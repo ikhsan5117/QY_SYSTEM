@@ -555,6 +555,451 @@ namespace AplikasiCheckDimensi.Controllers
             }
         }
 
+        // GET: /Rejection/DashboardHose
+        public async Task<IActionResult> DashboardHose(string? bulan, string? tanggal, string? jenisNG, string? line, string? kategoriNG, string? partCode)
+        {
+            if (!IsLoggedIn())
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            if (!IsAdmin())
+            {
+                TempData["ErrorMessage"] = "Akses ditolak. Dashboard Rejection hanya untuk Admin.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            ViewBag.PlantName = "HOSE";
+            return await GetDashboardByPlant("HOSE", bulan, tanggal, jenisNG, line, kategoriNG, partCode);
+        }
+
+        // GET: /Rejection/DashboardMolded
+        public async Task<IActionResult> DashboardMolded(string? bulan, string? tanggal, string? jenisNG, string? line, string? kategoriNG, string? partCode)
+        {
+            if (!IsLoggedIn())
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            if (!IsAdmin())
+            {
+                TempData["ErrorMessage"] = "Akses ditolak. Dashboard Rejection hanya untuk Admin.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            ViewBag.PlantName = "MOLDED";
+            return await GetDashboardByPlant("MOLDED", bulan, tanggal, jenisNG, line, kategoriNG, partCode);
+        }
+
+        // GET: /Rejection/DashboardRVI
+        public async Task<IActionResult> DashboardRVI(string? bulan, string? tanggal, string? jenisNG, string? line, string? kategoriNG, string? partCode)
+        {
+            if (!IsLoggedIn())
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            if (!IsAdmin())
+            {
+                TempData["ErrorMessage"] = "Akses ditolak. Dashboard Rejection hanya untuk Admin.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            ViewBag.PlantName = "RVI";
+            return await GetDashboardByPlant("RVI", bulan, tanggal, jenisNG, line, kategoriNG, partCode);
+        }
+
+        // GET: /Rejection/DashboardBTR
+        public async Task<IActionResult> DashboardBTR(string? bulan, string? tanggal, string? jenisNG, string? line, string? kategoriNG, string? partCode)
+        {
+            if (!IsLoggedIn())
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            if (!IsAdmin())
+            {
+                TempData["ErrorMessage"] = "Akses ditolak. Dashboard Rejection hanya untuk Admin.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            ViewBag.PlantName = "BTR";
+            return await GetDashboardByPlant("BTR", bulan, tanggal, jenisNG, line, kategoriNG, partCode);
+        }
+
+        // Helper method for plant-specific dashboard
+        private async Task<IActionResult> GetDashboardByPlant(string plantName, string? bulan, string? tanggal, string? jenisNG, string? line, string? kategoriNG, string? partCode)
+        {
+            try
+            {
+                bool hasAnyFilter = !string.IsNullOrEmpty(bulan) || 
+                                   !string.IsNullOrEmpty(tanggal) || 
+                                   !string.IsNullOrEmpty(jenisNG) || 
+                                   !string.IsNullOrEmpty(line) || 
+                                   !string.IsNullOrEmpty(kategoriNG) || 
+                                   !string.IsNullOrEmpty(partCode);
+                
+                // Get NG data with Plant filter
+                var query = _context.QCHoseData
+                    .Where(x => x.QtyNG != null && x.QtyNG > 0 && x.Plant == plantName)
+                    .AsQueryable();
+
+                // Parse selected months for filtering
+                List<(int Month, int Year)> selectedMonthYears = new List<(int Month, int Year)>();
+                List<int> selectedMonths = new List<int>();
+                int selectedMonth = DateTime.Now.Month;
+                int selectedYear = DateTime.Now.Year;
+
+                if (!string.IsNullOrEmpty(bulan))
+                {
+                    var bulanList = bulan.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var b in bulanList)
+                    {
+                        var parts = b.Split('-');
+                        if (parts.Length == 2 && int.TryParse(parts[0], out int month) && int.TryParse(parts[1], out int year))
+                        {
+                            selectedMonthYears.Add((month, year));
+                            if (!selectedMonths.Contains(month))
+                                selectedMonths.Add(month);
+                            selectedMonth = month;
+                            selectedYear = year;
+                        }
+                    }
+                }
+
+                // Apply filters to NG query
+                if (!string.IsNullOrEmpty(bulan))
+                {
+                    var bulanList = bulan.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    if (bulanList.Length > 0)
+                    {
+                        var monthYearPairs = bulanList
+                            .Select(b => {
+                                var parts = b.Split('-');
+                                if (parts.Length == 2 && int.TryParse(parts[0], out int month) && int.TryParse(parts[1], out int year))
+                                {
+                                    return new { Month = month, Year = year };
+                                }
+                                else if (int.TryParse(b, out int monthOnly))
+                                {
+                                    return new { Month = monthOnly, Year = DateTime.Now.Year };
+                                }
+                                return null;
+                            })
+                            .Where(p => p != null)
+                            .ToList();
+                        
+                        if (monthYearPairs != null && monthYearPairs.Count > 0)
+                        {
+                            var validPairs = monthYearPairs.Where(p => p != null).ToList();
+                            if (validPairs.Count > 0)
+                            {
+                                query = query.Where(x => validPairs.Any(p => p != null && p.Month == x.TanggalInput.Month && p.Year == x.TanggalInput.Year));
+                            }
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(tanggal))
+                {
+                    var tanggalList = tanggal.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    if (tanggalList.Length > 0)
+                    {
+                        int tanggalYear = DateTime.Now.Year;
+                        int tanggalMonth = DateTime.Now.Month;
+                        if (!string.IsNullOrEmpty(bulan))
+                        {
+                            var bulanList = bulan.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            if (bulanList.Length > 0)
+                            {
+                                var firstBulan = bulanList.First();
+                                var parts = firstBulan.Split('-');
+                                if (parts.Length == 2 && int.TryParse(parts[0], out int month) && int.TryParse(parts[1], out int year))
+                                {
+                                    tanggalMonth = month;
+                                    tanggalYear = year;
+                                }
+                            }
+                        }
+                        
+                        var tanggalDates = tanggalList
+                            .Where(t => int.TryParse(t, out int day) && day >= 1 && day <= 31)
+                            .Select(t => {
+                                int day = int.Parse(t);
+                                if (day <= DateTime.DaysInMonth(tanggalYear, tanggalMonth))
+                                {
+                                    return new DateTime(tanggalYear, tanggalMonth, day).Date;
+                                }
+                                return (DateTime?)null;
+                            })
+                            .Where(dt => dt.HasValue)
+                            .Select(dt => dt!.Value)
+                            .ToList();
+                        if (tanggalDates.Count > 0)
+                        {
+                            query = query.Where(x => tanggalDates.Contains(x.TanggalInput.Date));
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(jenisNG))
+                {
+                    var jenisNGList = jenisNG.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    if (jenisNGList.Length > 0)
+                    {
+                        query = query.Where(x => jenisNGList.Contains(x.JenisNG ?? ""));
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(line))
+                {
+                    var lineList = line.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    if (lineList.Length > 0)
+                    {
+                        query = query.Where(x => lineList.Contains(x.LineChecking ?? ""));
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(partCode))
+                {
+                    var partCodeList = partCode.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    if (partCodeList.Length > 0)
+                    {
+                        query = query.Where(x => partCodeList.Contains(x.PartCode ?? ""));
+                    }
+                }
+
+                var data = await query.ToListAsync(); // Always load data for plant-specific dashboard
+                var totalQtyNG = data.Sum(x => x.QtyNG ?? 0);
+
+                // Get QTY CHECK data (all checked data, not just NG) with Plant filter
+                var qtyCheckQuery = _context.QCHoseData
+                    .Where(x => x.Plant == plantName)
+                    .AsQueryable();
+
+                // Apply same filters to qtyCheckQuery
+                if (!string.IsNullOrEmpty(bulan))
+                {
+                    var bulanList = bulan.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    if (bulanList.Length > 0)
+                    {
+                        var monthYearPairs = bulanList
+                            .Select(b => {
+                                var parts = b.Split('-');
+                                if (parts.Length == 2 && int.TryParse(parts[0], out int month) && int.TryParse(parts[1], out int year))
+                                {
+                                    return new { Month = month, Year = year };
+                                }
+                                return null;
+                            })
+                            .Where(p => p != null)
+                            .ToList();
+                        
+                        if (monthYearPairs != null && monthYearPairs.Count > 0)
+                        {
+                            qtyCheckQuery = qtyCheckQuery.Where(x => monthYearPairs.Any(p => p != null && p.Month == x.TanggalInput.Month && p.Year == x.TanggalInput.Year));
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(tanggal))
+                {
+                    var tanggalList = tanggal.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    if (tanggalList.Length > 0)
+                    {
+                        int tanggalYear = DateTime.Now.Year;
+                        int tanggalMonth = DateTime.Now.Month;
+                        if (!string.IsNullOrEmpty(bulan))
+                        {
+                            var bulanList = bulan.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            if (bulanList.Length > 0)
+                            {
+                                var firstBulan = bulanList.First();
+                                var parts = firstBulan.Split('-');
+                                if (parts.Length == 2 && int.TryParse(parts[0], out int month) && int.TryParse(parts[1], out int year))
+                                {
+                                    tanggalMonth = month;
+                                    tanggalYear = year;
+                                }
+                            }
+                        }
+                        
+                        var tanggalDates = tanggalList
+                            .Where(t => int.TryParse(t, out int day) && day >= 1 && day <= 31)
+                            .Select(t => {
+                                int day = int.Parse(t);
+                                if (day <= DateTime.DaysInMonth(tanggalYear, tanggalMonth))
+                                {
+                                    return new DateTime(tanggalYear, tanggalMonth, day).Date;
+                                }
+                                return (DateTime?)null;
+                            })
+                            .Where(dt => dt.HasValue)
+                            .Select(dt => dt!.Value)
+                            .ToList();
+                        if (tanggalDates.Count > 0)
+                        {
+                            qtyCheckQuery = qtyCheckQuery.Where(x => tanggalDates.Contains(x.TanggalInput.Date));
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(line))
+                {
+                    var lineList = line.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    if (lineList.Length > 0)
+                    {
+                        qtyCheckQuery = qtyCheckQuery.Where(x => lineList.Contains(x.LineChecking));
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(partCode))
+                {
+                    var partCodeList = partCode.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    if (partCodeList.Length > 0)
+                    {
+                        qtyCheckQuery = qtyCheckQuery.Where(x => partCodeList.Contains(x.PartCode));
+                    }
+                }
+
+                var totalQtyCheck = await qtyCheckQuery.SumAsync(x => x.QtyCheck ?? 0);
+                var totalRR = totalQtyCheck > 0 ? Math.Round((totalQtyNG * 100.0) / totalQtyCheck, 2) : 0;
+
+                var allCheckedData = await qtyCheckQuery.ToListAsync();
+                
+                // Get all data for this plant (with bulan filter if applicable)
+                var allDataQuery = _context.QCHoseData.Where(x => x.Plant == plantName).AsQueryable();
+                
+                // Apply bulan filter to allData for correct weekly chart display
+                if (!string.IsNullOrEmpty(bulan))
+                {
+                    var bulanList = bulan.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    if (bulanList.Length > 0)
+                    {
+                        var monthYearPairs = bulanList
+                            .Select(b => {
+                                var parts = b.Split('-');
+                                if (parts.Length == 2 && int.TryParse(parts[0], out int month) && int.TryParse(parts[1], out int year))
+                                {
+                                    return new { Month = month, Year = year };
+                                }
+                                return null;
+                            })
+                            .Where(p => p != null)
+                            .ToList();
+                        
+                        if (monthYearPairs != null && monthYearPairs.Count > 0)
+                        {
+                            allDataQuery = allDataQuery.Where(x => monthYearPairs.Any(p => p != null && p.Month == x.TanggalInput.Month && p.Year == x.TanggalInput.Year));
+                        }
+                    }
+                }
+                
+                var allData = await allDataQuery.ToListAsync();
+
+                // Generate chart data
+                var monthlyData = GetMonthlyData(data, allCheckedData, allData, bulan, selectedMonthYears);
+                var weeklyData = GetWeeklyData(data, allCheckedData, allData, selectedMonths, selectedMonthYears, bulan);
+                var dailyData = GetDailyData(data, allCheckedData, allData, selectedMonth, selectedYear, tanggal);
+                var paretoPartData = GetParetoPartData(data, allCheckedData, allData);
+                var kriteriaNGData = GetKriteriaNGData(data);
+                var rejectionByPartData = GetRejectionByPartData(data, allCheckedData, allData);
+                var rejectionByKriteriaData = GetRejectionByKriteriaData(data);
+
+                // Set ViewBag data
+                ViewBag.TotalQtyNG = totalQtyNG;
+                ViewBag.TotalQtyCheck = totalQtyCheck;
+                ViewBag.TotalRR = totalRR;
+                ViewBag.MonthlyData = monthlyData;
+                ViewBag.WeeklyData = weeklyData;
+                ViewBag.DailyData = dailyData;
+                ViewBag.ParetoPartData = paretoPartData;
+                ViewBag.KriteriaNGData = kriteriaNGData;
+                ViewBag.RejectionByPartData = rejectionByPartData;
+                ViewBag.RejectionByKriteriaData = rejectionByKriteriaData;
+                ViewBag.SelectedMonths = selectedMonths;
+                ViewBag.SelectedTanggal = !string.IsNullOrEmpty(tanggal) ? tanggal.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList() : new List<string>();
+
+                // Get filter options (filtered by plant)
+                ViewBag.JenisNGList = await _context.QCHoseData
+                    .Where(x => x.Plant == plantName && !string.IsNullOrEmpty(x.JenisNG))
+                    .Select(x => x.JenisNG)
+                    .Distinct()
+                    .OrderBy(x => x)
+                    .ToListAsync();
+
+                ViewBag.LineList = await _context.QCHoseData
+                    .Where(x => x.Plant == plantName && !string.IsNullOrEmpty(x.LineChecking))
+                    .Select(x => x.LineChecking)
+                    .Distinct()
+                    .OrderBy(x => x)
+                    .ToListAsync();
+
+                ViewBag.PartCodeList = await _context.QCHoseData
+                    .Where(x => x.Plant == plantName && !string.IsNullOrEmpty(x.PartCode))
+                    .Select(x => x.PartCode)
+                    .Distinct()
+                    .OrderBy(x => x)
+                    .ToListAsync();
+
+                // Get bulan list (filtered by plant)
+                var bulanListQuery = await _context.QCHoseData
+                    .Where(x => x.Plant == plantName)
+                    .GroupBy(x => new { x.TanggalInput.Year, x.TanggalInput.Month })
+                    .Select(g => new { 
+                        Year = g.Key.Year, 
+                        Month = g.Key.Month
+                    })
+                    .Where(x => x.Year > 0 && x.Month > 0)
+                    .ToListAsync();
+                
+                ViewBag.BulanList = bulanListQuery
+                    .Select(x => new { 
+                        Year = x.Year, 
+                        Month = x.Month,
+                        MonthName = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(x.Month),
+                        Value = $"{x.Month}-{x.Year}"
+                    })
+                    .OrderByDescending(x => x.Year)
+                    .ThenByDescending(x => x.Month)
+                    .ToList();
+
+                ViewBag.Bulan = bulan;
+                ViewBag.Tanggal = tanggal;
+                ViewBag.JenisNG = jenisNG;
+                ViewBag.Line = line;
+                ViewBag.KategoriNG = kategoriNG;
+                ViewBag.PartCode = partCode;
+
+                ViewData["Title"] = $"Dashboard Rejection {plantName}";
+
+                // If AJAX request, return JSON
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new {
+                        TotalQtyNG = totalQtyNG,
+                        TotalQtyCheck = totalQtyCheck,
+                        TotalRR = totalRR,
+                        MonthlyData = monthlyData,
+                        WeeklyData = weeklyData,
+                        DailyData = dailyData,
+                        ParetoPartData = paretoPartData,
+                        KriteriaNGData = kriteriaNGData,
+                        RejectionByPartData = rejectionByPartData,
+                        RejectionByKriteriaData = rejectionByKriteriaData
+                    });
+                }
+
+                return View($"Dashboard{plantName}");
+            }
+            catch (Exception ex)
+            {
+                ViewData["Title"] = $"Dashboard Rejection {plantName}";
+                ViewBag.ErrorMessage = "Error loading data: " + ex.Message;
+                return View($"Dashboard{plantName}");
+            }
+        }
+
         // Helper methods for data aggregation
         private dynamic GetMonthlyData(List<QCHoseData> ngData, List<QCHoseData> allCheckedData, List<QCHoseData> allData, string? bulan, List<(int Month, int Year)> selectedMonthYears)
         {

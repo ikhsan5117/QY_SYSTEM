@@ -535,7 +535,7 @@
 
 <div class="dashboard-container">
     <div class="dashboard-header">
-        <h1 class="dashboard-title">DASHBOARD REJECTION ALL</h1>
+        <h1 class="dashboard-title">DASHBOARD REJECTION HOSE</h1>
         <div style="display: flex; align-items: center; gap: 15px;">
             <div class="dashboard-date">
                 @DateTime.Now.ToString("dd MMM yyyy")
@@ -613,7 +613,7 @@
         </div>
 
         <!-- Filter Section - Above Pareto and Kriteria -->
-        <form method="get" action="@Url.Action("Dashboard", "Rejection")" id="filterFormMain" style="grid-row: 1; grid-column: 2 / 4;">
+        <form method="get" action="@Url.Action("DashboardHose", "Rejection")" id="filterFormMain" style="grid-row: 1; grid-column: 2 / 4;">
             <div class="filter-section-grid">
                 <!-- Bulan -->
                 <div class="filter-item">
@@ -2545,15 +2545,22 @@
             connection.on("NewQCDataAdded", function(data) {
                 console.log('🔔 New QC Data received via SignalR:', data);
                 
-                // 1. Tampilkan Notifikasi Popup
-                showToast("🔔 Data E_LWP Baru Masuk!", "Dashboard diperbarui otomatis.");
+                // ✅ FILTER: Hanya refresh jika data Plant = "HOSE"
+                if (data.plant && data.plant.toUpperCase() === "HOSE") {
+                    console.log('✅ Plant match! Refreshing Dashboard HOSE...');
+                    
+                    // 1. Tampilkan Notifikasi Popup
+                    showToast("🔔 Data E_LWP HOSE Baru Masuk!", "Dashboard HOSE diperbarui otomatis.");
 
-                // 2. Refresh Dashboard
-                console.log('🔄 Auto-refreshing Dashboard Rejection charts...');
-                if (typeof updateDashboardResults === 'function') {
-                    updateDashboardResults();
+                    // 2. Refresh Dashboard
+                    console.log('🔄 Auto-refreshing Dashboard Rejection HOSE charts...');
+                    if (typeof updateDashboardResults === 'function') {
+                        updateDashboardResults();
+                    } else {
+                        location.reload();
+                    }
                 } else {
-                    location.reload();
+                    console.log('⏭️ Plant mismatch. Data Plant:', data.plant, '| Dashboard Plant: HOSE. Skipping refresh.');
                 }
             });
 
