@@ -1,0 +1,93 @@
+@model InputAktual
+@{
+    ViewData["Title"] = "Edit Data Input";
+    Layout = "_LayoutDesktop";
+}
+
+<div class="row g-4">
+    <div class="col-lg-8 offset-lg-2">
+        <!-- Header -->
+        <div style="margin-bottom: 20px; padding: 16px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border-radius: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="bi bi-pencil-square" style="font-size: 32px;"></i>
+                <div>
+                    <h2 style="margin: 0; font-size: 22px; font-weight: 700;">Edit Data Input</h2>
+                    <p style="margin: 0; font-size: 14px; opacity: 0.9;">Perbarui data hasil pengecekan dimensi</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Produk -->
+        <div class="card-desktop" style="margin-bottom: 20px; border: 2px solid #e2e8f0;">
+            <div style="padding: 16px; background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">Informasi Produk</h3>
+            </div>
+            <div style="padding: 20px;">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div style="font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 4px;">PRODUK</div>
+                        <div style="font-size: 16px; font-weight: 700; color: #1e293b;">@Model.StandarDimensi?.Produk?.NamaProduk</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 4px;">DIMENSI</div>
+                        <div style="font-size: 16px; font-weight: 700; color: #3b82f6;">@Model.StandarDimensi?.NamaDimensi</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Edit -->
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="StandarDimensiId" />
+            <input type="hidden" asp-for="TanggalInput" />
+
+            <div class="card-desktop" style="border: 2px solid #e2e8f0; margin-bottom: 20px;">
+                <div style="padding: 16px; background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">Data Pengukuran</h3>
+                </div>
+                <div style="padding: 20px;">
+                    <div class="row g-3">
+                        @if (Model.StandarDimensi?.DimensiA_Min != null || Model.StandarDimensi?.DimensiA_Max != null)
+                        {
+                            <div class="col-md-6">
+                                <label class="form-label" style="font-weight: 600; color: #1e293b; font-size: 13px;">Dimensi A</label>
+                                <input asp-for="NilaiDimensiA" class="form-control" type="number" step="0.01" style="padding: 10px; font-size: 14px;" />
+                                <small style="color: #64748b; font-size: 11px;">Range: @Model.StandarDimensi?.DimensiA_Min - @Model.StandarDimensi?.DimensiA_Max mm</small>
+                            </div>
+                        }
+                        @if (Model.StandarDimensi?.DimensiB_Min != null || Model.StandarDimensi?.DimensiB_Max != null)
+                        {
+                            <div class="col-md-6">
+                                <label class="form-label" style="font-weight: 600; color: #1e293b; font-size: 13px;">Dimensi B</label>
+                                <input asp-for="NilaiDimensiB" class="form-control" type="number" step="0.01" style="padding: 10px; font-size: 14px;" />
+                                <small style="color: #64748b; font-size: 11px;">Range: @Model.StandarDimensi?.DimensiB_Min - @Model.StandarDimensi?.DimensiB_Max mm</small>
+                            </div>
+                        }
+                        @if (Model.StandarDimensi?.Sudut_Min != null || Model.StandarDimensi?.Sudut_Max != null)
+                        {
+                            <div class="col-md-6">
+                                <label class="form-label" style="font-weight: 600; color: #1e293b; font-size: 13px;">Sudut</label>
+                                <input asp-for="NilaiSudut" class="form-control" type="number" step="0.01" style="padding: 10px; font-size: 14px;" />
+                                <small style="color: #64748b; font-size: 11px;">Range: @Model.StandarDimensi?.Sudut_Min - @Model.StandarDimensi?.Sudut_Max °</small>
+                            </div>
+                        }
+                        <div class="col-12">
+                            <label class="form-label" style="font-weight: 600; color: #1e293b; font-size: 13px;">Catatan Operator (Opsional)</label>
+                            <textarea asp-for="CatatanOperator" class="form-control" rows="3" style="padding: 10px; font-size: 14px;"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <a asp-action="Riwayat" style="padding: 12px 24px; background: #e2e8f0; color: #64748b; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-x-circle"></i> Batal
+                </a>
+                <button type="submit" style="padding: 12px 24px; background: #f59e0b; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-check-circle"></i> Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Open Aplikasi Check Dimensi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #2a2a2a;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #4ade80;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #4ade80;
+            color: #1a1a1a;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #22c55e;
+        }
+        .info {
+            background: #3a3a3a;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .warning {
+            background: #ef4444;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Aplikasi Check Dimensi</h1>
+        
+        <div class="info">
+            <h3>📋 Langkah-langkah:</h3>
+            <ol>
+                <li>Pastikan aplikasi sudah running (double-click <strong>run-app.bat</strong>)</li>
+                <li>Klik tombol di bawah untuk membuka aplikasi</li>
+                <li>Login dengan:
+                    <ul>
+                        <li>Username: <strong>Administrator</strong></li>
+                        <li>Password: <strong>admin123</strong></li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <a href="http://localhost:5000" class="btn" target="_blank">
+            🌐 Buka Aplikasi
+        </a>
+        <a href="http://localhost:5000/Auth/Login" class="btn" target="_blank">
+            🔐 Buka Halaman Login
+        </a>
+
+        <div class="warning">
+            <strong>⚠️ Jika aplikasi tidak muncul:</strong>
+            <ul>
+                <li>Pastikan SQL Server sudah running</li>
+                <li>Pastikan database CheckDimensiDB sudah dibuat</li>
+                <li>Jalankan <strong>run-app.bat</strong> dan lihat error message</li>
+                <li>Cek connection string di <strong>appsettings.json</strong></li>
+            </ul>
+        </div>
+
+        <div class="info">
+            <h3>📝 Default Credentials:</h3>
+            <p><strong>Admin:</strong> Administrator / admin123</p>
+            <p><strong>Quality User:</strong> Hose1A / password123</p>
+        </div>
+    </div>
+</body>
+</html>
+

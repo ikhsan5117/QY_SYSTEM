@@ -1,0 +1,687 @@
+@model AplikasiCheckDimensi.Models.Produk
+@{
+    ViewData["Title"] = "SOP Detail - " + Model.NamaProduk;
+    Layout = "~/Views/Shared/_LayoutDesktop.cshtml";
+    var standarDimensi = ViewBag.StandarDimensi as List<AplikasiCheckDimensi.Models.StandarDimensi>;
+}
+
+<style>
+    .sop-detail-container {
+        padding: 20px;
+        max-width: 1600px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 250px 1fr 350px;
+        gap: 20px;
+        height: calc(100vh - 110px);
+    }
+
+    /* Left Sidebar */
+    .left-sidebar {
+        background: #1e293b;
+        border-radius: 16px;
+        padding: 20px;
+        color: white;
+        overflow-y: auto;
+    }
+
+    .sidebar-nav-item {
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 8px;
+    }
+
+    .sidebar-nav-item:hover {
+        background: rgba(255,255,255,0.1);
+    }
+
+    .sidebar-nav-item.active {
+        background: #3b82f6;
+    }
+
+    .sidebar-nav-item i {
+        font-size: 28px;
+    }
+
+    .sidebar-nav-item span {
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    /* Main Content */
+    .main-content-sop {
+        background: #1e293b;
+        border-radius: 16px;
+        padding: 30px;
+        color: white;
+        overflow-y: auto;
+    }
+
+    .content-section {
+        display: none;
+    }
+
+    .content-section.active {
+        display: block;
+    }
+
+    .sop-title {
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 20px;
+        color: #06b6d4;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* Part Identity Section */
+    .part-identity {
+        background: rgba(59, 130, 246, 0.1);
+        border: 2px solid #3b82f6;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+
+    .identity-header {
+        font-size: 14px;
+        color: #94a3b8;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .identity-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+    }
+
+    .identity-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .identity-label {
+        font-size: 12px;
+        color: #94a3b8;
+        font-weight: 600;
+    }
+
+    .identity-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .step-indicator {
+        background: rgba(16, 185, 129, 0.2);
+        border: 2px solid #10b981;
+        border-radius: 8px;
+        padding: 10px 20px;
+        display: inline-block;
+        margin-bottom: 20px;
+        font-weight: 700;
+        color: #10b981;
+    }
+
+    /* Video Player */
+    .video-container {
+        position: relative;
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        aspect-ratio: 16/9;
+    }
+
+    .video-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        color: #64748b;
+    }
+
+    .video-placeholder i {
+        font-size: 80px;
+        margin-bottom: 20px;
+        opacity: 0.3;
+    }
+
+    .play-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80px;
+        height: 80px;
+        background: #10b981;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .play-overlay:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+        box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+    }
+
+    .play-overlay i {
+        font-size: 36px;
+        color: white;
+        margin-left: 5px;
+    }
+
+    .safety-note {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-radius: 10px;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-weight: 600;
+        margin-top: 20px;
+    }
+
+    .safety-note i {
+        font-size: 24px;
+    }
+
+    /* Right Panel */
+    .right-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .control-panel {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .panel-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #06b6d4;
+    }
+
+    .nav-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .nav-btn {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        background: white;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .nav-btn:hover {
+        background: #f1f5f9;
+        border-color: #3b82f6;
+        color: #3b82f6;
+    }
+
+    .action-btn {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-verify {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-verify:hover {
+        background: #059669;
+        transform: translateY(-2px);
+    }
+
+    .btn-issue {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .btn-issue:hover {
+        background: #d97706;
+    }
+
+    /* Dimensions Table */
+    .dimensions-panel {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .dimension-item {
+        padding: 12px;
+        background: #f8fafc;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 4px solid #3b82f6;
+    }
+
+    .dimension-name {
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+
+    .dimension-values {
+        display: flex;
+        gap: 15px;
+        font-size: 12px;
+    }
+
+    .dimension-value {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .dim-label {
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .dim-val {
+        color: #1e293b;
+        font-weight: 700;
+    }
+
+    .packing-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        border-radius: 12px;
+        padding: 20px;
+        color: white;
+        text-align: center;
+    }
+
+    .packing-label {
+        font-size: 12px;
+        opacity: 0.9;
+        margin-bottom: 5px;
+    }
+
+    .packing-value {
+        font-size: 32px;
+        font-weight: 900;
+    }
+
+    /* SOP List */
+    .sop-steps-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .sop-step-item {
+        background: rgba(59, 130, 246, 0.1);
+        border: 2px solid rgba(59, 130, 246, 0.3);
+        border-radius: 10px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .sop-step-item:hover {
+        background: rgba(59, 130, 246, 0.2);
+        border-color: #3b82f6;
+    }
+
+    .step-number {
+        font-size: 12px;
+        color: #3b82f6;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .step-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: white;
+    }
+</style>
+
+<div class="sop-detail-container">
+    <!-- Left Sidebar -->
+    <div class="left-sidebar">
+        <div class="sidebar-nav-item active" data-section="dashboard">
+            <i class="bi bi-grid"></i>
+            <span>Dashboard</span>
+        </div>
+        <div class="sidebar-nav-item" data-section="sop-list">
+            <i class="bi bi-list-check"></i>
+            <span>SOP List</span>
+        </div>
+        <div class="sidebar-nav-item" data-section="settings">
+            <i class="bi bi-gear"></i>
+            <span>Settings</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content-sop">
+        <!-- Dashboard Section -->
+        <div class="content-section active" id="dashboard">
+            <h2 class="sop-title">
+                <i class="bi bi-clipboard-check"></i>
+                SOP CHECKING & VERIFICATION
+            </h2>
+
+            <!-- Part Identity -->
+            <div class="part-identity">
+                <div class="identity-header">PART IDENTITY</div>
+                <div class="identity-grid">
+                    <div class="identity-item">
+                        <span class="identity-label">Part Name</span>
+                        <span class="identity-value">@Model.NamaProduk</span>
+                    </div>
+                    <div class="identity-item">
+                        <span class="identity-label">Part Code</span>
+                        <span class="identity-value">@(Model.PartCode ?? "-")</span>
+                    </div>
+                    <div class="identity-item">
+                        <span class="identity-label">Part No</span>
+                        <span class="identity-value">@(Model.PartNo ?? "-")</span>
+                    </div>
+                    <div class="identity-item">
+                        <span class="identity-label">Product ID</span>
+                        <span class="identity-value">#@Model.Id</span>
+                    </div>
+                    <div class="identity-item">
+                        <span class="identity-label">CT (Detik)</span>
+                        <span class="identity-value">@(Model.CT ?? "-")</span>
+                    </div>
+                    <div class="identity-item">
+                        <span class="identity-label">Plant</span>
+                        <span class="identity-value">@(Model.Plant ?? "-")</span>
+                    </div>
+                    <div class="identity-item">
+                        <span class="identity-label">Operator</span>
+                        <span class="identity-value">@(Model.Operator ?? "-")</span>
+                    </div>
+                    <div class="identity-item">
+                        <span class="identity-label">Date</span>
+                        <span class="identity-value">@Model.TanggalInput.ToString("dd/MM/yyyy")</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-indicator">Step 1 of 5</div>
+
+            <!-- Video Player -->
+            <div class="video-container" id="videoContainer">
+                @if (!string.IsNullOrEmpty(Model.VideoPath))
+                {
+                    <video id="sopVideo" width="100%" height="100%" controls autoplay muted loop style="border-radius: 12px;">
+                        <source src="@Model.VideoPath" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                }
+                else
+                {
+                    <div class="video-placeholder">
+                        <i class="bi bi-camera-video"></i>
+                        <p>No video available for this product</p>
+                        <small>Upload SOP video in Management section</small>
+                    </div>
+                }
+            </div>
+
+            <!-- Safety Note -->
+            <div class="safety-note">
+                <i class="bi bi-shield-check"></i>
+                <span>PASTIKAN KLEM TERPASANG DENGAN ERAT & AMAN</span>
+            </div>
+        </div>
+
+        <!-- SOP List Section -->
+        <div class="content-section" id="sop-list">
+            <h2 class="sop-title">
+                <i class="bi bi-list-check"></i>
+                ALL SOP STEPS
+            </h2>
+
+            <div class="sop-steps-list">
+                <div class="sop-step-item">
+                    <div class="step-number">STEP 1 OF 5</div>
+                    <div class="step-title">Initial Inspection - Visual Check</div>
+                </div>
+                <div class="sop-step-item">
+                    <div class="step-number">STEP 2 OF 5</div>
+                    <div class="step-title">Dimension Measurement Setup</div>
+                </div>
+                <div class="sop-step-item">
+                    <div class="step-number">STEP 3 OF 5</div>
+                    <div class="step-title">Critical Dimension Verification</div>
+                </div>
+                <div class="sop-step-item">
+                    <div class="step-number">STEP 4 OF 5</div>
+                    <div class="step-title">Quality Control Check</div>
+                </div>
+                <div class="sop-step-item">
+                    <div class="step-number">STEP 5 OF 5</div>
+                    <div class="step-title">Final Verification & Documentation</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div class="content-section" id="settings">
+            <h2 class="sop-title">
+                <i class="bi bi-gear"></i>
+                SETTINGS
+            </h2>
+            <p style="opacity: 0.7;">Configuration options coming soon...</p>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <!-- Navigation Controls -->
+        <div class="control-panel">
+            <div class="panel-title">SOP NAVIGATION & VERIFICATION CONTROLS</div>
+            
+            <div class="nav-buttons">
+                <button class="nav-btn">
+                    <i class="bi bi-chevron-left"></i>
+                    PREV. STEP
+                </button>
+                <button class="nav-btn">
+                    NEXT STEP
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+
+            <button class="action-btn btn-verify">
+                <i class="bi bi-check-circle"></i>
+                VERIFY & COMPLETE STEP
+            </button>
+
+            <button class="action-btn btn-issue">
+                <i class="bi bi-exclamation-triangle"></i>
+                REPORT AN ISSUE
+            </button>
+        </div>
+
+        <!-- Dimensions -->
+        <div class="dimensions-panel">
+            <div class="panel-title">DIMENSION STANDARDS</div>
+            
+            @if (standarDimensi != null && standarDimensi.Any())
+            {
+                @foreach (var std in standarDimensi)
+                {
+                    <div class="dimension-item">
+                        <div class="dimension-name">@std.NamaDimensi</div>
+                        <div class="dimension-values">
+                            @{
+                                decimal? minValue = null;
+                                decimal? maxValue = null;
+                                
+                                // Determine which dimension to show based on name
+                                if (std.NamaDimensi.Contains("Inner", StringComparison.OrdinalIgnoreCase) || std.NamaDimensi.Contains("ID", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    minValue = std.InnerDiameter_Min;
+                                    maxValue = std.InnerDiameter_Max;
+                                }
+                                else if (std.NamaDimensi.Contains("Outer", StringComparison.OrdinalIgnoreCase) || std.NamaDimensi.Contains("OD", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    minValue = std.OuterDiameter_Min;
+                                    maxValue = std.OuterDiameter_Max;
+                                }
+                                else if (std.NamaDimensi.Contains("Panjang", StringComparison.OrdinalIgnoreCase) || std.NamaDimensi.Contains("Length", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    minValue = std.Panjang_Min;
+                                    maxValue = std.Panjang_Max;
+                                }
+                                else if (std.NamaDimensi.Contains("Thick", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    minValue = std.Thickness_Min;
+                                    maxValue = std.Thickness_Max;
+                                }
+                                else
+                                {
+                                    minValue = std.DimensiA_Min;
+                                    maxValue = std.DimensiA_Max;
+                                }
+                            }
+                            <div class="dimension-value">
+                                <span class="dim-label">MIN</span>
+                                <span class="dim-val">@(minValue?.ToString("F2") ?? "-")</span>
+                            </div>
+                            <div class="dimension-value">
+                                <span class="dim-label">MAX</span>
+                                <span class="dim-val">@(maxValue?.ToString("F2") ?? "-")</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p style="text-align: center; color: #94a3b8; padding: 20px;">No dimension standards defined</p>
+            }
+
+            <!-- Product Info -->
+            <div class="packing-info" style="margin-top: 20px;">
+                <div class="packing-label">@(Model.PartCode ?? "PRODUCT ID")</div>
+                <div class="packing-value">@(Model.PartCode ?? "#" + Model.Id)</div>
+                <div class="packing-label" style="margin-top: 10px; font-size: 14px;">@Model.NamaProduk</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sidebar navigation
+    const sidebarItems = document.querySelectorAll('.sidebar-nav-item');
+    const contentSections = document.querySelectorAll('.content-section');
+    
+    sidebarItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const targetSection = this.dataset.section;
+            
+            // Remove active class from all items
+            sidebarItems.forEach(i => i.classList.remove('active'));
+            contentSections.forEach(s => s.classList.remove('active'));
+            
+            // Add active class to clicked item
+            this.classList.add('active');
+            document.getElementById(targetSection).classList.add('active');
+        });
+    });
+
+    // Video autoplay
+    const sopVideo = document.getElementById('sopVideo');
+    if (sopVideo) {
+        sopVideo.play().catch(function(error) {
+            console.log('Autoplay prevented:', error);
+        });
+    }
+
+    // Navigation buttons
+    const prevBtn = document.querySelector('.nav-btn:first-child');
+    const nextBtn = document.querySelector('.nav-btn:last-child');
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            alert('Navigate to previous step');
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            alert('Navigate to next step');
+        });
+    }
+
+    // Action buttons
+    const verifyBtn = document.querySelector('.btn-verify');
+    const issueBtn = document.querySelector('.btn-issue');
+
+    if (verifyBtn) {
+        verifyBtn.addEventListener('click', function() {
+            if (confirm('Mark this step as verified and complete?')) {
+                alert('Step verified successfully!');
+            }
+        });
+    }
+
+    if (issueBtn) {
+        issueBtn.addEventListener('click', function() {
+            const issue = prompt('Please describe the issue:');
+            if (issue) {
+                alert('Issue reported: ' + issue);
+            }
+        });
+    }
+});
+</script>

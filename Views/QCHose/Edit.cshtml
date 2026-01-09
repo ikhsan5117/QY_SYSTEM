@@ -1,0 +1,2692 @@
+@model AplikasiCheckDimensi.Models.QCHoseData
+@{
+    ViewData["Title"] = "Edit Data E_LWP";
+    Layout = "_LayoutDesktop";
+}
+
+<style>
+    .qchose-page {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 20px 16px 100px 16px;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #111827;
+    }
+
+    /* Tablet & Desktop: lebar penuh seperti laptop */
+    @@media (min-width: 768px) {
+        body.desktop-view .main-content .content-area {
+            padding: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+        
+        .qchose-page {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding: 24px !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+        }
+    }
+
+    .qchose-header {
+        position: relative;
+    }
+
+    .qchose-header-back {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #f3f4f6;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: #111827;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .qchose-header-back:hover {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .qchose-header-title {
+        font-size: 24px;
+        font-weight: 800;
+        text-align: center;
+        letter-spacing: 1px;
+        margin-bottom: 4px;
+    }
+
+    .qchose-header-subtitle {
+        text-align: center;
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 20px;
+    }
+
+    .qchose-section {
+        background-color: #ffffff;
+        border-radius: 16px;
+        padding: 16px 16px 4px 16px;
+        box-shadow: 0 3px 8px rgba(15, 23, 42, 0.15);
+        margin-bottom: 16px;
+    }
+
+    .qchose-label {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #111827;
+        margin-bottom: 6px;
+    }
+
+    .qchose-select,
+    .qchose-input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .qchose-select:focus,
+    .qchose-input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
+    }
+
+    .qchose-radio-group {
+        display: flex;
+        gap: 32px;
+        align-items: center;
+        margin-top: 4px;
+        margin-bottom: 4px;
+    }
+
+    .qchose-radio-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+    }
+
+    .qchose-inline-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 4px;
+    }
+
+    .qchose-partcode-input {
+        flex: 1;
+    }
+
+    .qchose-partcode-input:disabled {
+        background-color: #f3f4f6 !important;
+        cursor: not-allowed !important;
+        color: #6b7280;
+    }
+
+    .line-stop-message {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        transform: translateY(-50%);
+        background: #fef3c7;
+        color: #92400e;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        pointer-events: none;
+        z-index: 10;
+        border: 1px solid #fbbf24;
+    }
+
+    .line-stop-message i {
+        font-size: 14px;
+    }
+
+    .qchose-inline-row > div:first-child {
+        position: relative;
+        flex: 1;
+    }
+
+    /* Line Stop Warning Modal */
+    .line-stop-warning-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .line-stop-warning-content {
+        background: white;
+        border-radius: 16px;
+        padding: 0;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        animation: slideUp 0.3s ease;
+    }
+
+    @@keyframes slideUp {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .line-stop-warning-header {
+        padding: 24px 24px 16px;
+        text-align: center;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .line-stop-warning-header h3 {
+        margin: 12px 0 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .line-stop-warning-body {
+        padding: 24px;
+        text-align: center;
+    }
+
+    .line-stop-warning-body p {
+        margin: 8px 0;
+        font-size: 15px;
+        color: #374151;
+        line-height: 1.5;
+    }
+
+    .line-stop-warning-body p strong {
+        color: #111827;
+        font-weight: 600;
+    }
+
+    .line-stop-warning-footer {
+        padding: 16px 24px 24px;
+        text-align: center;
+    }
+
+    .line-stop-warning-btn {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 32px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: background 0.2s;
+    }
+
+    .line-stop-warning-btn:hover {
+        background: #2563eb;
+    }
+
+    .line-stop-warning-btn:active {
+        transform: scale(0.98);
+    }
+
+    /* Data Menu Icon Button - Lingkaran Ungu Fixed Position */
+    .data-menu-icon-btn-fixed {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        left: auto;
+        background: none !important;
+        border: none !important;
+        padding: 0 !important;
+        cursor: pointer;
+        outline: none;
+        z-index: 9999;
+        transition: transform 0.2s;
+        transform: none;
+    }
+
+    .data-menu-icon-btn-fixed:hover {
+        transform: scale(1.1);
+    }
+
+    .data-menu-icon-inner {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        transition: transform 0.2s;
+    }
+
+    .data-menu-icon-btn-fixed:hover .data-menu-icon-inner {
+        transform: scale(1.05);
+    }
+
+    .data-menu-icon-btn-fixed:active .data-menu-icon-inner {
+        transform: scale(0.95);
+    }
+
+    /* Mobile: tengah bawah */
+    @@media (max-width: 767px) {
+        .data-menu-icon-btn-fixed {
+            bottom: 20px;
+            right: 50%;
+            transform: translateX(50%);
+        }
+
+        .data-menu-icon-btn-fixed:hover {
+            transform: translateX(50%) scale(1.1);
+        }
+    }
+
+    /* Tablet: kanan bawah (tidak di tengah) - SPECIFIC OVERRIDE */
+    @@media (min-width: 768px) and (max-width: 1024px) {
+        .data-menu-icon-btn-fixed {
+            position: fixed !important;
+            bottom: 30px !important;
+            right: 30px !important;
+            left: auto !important;
+            transform: none !important;
+            margin: 0 !important;
+        }
+
+        .data-menu-icon-btn-fixed:hover {
+            transform: scale(1.1) !important;
+            right: 30px !important;
+            left: auto !important;
+        }
+        
+        .data-menu-icon-btn-fixed:active {
+            right: 30px !important;
+            left: auto !important;
+        }
+    }
+
+    /* Desktop: kanan bawah */
+    @@media (min-width: 1025px) {
+        .data-menu-icon-btn-fixed {
+            bottom: 30px;
+            right: 30px;
+            transform: none;
+        }
+
+        .data-menu-icon-btn-fixed:hover {
+            transform: scale(1.1);
+        }
+    }
+
+    /* Data Menu Modal */
+    .data-menu-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10001;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .data-menu-content {
+        background: white;
+        border-radius: 20px;
+        padding: 24px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease;
+    }
+
+    .data-menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .data-menu-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+        letter-spacing: 2px;
+    }
+
+    .data-menu-close {
+        background: #f3f4f6;
+        border: none;
+        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 18px;
+        transition: all 0.2s;
+    }
+
+    .data-menu-close:hover {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .data-menu-body {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .data-menu-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: space-between;
+    }
+
+    .data-menu-btn {
+        flex: 1;
+        padding: 14px 20px;
+        background: #374151;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+    }
+
+    .data-menu-btn:hover {
+        background: #4b5563;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(55, 65, 81, 0.3);
+    }
+
+    .data-menu-btn:active {
+        transform: translateY(0);
+    }
+
+    .data-menu-icon-circle {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .data-menu-icon-circle:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .data-menu-icon-circle:active {
+        transform: scale(0.95);
+    }
+
+    .data-menu-footer {
+        display: flex;
+        justify-content: center;
+        margin-top: 8px;
+    }
+
+    .qchose-btn-qr {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: #111827;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .qchose-btn-qr:hover {
+        background-color: #e5e7eb;
+        border-color: #3b82f6;
+        color: #3b82f6;
+        transform: scale(1.05);
+    }
+    
+    .qchose-btn-qr:active {
+        transform: scale(0.95);
+    }
+    
+    .qchose-btn-qr:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .qchose-btn-dimensi {
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: none;
+        background-color: #facc15;
+        color: #111827;
+        font-weight: 700;
+        font-size: 13px;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .qchose-time-stop {
+        margin-top: 8px;
+        font-size: 14px;
+    }
+
+    .qchose-time-stop-label {
+        color: #ef4444;
+        font-weight: 600;
+        margin-right: 4px;
+    }
+
+    .qchose-time-stop-value {
+        font-weight: 700;
+        letter-spacing: 0.1em;
+    }
+
+    .qchose-section-title {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .qchose-btn-primary,
+    .qchose-btn-secondary {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 15px;
+        border: none;
+        margin-top: 8px;
+        cursor: pointer;
+    }
+
+    .qchose-btn-primary {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+    }
+
+    .qchose-btn-secondary {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+
+    .qchose-status-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 12px;
+    }
+
+    .qchose-status-label {
+        font-size: 15px;
+        font-weight: 600;
+        color: #16a34a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .qchose-status-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 999px;
+        background-color: #22c55e;
+        box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.35);
+    }
+
+    .qchose-status-time {
+        font-family: "SF Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 16px;
+        letter-spacing: 0.15em;
+    }
+
+    .text-danger {
+        color: #dc2626;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+    }
+
+    .alert-success {
+        background: #dcfce7;
+        color: #15803d;
+        border: 1px solid #86efac;
+    }
+
+    .alert-danger {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fca5a5;
+    }
+
+    /* QR Scanner Modal */
+    .qr-scanner-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .qr-scanner-content {
+        background: white;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease;
+    }
+
+    .qr-scanner-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+
+    .qr-scanner-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .qr-scanner-close {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        font-size: 28px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        line-height: 1;
+    }
+
+    .qr-scanner-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+
+    .qr-scanner-body {
+        padding: 24px;
+        text-align: center;
+    }
+
+    #qr-video {
+        width: 100%;
+        max-width: 500px;
+        border-radius: 8px;
+        background: #000;
+        margin-bottom: 16px;
+    }
+
+    .qr-scanner-instructions {
+        margin-top: 16px;
+        padding: 12px;
+        background: #f8fafc;
+        border-radius: 8px;
+    }
+
+    .qr-scanner-instructions p {
+        margin: 4px 0;
+        font-size: 14px;
+        color: #475569;
+    }
+
+    .qr-scanner-instructions i {
+        color: #3b82f6;
+        margin-right: 6px;
+    }
+</style>
+
+<div class="qchose-page">
+    <div class="qchose-header" style="margin-bottom: 16px;">
+        <div class="qchose-header-title">EDIT DATA E_LWP</div>
+        <div class="qchose-header-subtitle" id="qcHoseNow"></div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success" id="successAlert">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i> @ViewBag.ErrorMessage
+        </div>
+    }
+
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+        @Html.AntiForgeryToken()
+
+        <div class="qchose-section">
+            <div class="qchose-label">Line Checking</div>
+            <select asp-for="LineChecking" class="qchose-select" required>
+                <option value="">- Pilih line -</option>
+                <option value="Line 1">Line 1</option>
+                <option value="Line 2">Line 2</option>
+                <option value="Line 3">Line 3</option>
+                <option value="Line 4">Line 4</option>
+            </select>
+            <span asp-validation-for="LineChecking" class="text-danger"></span>
+
+            <div class="qchose-label" style="margin-top: 12px;">Nama Inspector</div>
+            <select asp-for="NamaInspector" class="qchose-select" required>
+                <option value="">- Pilih Nama Inspector -</option>
+                @if (ViewBag.Inspectors != null)
+                {
+                    @foreach (var inspector in ViewBag.Inspectors)
+                    {
+                        <option value="@inspector">@inspector</option>
+                    }
+                }
+            </select>
+            <span asp-validation-for="NamaInspector" class="text-danger"></span>
+
+            <div class="qchose-label" style="margin-top: 12px;">Group Checking</div>
+            <div class="qchose-radio-group">
+                <label class="qchose-radio-item">
+                    <input type="radio" asp-for="GroupChecking" value="A" checked />
+                    <span>A</span>
+                </label>
+                <label class="qchose-radio-item">
+                    <input type="radio" asp-for="GroupChecking" value="B" />
+                    <span>B</span>
+                </label>
+            </div>
+
+            <div class="qchose-label" style="margin-top: 12px;">Part Code</div>
+            <div class="qchose-inline-row">
+                <div style="position: relative; flex: 1;">
+                    <input asp-for="PartCode" class="qchose-input qchose-partcode-input" placeholder="Masukan part code" list="partCodeList" id="partCodeInputField" required />
+                    <div id="lineStopMessage" class="line-stop-message" style="display: none;">
+                        <i class="bi bi-exclamation-triangle"></i> Sedang Line Stop
+                    </div>
+                </div>
+                <datalist id="partCodeList">
+                    @if (ViewBag.PartCodes != null)
+                    {
+                        @foreach (var partCode in ViewBag.PartCodes)
+                        {
+                            <option value="@partCode">@partCode</option>
+                        }
+                    }
+                </datalist>
+                <button type="button" class="qchose-btn-qr" title="Scan QR" id="btnScanQR">
+                    <i class="bi bi-qr-code-scan"></i>
+                </button>
+                <a href="@Url.Action("Input", "Dimensi")" class="qchose-btn-dimensi" id="btnDimensi" target="_blank">
+                    Dimensi
+                </a>
+            </div>
+            <span asp-validation-for="PartCode" class="text-danger"></span>
+
+            <div class="qchose-time-stop">
+                <span class="qchose-time-stop-label">Time Stop :</span>
+                <span class="qchose-time-stop-value" id="qcHoseTimeStop">0:0:0:0</span>
+                <div style="margin-top: 8px; display: flex; gap: 8px;">
+                    <button type="button" class="btn-timer-control" id="btnStartTimeStop" style="flex: 1; padding: 6px 12px; background: #22c55e; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Start</button>
+                    <button type="button" class="btn-timer-control" id="btnStopTimeStop" style="flex: 1; padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: none;">Stop</button>
+                    <button type="button" class="btn-timer-control" id="btnResetTimeStop" style="flex: 1; padding: 6px 12px; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Reset</button>
+                </div>
+            </div>
+            <input type="hidden" asp-for="TimeStop" id="timeStopValue" value="0:0:0:0" />
+        </div>
+
+        <div class="qchose-section">
+            <div class="qchose-section-title">Qty NG</div>
+            <select asp-for="JenisNG" class="qchose-select">
+                <option value="">- Pilih Jenis NG -</option>
+                <option value="Dimensi">Dimensi</option>
+                <option value="Visual">Visual</option>
+                <option value="Fungsi">Fungsi</option>
+                <option value="Lainnya">Lainnya</option>
+            </select>
+
+            <div class="qchose-inline-row" style="margin-top: 8px;">
+                <input asp-for="NamaOPR" class="qchose-input" placeholder="Nama OPR" />
+                <input asp-for="QtyNG" type="number" class="qchose-input" style="max-width: 140px;" placeholder="Qty (pcs)" min="0" />
+            </div>
+
+            <button type="button" class="qchose-btn-primary" id="btnUpdateNG">
+                UPDATE NG
+            </button>
+            <div id="ngUpdateMessage" style="margin-top: 8px; padding: 8px; border-radius: 6px; display: none; font-size: 12px;"></div>
+        </div>
+
+        <div class="qchose-section">
+            <div class="qchose-section-title">Qty Check</div>
+            <input asp-for="QtyCheck" type="number" class="qchose-input" placeholder="Qty (pcs)" min="0" required />
+            <span asp-validation-for="QtyCheck" class="text-danger"></span>
+
+            <button type="submit" class="qchose-btn-secondary">
+                SELESAI CHECK
+            </button>
+        </div>
+
+        <div class="qchose-section">
+            <div class="qchose-section-title">Line Stop</div>
+            <select asp-for="LineStop" class="qchose-select" id="lineStopSelect" style="margin-bottom: 16px;">
+                <option value="">- Pilih Line Stop -</option>
+                @if (ViewBag.LineStop != null)
+                {
+                    @foreach (var line in ViewBag.LineStop)
+                    {
+                        <option value="@line">@line</option>
+                    }
+                }
+                else
+                {
+                    <option value="2R AREA CHECKING">2R AREA CHECKING</option>
+                    <option value="KE TOILET">KE TOILET</option>
+                <option value="Line 1">Line 1</option>
+                <option value="Line 2">Line 2</option>
+                <option value="Line 3">Line 3</option>
+                <option value="Line 4">Line 4</option>
+                }
+            </select>
+
+            <div class="line-stop-timer-container" id="lineStopTimerRow" style="display: none;">
+                <div class="line-stop-timer-header">
+                    <div class="line-stop-checking-group">
+                        <span class="line-stop-checking-label">Checking</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="lineStopToggle" onchange="toggleLineStopTimer()" tabindex="0" aria-label="Toggle Line Stop Timer">
+                            <span class="toggle-slider"></span>
+                        </label>
+                </div>
+                    <div class="line-stop-timer-display" id="qcHoseLineStopTime">0:0:0:0</div>
+            </div>
+            </div>
+            <input type="hidden" asp-for="StatusChecking" value="Checking" />
+            <input type="hidden" asp-for="StatusCheckingTime" id="lineStopDurationValue" value="@(Model.StatusCheckingTime ?? "0:0:0:0")" />
+            <!-- StatusCheckingTime digunakan untuk menyimpan durasi Line Stop -->
+        </div>
+    </form>
+
+    <!-- Modal Warning Line Stop -->
+    <div id="lineStopWarningModal" class="line-stop-warning-modal" style="display: none;">
+        <div class="line-stop-warning-content">
+            <div class="line-stop-warning-header">
+                <i class="bi bi-exclamation-triangle-fill" style="color: #f59e0b; font-size: 32px;"></i>
+                <h3>Peringatan</h3>
+            </div>
+            <div class="line-stop-warning-body">
+                <p><strong>Update QTY Check terlebih dahulu</strong></p>
+                <p>Waktu Pengecekan sedang berjalan</p>
+            </div>
+            <div class="line-stop-warning-footer">
+                <button type="button" class="line-stop-warning-btn" id="closeLineStopWarning" onclick="document.getElementById('lineStopWarningModal').style.display='none';">
+                    Mengerti
+                </button>
+            </div>
+        </div>
+</div>
+
+    <!-- Tombol Navigasi -->
+    <div class="nav-buttons-container">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn nav-btn-home">
+            <i class="bi bi-house-door-fill"></i>
+            <span>HOME</span>
+        </a>
+        <button type="button" id="btnSCW" class="nav-btn nav-btn-scw">
+            <i class="bi bi-bell-fill"></i>
+            <span>SCW</span>
+        </button>
+    </div>
+
+</div>
+
+<!-- Button Lihat Data - Icon lingkaran ungu Fixed Position -->
+<button type="button" id="btnLihatData" class="data-menu-icon-btn-fixed" style="position: fixed; bottom: 30px; right: 30px; left: auto; transform: none;">
+    <div class="data-menu-icon-inner">
+        <i class="bi bi-house-door-fill" style="font-size: 32px; color: white;"></i>
+    </div>
+</button>
+
+<!-- Data Menu Modal -->
+<div id="dataMenuModal" class="data-menu-modal" style="display: none;">
+    <div class="data-menu-content">
+        <div class="data-menu-header">
+            <span class="data-menu-title">O B</span>
+            <button type="button" class="data-menu-close" id="closeDataMenuModal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="data-menu-body">
+            <div class="data-menu-row">
+                <button type="button" class="data-menu-btn" data-action="planning-qc">
+                    Planning QC
+                </button>
+                <button type="button" class="data-menu-icon-circle" style="background: #3b82f6;" data-action="data-list">
+                    <i class="bi bi-file-text" style="color: white; font-size: 24px;"></i>
+                </button>
+            </div>
+            <div class="data-menu-row">
+                <button type="button" class="data-menu-btn" data-action="output-check">
+                    Output Check
+                </button>
+                <button type="button" class="data-menu-icon-circle" style="background: #22c55e;" data-action="check-list">
+                    <i class="bi bi-check-square" style="color: white; font-size: 24px;"></i>
+                </button>
+            </div>
+            <div class="data-menu-row">
+                <button type="button" class="data-menu-btn" data-action="detail-ng">
+                    Detail NG
+                </button>
+                <button type="button" class="data-menu-icon-circle" style="background: #ef4444;" data-action="ng-list">
+                    <i class="bi bi-x-square" style="color: white; font-size: 24px;"></i>
+                </button>
+            </div>
+            <div class="data-menu-footer">
+                <button type="button" class="data-menu-icon-circle" style="background: #8b5cf6;" data-action="refresh">
+                    <i class="bi bi-arrow-clockwise" style="color: white; font-size: 24px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Andon System Modal -->
+<div id="andonModal" class="andon-modal-overlay" style="display: none;">
+    <div class="andon-modal-content">
+        <div class="andon-modal-title">ANDON SYSTEM</div>
+        <div class="andon-modal-body">
+            <label class="andon-label">List Abnormality :</label>
+            <select id="listAbnormality" class="andon-select">
+                <option value="">- Pilih Abnormality -</option>
+                @if (ViewBag.ListAbnormality != null)
+                {
+                    @foreach (var abnormality in ViewBag.ListAbnormality)
+                    {
+                        <option value="@abnormality">@abnormality</option>
+                    }
+                }
+            </select>
+            <div class="andon-buttons">
+                <button type="button" class="andon-btn-leader" onclick="panggilLeader()">
+                    Panggil Leader
+                </button>
+                <button type="button" class="andon-btn-wa" onclick="panggilWhatsApp()">
+                    <i class="bi bi-whatsapp" style="font-size: 24px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data Table Modal -->
+<div id="dataTableModal" class="data-modal-overlay" style="display: none;">
+    <div class="data-modal-content">
+        <div class="data-modal-header">
+            <h2 class="data-modal-title">
+                <i class="bi bi-table"></i> Tabel Data E_LWP
+            </h2>
+            <button type="button" class="data-modal-close" id="btnCloseDataModal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="data-modal-body" id="dataModalBody">
+            <div class="data-loading">
+                <i class="bi bi-arrow-repeat" style="animation: spin 1s linear infinite;"></i>
+                <span>Memuat data...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Navigation Buttons Styles */
+    .nav-buttons-container {
+        display: flex;
+        gap: 16px;
+        margin-top: 32px;
+        padding: 0 16px 32px;
+    }
+
+    .nav-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 16px 20px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 15px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-btn-home {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .nav-btn-scw {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .nav-btn-data {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        width: 100%;
+    }
+
+    .nav-btn-data:hover {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Andon Modal Styles */
+    .andon-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .andon-modal-content {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .andon-modal-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #000;
+        text-align: center;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+    }
+
+    .andon-modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .andon-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #000;
+        margin-bottom: 4px;
+    }
+
+    .andon-select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        background: white;
+    }
+
+    .andon-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .andon-btn-leader {
+        flex: 1;
+        padding: 14px;
+        background: #4b5563;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .andon-btn-wa {
+        width: 50px;
+        height: 50px;
+        background: #25d366;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    /* Data Table Modal Styles */
+    .data-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        padding: 20px;
+    }
+
+    .data-modal-content {
+        background: white;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 1200px;
+        max-height: 90vh;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .data-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 2px solid #e5e7eb;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+
+    .data-modal-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .data-modal-close {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 18px;
+        transition: all 0.2s;
+    }
+
+    .data-modal-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+
+    .data-modal-body {
+        padding: 24px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .data-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+        gap: 16px;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .data-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .data-table thead {
+        background: #f3f4f6;
+        position: sticky;
+        top: 0;
+    }
+
+    .data-table th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #e5e7eb;
+        white-space: nowrap;
+    }
+
+    .data-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #f3f4f6;
+        color: #111827;
+    }
+
+    .data-table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .data-empty {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6b7280;
+    }
+
+    .data-empty i {
+        font-size: 64px;
+        color: #d1d5db;
+        margin-bottom: 16px;
+    }
+
+    .data-empty h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+
+    .badge-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .badge-checking {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .badge-done {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .badge-stop {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    /* Line Stop Timer Styles */
+    .line-stop-timer-container {
+        margin-top: 16px;
+        padding: 16px;
+        background: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+
+    .line-stop-timer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .line-stop-checking-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .line-stop-checking-label {
+        color: #22c55e;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+    }
+
+    .line-stop-timer-display {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        letter-spacing: 0.1em;
+        font-family: 'Courier New', monospace;
+        min-width: 80px;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 28px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+    }
+
+    /* Keyboard navigation support untuk toggle switch */
+    .toggle-switch input:focus + .toggle-slider {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+    }
+
+    .toggle-switch input:focus-visible + .toggle-slider {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 28px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+        background-color: #22c55e;
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+        transform: translateX(22px);
+    }
+
+    @@keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* --------- RESPONSIVE LAYOUT (Desktop/Laptop) --------- */
+    @@media (min-width: 1025px) {
+        body.desktop-view .main-content .content-area {
+            padding: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+        
+        .qchose-page {
+            max-width: 100% !important;
+            width: calc(100% - 20px) !important;
+            padding: 24px !important;
+            margin: 10px auto !important;
+            box-sizing: border-box !important;
+        }
+    }
+
+        .qchose-section {
+            border-radius: 18px;
+            padding: 20px 20px 8px 20px;
+        }
+
+        .qchose-header-title {
+            font-size: 26px;
+        }
+
+        .qchose-header-subtitle {
+            font-size: 14px;
+        }
+
+        .qchose-label {
+            font-size: 13px;
+        }
+
+        .qchose-select,
+        .qchose-input {
+            font-size: 14px;
+            padding: 12px 14px;
+        }
+
+        .qchose-inline-row {
+            gap: 12px;
+        }
+
+        .nav-buttons-container {
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 24px 32px;
+        }
+
+        .line-stop-timer-container {
+            padding: 20px;
+        }
+
+        .line-stop-timer-display {
+            font-size: 20px;
+        }
+    }
+
+    /* Removed duplicate media query - using 1025px instead */
+    
+        .qchose-header-subtitle {
+            font-size: 15px;
+        }
+
+        .qchose-label {
+            font-size: 14px;
+        }
+
+        .qchose-select,
+        .qchose-input {
+            font-size: 15px;
+            padding: 12px 16px;
+        }
+
+        .nav-buttons-container {
+            max-width: 900px;
+            padding: 0 32px 40px;
+        }
+
+        .line-stop-timer-container {
+            padding: 24px;
+        }
+
+        .line-stop-timer-display {
+            font-size: 22px;
+        }
+    }
+
+    /* Mobile optimizations */
+    @@media (max-width: 767px) {
+        .qchose-page {
+            padding: 16px 12px 100px 12px;
+        }
+
+        .qchose-section {
+            padding: 14px 12px 4px 12px;
+            border-radius: 12px;
+        }
+
+        .qchose-header-title {
+            font-size: 20px;
+            padding: 0 40px;
+        }
+
+        .qchose-header-subtitle {
+            font-size: 12px;
+        }
+
+        .qchose-label {
+            font-size: 12px;
+        }
+
+        .qchose-select,
+        .qchose-input {
+            font-size: 14px;
+            padding: 10px 12px;
+        }
+
+        .qchose-radio-group {
+            gap: 24px;
+        }
+
+        .qchose-inline-row {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-buttons-container {
+            flex-direction: column;
+            gap: 12px;
+            padding: 0 12px 24px;
+        }
+
+        .nav-btn {
+            width: 100%;
+        }
+
+        .data-modal-content {
+            max-width: 95%;
+            max-height: 85vh;
+        }
+
+        .data-modal-body {
+            padding: 16px;
+        }
+
+        .data-table {
+            font-size: 11px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 8px;
+        }
+
+        /* Line Stop Timer responsive untuk mobile */
+        .line-stop-timer-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .line-stop-checking-group {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .line-stop-timer-display {
+            width: 100%;
+            text-align: left;
+            font-size: 16px;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Header datetime & timer dengan kontrol
+        (function () {
+            const timeStopEl = document.getElementById('qcHoseTimeStop');
+            const nowEl = document.getElementById('qcHoseNow');
+            const timeStopValue = document.getElementById('timeStopValue');
+            const lineStopDurationValue = document.getElementById('lineStopDurationValue');
+
+            let timeStopSeconds = 0;
+            let timeStopInterval = null;
+            let timeStopRunning = false;
+            let timerStarted = false; // Flag untuk memastikan timer hanya start sekali
+
+            // Update jam & tanggal realtime
+            if (nowEl) {
+                const updateNow = () => {
+                    const d = new Date();
+                    const pad = (n) => n.toString().padStart(2, '0');
+                    const formatted = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+                    nowEl.textContent = formatted;
+                };
+                updateNow();
+                setInterval(updateNow, 1000);
+            }
+
+            // Format waktu untuk Time Stop (H:M:S)
+            const formatTime = (seconds) => {
+                const h = Math.floor(seconds / 3600);
+                const m = Math.floor((seconds % 3600) / 60);
+                const s = seconds % 60;
+                return `${h}:${m}:${s}`;
+            };
+
+            // Format waktu untuk Line Stop (H:M:S:MS)
+            const formatLineStopTime = (seconds) => {
+                const h = Math.floor(seconds / 3600);
+                const m = Math.floor((seconds % 3600) / 60);
+                const s = seconds % 60;
+                const ms = 0; // Milidetik selalu 0 untuk sekarang
+                return `${h}:${m}:${s}:${ms}`;
+            };
+
+            // Timer untuk Time Stop
+            const updateTimeStop = () => {
+                if (timeStopRunning && timeStopEl) {
+                    timeStopSeconds++;
+                    const display = formatTime(timeStopSeconds);
+                    timeStopEl.textContent = display;
+                    if (timeStopValue) {
+                        timeStopValue.value = display;
+                    }
+                }
+            };
+
+            // Timer untuk Line Stop Duration
+            const lineStopTimeEl = document.getElementById('qcHoseLineStopTime');
+            let lineStopSeconds = 0;
+            let lineStopInterval = null;
+            let lineStopRunning = false;
+
+            // Initialize Line Stop timer dari nilai yang sudah ada (jika edit)
+            if (lineStopTimeEl && lineStopDurationValue && lineStopDurationValue.value) {
+                const existingTime = lineStopDurationValue.value;
+                lineStopTimeEl.textContent = existingTime;
+                // Parse existing time ke seconds (format: H:M:S:MS)
+                const parts = existingTime.split(':');
+                if (parts.length >= 3) {
+                    const h = parseInt(parts[0]) || 0;
+                    const m = parseInt(parts[1]) || 0;
+                    const s = parseInt(parts[2]) || 0;
+                    lineStopSeconds = h * 3600 + m * 60 + s;
+                }
+            }
+
+            const updateLineStopTimer = () => {
+                if (lineStopRunning && lineStopTimeEl) {
+                    lineStopSeconds++;
+                    const display = formatLineStopTime(lineStopSeconds);
+                    lineStopTimeEl.textContent = display;
+                    if (lineStopDurationValue) {
+                        lineStopDurationValue.value = display;
+                    }
+                }
+            };
+
+            // Toggle timer Line Stop (toggle switch)
+            window.toggleLineStopTimer = () => {
+                const toggle = document.getElementById('lineStopToggle');
+                if (!toggle) return;
+
+                const partCodeInput = document.getElementById('partCodeInputField') || document.getElementById('PartCode');
+                const lineStopMessage = document.getElementById('lineStopMessage');
+                const btnScanQR = document.getElementById('btnScanQR');
+                const btnDimensi = document.getElementById('btnDimensi');
+                const warningModal = document.getElementById('lineStopWarningModal');
+
+                if (toggle.checked) {
+                    // Cek apakah Part Code sudah diisi dan Time Stop timer sedang berjalan
+                    const partCodeValue = partCodeInput ? partCodeInput.value.trim() : '';
+                    const isPartCodeFilled = partCodeValue !== '';
+                    const isTimeStopRunning = timeStopRunning && timeStopInterval !== null;
+
+                    if (isPartCodeFilled && isTimeStopRunning) {
+                        // Tampilkan popup peringatan dan uncheck toggle
+                        toggle.checked = false;
+                        if (warningModal) {
+                            warningModal.style.display = 'flex';
+                        }
+                        console.log('Line Stop blocked: Part Code filled and Time Stop running');
+                        return; // Jangan lanjutkan, stop di sini
+                    }
+
+                    // Start timer
+                    lineStopRunning = true;
+                    if (!lineStopInterval) {
+                        lineStopInterval = setInterval(updateLineStopTimer, 1000);
+                    }
+                    
+                    // Disable Part Code input dan tampilkan pesan
+                    if (partCodeInput) {
+                        partCodeInput.disabled = true;
+                        partCodeInput.style.backgroundColor = '#f3f4f6';
+                        partCodeInput.style.cursor = 'not-allowed';
+                        partCodeInput.value = ''; // Clear value saat Line Stop
+                        // Stop Time Stop timer jika sedang berjalan
+                        if (timeStopRunning && timeStopInterval) {
+                            clearInterval(timeStopInterval);
+                            timeStopInterval = null;
+                            timeStopRunning = false;
+                            timeStopSeconds = 0;
+                            if (timeStopEl) timeStopEl.textContent = '0:0:0:0';
+                            if (timeStopValue) timeStopValue.value = '0:0:0:0';
+                        }
+                    }
+                    
+                    // Tampilkan pesan "Sedang Line Stop"
+                    if (lineStopMessage) {
+                        lineStopMessage.style.display = 'flex';
+                    }
+                    
+                    // Disable tombol Scan QR dan Dimensi
+                    if (btnScanQR) {
+                        btnScanQR.disabled = true;
+                        btnScanQR.style.opacity = '0.5';
+                        btnScanQR.style.cursor = 'not-allowed';
+                    }
+                    if (btnDimensi) {
+                        btnDimensi.style.pointerEvents = 'none';
+                        btnDimensi.style.opacity = '0.5';
+                        btnDimensi.style.cursor = 'not-allowed';
+                    }
+                    
+                    console.log('Line Stop timer started - Part Code disabled');
+                } else {
+                    // Stop timer dan reset ke 0
+                    lineStopRunning = false;
+                    if (lineStopInterval) {
+                        clearInterval(lineStopInterval);
+                        lineStopInterval = null;
+                    }
+                    // Reset timer ke 0:0:0:0
+                    lineStopSeconds = 0;
+                    if (lineStopTimeEl) lineStopTimeEl.textContent = '0:0:0:0';
+                    if (lineStopDurationValue) lineStopDurationValue.value = '0:0:0:0';
+                    
+                    // Enable Part Code input dan sembunyikan pesan
+                    if (partCodeInput) {
+                        partCodeInput.disabled = false;
+                        partCodeInput.style.backgroundColor = '';
+                        partCodeInput.style.cursor = '';
+                    }
+                    
+                    // Sembunyikan pesan "Sedang Line Stop"
+                    if (lineStopMessage) {
+                        lineStopMessage.style.display = 'none';
+                    }
+                    
+                    // Enable tombol Scan QR dan Dimensi
+                    if (btnScanQR) {
+                        btnScanQR.disabled = false;
+                        btnScanQR.style.opacity = '1';
+                        btnScanQR.style.cursor = 'pointer';
+                    }
+                    if (btnDimensi) {
+                        btnDimensi.style.pointerEvents = 'auto';
+                        btnDimensi.style.opacity = '1';
+                        btnDimensi.style.cursor = 'pointer';
+                    }
+                    
+                    console.log('Line Stop timer stopped and reset - Part Code enabled');
+                }
+            };
+
+
+            // Kontrol Time Stop
+            const btnStartTimeStop = document.getElementById('btnStartTimeStop');
+            const btnStopTimeStop = document.getElementById('btnStopTimeStop');
+            const btnResetTimeStop = document.getElementById('btnResetTimeStop');
+
+            if (btnStartTimeStop) {
+                btnStartTimeStop.addEventListener('click', () => {
+                    timeStopRunning = true;
+                    timeStopInterval = setInterval(updateTimeStop, 1000);
+                    btnStartTimeStop.style.display = 'none';
+                    btnStopTimeStop.style.display = 'block';
+                });
+            }
+
+            if (btnStopTimeStop) {
+                btnStopTimeStop.addEventListener('click', () => {
+                    timeStopRunning = false;
+                    if (timeStopInterval) {
+                        clearInterval(timeStopInterval);
+                        timeStopInterval = null;
+                    }
+                    btnStartTimeStop.style.display = 'block';
+                    btnStopTimeStop.style.display = 'none';
+                });
+            }
+
+            if (btnResetTimeStop) {
+                btnResetTimeStop.addEventListener('click', () => {
+                    timeStopRunning = false;
+                    if (timeStopInterval) {
+                        clearInterval(timeStopInterval);
+                        timeStopInterval = null;
+                    }
+                    timeStopSeconds = 0;
+                    if (timeStopEl) timeStopEl.textContent = '0:0:0:0';
+                    if (timeStopValue) timeStopValue.value = '0:0:0:0';
+                    btnStartTimeStop.style.display = 'block';
+                    btnStopTimeStop.style.display = 'none';
+                });
+            }
+
+            // Kontrol Timer Line Stop
+            const lineStopSelect = document.getElementById('lineStopSelect');
+            const lineStopTimerRow = document.getElementById('lineStopTimerRow');
+
+            // Tampilkan timer saat Line Stop dipilih
+            if (lineStopSelect) {
+                // Tampilkan timer jika sudah ada nilai Line Stop (saat edit)
+                if (lineStopSelect.value && lineStopSelect.value.trim() !== '' && lineStopTimerRow) {
+                    lineStopTimerRow.style.display = 'block';
+                }
+
+                lineStopSelect.addEventListener('change', (e) => {
+                    if (e.target.value && e.target.value.trim() !== '') {
+                        // Tampilkan timer
+                        if (lineStopTimerRow) lineStopTimerRow.style.display = 'block';
+                    } else {
+                        // Sembunyikan timer jika Line Stop dikosongkan
+                        if (lineStopTimerRow) lineStopTimerRow.style.display = 'none';
+                        // Reset timer
+                        lineStopRunning = false;
+                        const toggle = document.getElementById('lineStopToggle');
+                        if (toggle) toggle.checked = false;
+                        if (lineStopInterval) {
+                            clearInterval(lineStopInterval);
+                            lineStopInterval = null;
+                    }
+                        lineStopSeconds = 0;
+                        if (lineStopTimeEl) lineStopTimeEl.textContent = '0:0:0:0';
+                        if (lineStopDurationValue) lineStopDurationValue.value = '0:0:0:0';
+                        
+                        // Enable Part Code input saat Line Stop dihapus
+                        const partCodeInput = document.getElementById('partCodeInputField') || document.getElementById('PartCode');
+                        const lineStopMessage = document.getElementById('lineStopMessage');
+                        const btnScanQR = document.getElementById('btnScanQR');
+                        const btnDimensi = document.getElementById('btnDimensi');
+                        
+                        if (partCodeInput) {
+                            partCodeInput.disabled = false;
+                            partCodeInput.style.backgroundColor = '';
+                            partCodeInput.style.cursor = '';
+                        }
+                        if (lineStopMessage) {
+                            lineStopMessage.style.display = 'none';
+                        }
+                        if (btnScanQR) {
+                            btnScanQR.disabled = false;
+                            btnScanQR.style.opacity = '1';
+                            btnScanQR.style.cursor = 'pointer';
+                        }
+                        if (btnDimensi) {
+                            btnDimensi.style.pointerEvents = 'auto';
+                            btnDimensi.style.opacity = '1';
+                            btnDimensi.style.cursor = 'pointer';
+                    }
+                    }
+                });
+            }
+
+            // Timer Time Stop otomatis start saat Part Code diklik atau diisi
+            const startTimeStopTimer = () => {
+                if (!timerStarted && !timeStopRunning) {
+                    timerStarted = true;
+                    timeStopRunning = true;
+                    
+                    // Ubah label dari "Time Stop" menjadi "Time Check"
+                    const timeStopLabel = document.getElementById('timeStopLabel');
+                    if (timeStopLabel) {
+                        timeStopLabel.textContent = 'Time Check :';
+                        timeStopLabel.style.color = '#22c55e';
+                        timeStopLabel.style.fontWeight = '600';
+                    }
+                    
+                    // Start timer
+                    if (!timeStopInterval) {
+                        timeStopInterval = setInterval(updateTimeStop, 1000);
+                        console.log('Timer Time Stop started');
+                    }
+            }
+            };
+
+
+            // Tombol UPDATE NG - simpan data NG ke form
+            const btnUpdateNG = document.getElementById('btnUpdateNG');
+            if (btnUpdateNG) {
+                btnUpdateNG.addEventListener('click', function() {
+                    const jenisNG = document.querySelector('[name="JenisNG"]').value;
+                    const namaOPR = document.querySelector('[name="NamaOPR"]').value;
+                    const qtyNG = document.querySelector('[name="QtyNG"]').value;
+
+                    if (!jenisNG) {
+                        alert('Pilih Jenis NG terlebih dahulu!');
+                        return;
+                    }
+
+                    // Data akan tersimpan saat submit form
+                    alert('Data NG berhasil diupdate! Data akan tersimpan saat klik SELESAI CHECK.');
+                });
+            }
+
+            // QR Code / Barcode Scanner dengan kamera (sama seperti Create.cshtml)
+            const btnScanQR = document.getElementById('btnScanQR');
+            let scannerActive = false;
+            let scannerModal = null;
+            let currentStream = null;
+            
+            // Create scanner modal
+            function createScannerModal() {
+                if (scannerModal) return scannerModal;
+                
+                const modal = document.createElement('div');
+                modal.id = 'qrScannerModal';
+                modal.className = 'qr-scanner-modal';
+                modal.innerHTML = `
+                    <div class="qr-scanner-content">
+                        <div class="qr-scanner-header">
+                            <h3>Scan Barcode / QR Code</h3>
+                            <button type="button" class="qr-scanner-close" id="closeScanner">&times;</button>
+                        </div>
+                        <div class="qr-scanner-body">
+                            <div id="qr-scanner-container">
+                                <video id="qr-video" autoplay playsinline></video>
+                                <canvas id="qr-canvas" style="display: none;"></canvas>
+                            </div>
+                            <div class="qr-scanner-instructions">
+                                <p><i class="bi bi-info-circle"></i> Arahkan kamera ke barcode/QR code</p>
+                                <p style="font-size: 12px; color: #6b7280;">Pastikan barcode/QR code dalam jangkauan kamera</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                return modal;
+            }
+            
+            const partCodeInput = document.getElementById('partCodeInputField') || 
+                                 document.querySelector('input[name="PartCode"]') || 
+                                 document.getElementById('PartCode');
+            if (btnScanQR) {
+                console.log('btnScanQR element found, attaching click listener');
+                btnScanQR.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('Scan QR button clicked');
+                    
+                    // Check if scanner is already active
+                    if (scannerActive) {
+                        console.log('Scanner is active, stopping...');
+                        stopScanner();
+                        return;
+                    }
+                    
+                    // Get the correct input element
+                    const partCodeInputEl = document.getElementById('partCodeInputField') || 
+                                           document.querySelector('input[name="PartCode"]') || 
+                                           document.getElementById('PartCode');
+                    
+                    // Check if Part Code input is disabled (Line Stop active)
+                    if (partCodeInputEl && partCodeInputEl.disabled) {
+                        console.log('Part Code input is disabled (Line Stop active)');
+                        alert('Part Code tidak dapat diisi saat Line Stop aktif!');
+                        return;
+                    }
+                    
+                    if (!partCodeInputEl) {
+                        console.error('Input Part Code tidak ditemukan');
+                        alert('Input Part Code tidak ditemukan');
+                        return;
+                    }
+                    
+                    console.log('Starting scanner for input:', partCodeInputEl.id || partCodeInputEl.name || partCodeInputEl);
+                    
+                    // Check if browser supports camera
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        console.log('Camera API not available, showing manual input dialog');
+                        // Fallback to manual input if camera not available
+                        showManualInputDialog(partCodeInputEl);
+                        return;
+                    }
+                    
+                    startScanner(partCodeInputEl);
+                });
+                
+                // Also add mouseenter to check if button is clickable
+                btnScanQR.addEventListener('mouseenter', function() {
+                    console.log('Mouse hover over Scan QR button');
+                });
+            } else {
+                console.error('btnScanQR element NOT FOUND!');
+            }
+            
+            // Old event listener code (deprecated, kept for compatibility)
+            const partCodeInput = document.getElementById('partCodeInputField') || 
+                                 document.querySelector('input[name="PartCode"]') || 
+                                 document.getElementById('PartCode');
+            
+            if (btnScanQR && partCodeInput) {
+                // This is a duplicate - the new code above should handle it
+                // Keeping this for backward compatibility but it should not be necessary
+                    
+                    console.log('Starting scanner for input:', partCodeInput.id || partCodeInput.name);
+                    
+                    // Check if browser supports camera
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        // Fallback to manual input if camera not available
+                        showManualInputDialog(partCodeInput);
+                        return;
+                    }
+                    
+                    startScanner(partCodeInput);
+                });
+            }
+            
+            function startScanner(inputElement) {
+                scannerModal = createScannerModal();
+                scannerModal.style.display = 'flex';
+                scannerActive = true;
+                
+                const video = document.getElementById('qr-video');
+                const canvas = document.getElementById('qr-canvas');
+                const context = canvas.getContext('2d');
+                
+                // Request camera access
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                })
+                .then(function(stream) {
+                    currentStream = stream;
+                    video.srcObject = stream;
+                    video.setAttribute('playsinline', 'true');
+                    video.play();
+                    
+                    video.addEventListener('loadedmetadata', () => {
+                        startScanningLoop(video, canvas, context, inputElement);
+                    });
+                })
+                .catch(function(err) {
+                    console.error('Error accessing camera:', err);
+                    if (scannerModal) {
+                        scannerModal.style.display = 'none';
+                    }
+                    scannerActive = false;
+                    
+                    showManualInputDialog(inputElement);
+                });
+                
+                const closeBtn = document.getElementById('closeScanner');
+                if (closeBtn) {
+                    closeBtn.onclick = stopScanner;
+                }
+                
+                scannerModal.onclick = function(e) {
+                    if (e.target === scannerModal) {
+                        stopScanner();
+                    }
+                };
+            }
+            
+            function startScanningLoop(video, canvas, context, inputElement) {
+                let scanning = true;
+                
+                function scan() {
+                    if (!scannerActive || !scanning) return;
+                    
+                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        
+                        if (window.BarcodeDetector) {
+                            const barcodeDetector = new BarcodeDetector({ 
+                                formats: ['qr_code', 'code_128', 'ean_13', 'ean_8', 'code_39', 'code_93', 'codabar', 'code_128', 'itf'] 
+                            });
+                            
+                            barcodeDetector.detect(canvas)
+                                .then(barcodes => {
+                                    if (barcodes.length > 0 && scannerActive) {
+                                        const code = barcodes[0].rawValue;
+                                        console.log('Barcode detected:', code);
+                                        handleScannedCode(code, inputElement);
+                                        scanning = false;
+                                    } else if (scannerActive) {
+                                        requestAnimationFrame(scan);
+                                    }
+                                })
+                                .catch((err) => {
+                                    console.log('BarcodeDetector error (continuing scan):', err);
+                                    if (scannerActive) {
+                                        requestAnimationFrame(scan);
+                                    }
+                                });
+                        } else {
+                            loadQRCodeLibrary().then(() => {
+                                if (typeof Html5Qrcode !== 'undefined' && scannerActive) {
+                                    const html5QrCode = new Html5Qrcode("qr-video");
+                                    html5QrCode.start(
+                                        { facingMode: "environment" },
+                                        {
+                                            fps: 10,
+                                            qrbox: { width: 250, height: 250 },
+                                            formatsToSupport: [
+                                                Html5QrcodeSupportedFormats.QR_CODE,
+                                                Html5QrcodeSupportedFormats.CODE_128,
+                                                Html5QrcodeSupportedFormats.CODE_39,
+                                                Html5QrcodeSupportedFormats.EAN_13,
+                                                Html5QrcodeSupportedFormats.EAN_8,
+                                                Html5QrcodeSupportedFormats.CODABAR,
+                                                Html5QrcodeSupportedFormats.ITF
+                                            ]
+                                        },
+                                        (decodedText) => {
+                                            if (scannerActive) {
+                                                console.log('QR/Barcode decoded:', decodedText);
+                                                handleScannedCode(decodedText, inputElement);
+                                                html5QrCode.stop().then(() => {
+                                                    console.log('Scanner stopped');
+                                                }).catch((err) => {
+                                                    console.error('Error stopping scanner:', err);
+                                                });
+                                                scanning = false;
+                                            }
+                                        },
+                                        (errorMessage) => {
+                                            // Continue scanning - this is normal
+                                            // console.log('Scanning...', errorMessage);
+                                        }
+                                    ).catch((err) => {
+                                        console.error('QR Scanner error:', err);
+                                        stopScanner();
+                                        showManualInputDialog(inputElement);
+                                    });
+                                } else {
+                                    stopScanner();
+                                    showManualInputDialog(inputElement);
+                                }
+                            });
+                        }
+                    } else {
+                        requestAnimationFrame(scan);
+                    }
+                }
+                
+                scan();
+            }
+            
+            function handleScannedCode(code, inputElement) {
+                if (!code || !code.trim()) {
+                    console.warn('Empty or invalid code scanned');
+                    return;
+                }
+                
+                const scannedValue = code.trim().toUpperCase();
+                console.log('=== SCAN RESULT ===');
+                console.log('Scanned code:', scannedValue);
+                console.log('Input element passed:', inputElement);
+                
+                // Find the actual input element if not found
+                let actualInputElement = inputElement;
+                if (!actualInputElement) {
+                    actualInputElement = document.getElementById('partCodeInputField') || 
+                                       document.querySelector('input[name="PartCode"]') || 
+                                       document.getElementById('PartCode');
+                    console.log('Input element searched:', actualInputElement);
+                }
+                
+                if (!actualInputElement) {
+                    console.error('ERROR: Input element not found!');
+                    alert('Input Part Code tidak ditemukan. Silakan refresh halaman.');
+                    stopScanner();
+                    return;
+                }
+                
+                console.log('Found input element:', actualInputElement.id || actualInputElement.name);
+                console.log('Current input value before update:', actualInputElement.value);
+                
+                // Set value to input field
+                actualInputElement.value = scannedValue;
+                console.log('Input value after setting:', actualInputElement.value);
+                
+                // Trigger events to ensure all handlers are called
+                actualInputElement.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+                actualInputElement.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+                actualInputElement.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, cancelable: true }));
+                
+                // Trigger focus to ensure field is active
+                setTimeout(() => {
+                    actualInputElement.focus();
+                    console.log('Input focused');
+                }, 100);
+                
+                console.log('Final input value:', actualInputElement.value);
+                console.log('=== END SCAN RESULT ===');
+                
+                // Stop scanner
+                stopScanner();
+                
+                // Show success feedback
+                const originalBg = actualInputElement.style.backgroundColor;
+                actualInputElement.style.backgroundColor = '#dcfce7';
+                actualInputElement.style.borderColor = '#22c55e';
+                setTimeout(() => {
+                    actualInputElement.style.backgroundColor = originalBg || '';
+                    actualInputElement.style.borderColor = '';
+                }, 2000);
+                
+                // Show success message
+                const successMsg = document.createElement('div');
+                successMsg.textContent = '✓ Barcode berhasil di-scan: ' + scannedValue;
+                successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #22c55e; color: white; padding: 12px 20px; border-radius: 8px; z-index: 10002; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-weight: 600;';
+                document.body.appendChild(successMsg);
+                setTimeout(() => {
+                    successMsg.style.transition = 'opacity 0.3s';
+                    successMsg.style.opacity = '0';
+                    setTimeout(() => successMsg.remove(), 300);
+                }, 3000);
+            }
+            
+            function stopScanner() {
+                console.log('Stopping scanner...');
+                scannerActive = false;
+                
+                // Stop html5-qrcode if active
+                if (window.html5QrCodeInstance) {
+                    window.html5QrCodeInstance.stop().catch(() => {});
+                    window.html5QrCodeInstance = null;
+                }
+                
+                const video = document.getElementById('qr-video');
+                if (video && video.srcObject) {
+                    const tracks = video.srcObject.getTracks();
+                    tracks.forEach(track => track.stop());
+                    video.srcObject = null;
+                }
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                    currentStream = null;
+                }
+                if (scannerModal) {
+                    scannerModal.style.display = 'none';
+                }
+                
+                // Clear reference
+                window.currentScannerInputElement = null;
+                console.log('Scanner stopped');
+            }
+            
+            function loadQRCodeLibrary() {
+                return new Promise((resolve, reject) => {
+                    if (typeof Html5Qrcode !== 'undefined') {
+                        resolve();
+                        return;
+                    }
+                    const script = document.createElement('script');
+                    script.src = 'https://unpkg.com/html5-qrcode@latest/html5-qrcode.min.js';
+                    script.onload = resolve;
+                    script.onerror = () => {
+                        console.warn('Failed to load QR code library');
+                        resolve();
+                    };
+                    document.head.appendChild(script);
+                });
+            }
+            
+            function showManualInputDialog(inputElement) {
+                // Create manual input modal
+                const manualModal = document.createElement('div');
+                manualModal.className = 'qr-scanner-modal';
+                manualModal.style.display = 'flex';
+                manualModal.innerHTML = `
+                    <div class="qr-scanner-content" style="max-width: 400px;">
+                        <div class="qr-scanner-header">
+                            <h3>Masukkan Part Code</h3>
+                            <button type="button" class="qr-scanner-close" id="closeManualInput">&times;</button>
+                        </div>
+                        <div class="qr-scanner-body">
+                            <p style="margin-bottom: 16px; color: #64748b;">Kamera tidak tersedia. Masukkan Part Code secara manual:</p>
+                            <input type="text" id="manualPartCodeInput" 
+                                   style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; margin-bottom: 16px;"
+                                   placeholder="Masukkan Part Code" autofocus />
+                            <div style="display: flex; gap: 12px;">
+                                <button type="button" id="cancelManualInput" 
+                                        style="flex: 1; padding: 12px; background: #f1f5f9; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                    Batal
+                                </button>
+                                <button type="button" id="submitManualInput" 
+                                        style="flex: 1; padding: 12px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                    Simpan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(manualModal);
+                
+                const manualInput = document.getElementById('manualPartCodeInput');
+                const submitBtn = document.getElementById('submitManualInput');
+                const cancelBtn = document.getElementById('cancelManualInput');
+                const closeBtn = document.getElementById('closeManualInput');
+                
+                function closeModal() {
+                    manualModal.remove();
+                }
+                
+                function submitCode() {
+                    const code = manualInput.value.trim();
+                    if (code) {
+                        inputElement.value = code.toUpperCase();
+                        inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+                        closeModal();
+                    }
+                }
+                
+                submitBtn.addEventListener('click', submitCode);
+                cancelBtn.addEventListener('click', closeModal);
+                closeBtn.addEventListener('click', closeModal);
+                manualModal.addEventListener('click', (e) => {
+                    if (e.target === manualModal) closeModal();
+                });
+                
+                manualInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        submitCode();
+                    }
+                });
+                
+                if (manualInput) {
+                    setTimeout(() => manualInput.focus(), 100);
+                }
+            }
+
+            // Link Dimensi dengan Part Code
+            const btnDimensi = document.getElementById('btnDimensi');
+            if (btnDimensi && partCodeInput) {
+                btnDimensi.addEventListener('click', function(e) {
+                    const partCode = partCodeInput.value;
+                    if (!partCode) {
+                        e.preventDefault();
+                        alert('Masukkan Part Code terlebih dahulu!');
+                        return false;
+                    }
+                    // Link akan membuka halaman Dimensi dengan part code
+                    this.href = '@Url.Action("Input", "Dimensi")?partCode=' + encodeURIComponent(partCode);
+                });
+            }
+        })();
+
+        // Andon System Modal
+        const btnSCW = document.getElementById('btnSCW');
+        const andonModal = document.getElementById('andonModal');
+
+        if (btnSCW && andonModal) {
+            btnSCW.addEventListener('click', function() {
+                andonModal.style.display = 'flex';
+            });
+
+            andonModal.addEventListener('click', function(e) {
+                if (e.target === andonModal) {
+                    andonModal.style.display = 'none';
+                }
+            });
+        }
+
+        function panggilLeader() {
+            const abnormality = document.getElementById('listAbnormality').value;
+            if (!abnormality) {
+                alert('Pilih List Abnormality terlebih dahulu!');
+                return;
+            }
+            alert('Leader akan dipanggil untuk: ' + abnormality);
+        }
+
+        function panggilWhatsApp() {
+            const abnormality = document.getElementById('listAbnormality').value;
+            if (!abnormality) {
+                alert('Pilih List Abnormality terlebih dahulu!');
+                return;
+            }
+            const message = encodeURIComponent(`ANDON SYSTEM\n\nList Abnormality: ${abnormality}\n\nMohon bantuan segera!`);
+            const phoneNumber = '6281234567890';
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Data Menu Modal Functions
+        // Fix icon position for tablet
+        function fixIconPositionForTablet() {
+            const btnLihatData = document.getElementById('btnLihatData');
+            if (btnLihatData && window.innerWidth >= 768 && window.innerWidth <= 1024) {
+                btnLihatData.style.position = 'fixed';
+                btnLihatData.style.bottom = '30px';
+                btnLihatData.style.right = '30px';
+                btnLihatData.style.left = 'auto';
+                btnLihatData.style.transform = 'none';
+            }
+        }
+        
+        // Run on load and resize
+        fixIconPositionForTablet();
+        window.addEventListener('resize', fixIconPositionForTablet);
+        
+        const btnLihatData = document.getElementById('btnLihatData');
+        const dataMenuModal = document.getElementById('dataMenuModal');
+        const closeDataMenuModal = document.getElementById('closeDataMenuModal');
+        const dataTableModal = document.getElementById('dataTableModal');
+        const btnCloseDataModal = document.getElementById('btnCloseDataModal');
+        const dataModalBody = document.getElementById('dataModalBody');
+
+        // Open Data Menu Modal
+        if (btnLihatData) {
+            btnLihatData.addEventListener('click', function() {
+                if (dataMenuModal) {
+                    dataMenuModal.style.display = 'flex';
+                }
+            });
+        }
+
+        // Close Data Menu Modal
+        if (closeDataMenuModal && dataMenuModal) {
+            closeDataMenuModal.addEventListener('click', function() {
+                dataMenuModal.style.display = 'none';
+            });
+            
+            // Close modal saat klik di luar
+            dataMenuModal.addEventListener('click', function(e) {
+                if (e.target === dataMenuModal) {
+                    dataMenuModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Handle menu actions
+        document.querySelectorAll('[data-action]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const action = this.getAttribute('data-action');
+                
+                // Tutup menu modal
+                if (dataMenuModal) {
+                    dataMenuModal.style.display = 'none';
+                }
+
+                // Handle each action
+                switch(action) {
+                    case 'data-list':
+                        // Buka modal tabel data
+                        if (dataTableModal) {
+                            dataTableModal.style.display = 'flex';
+                            if (typeof loadDataTable === 'function') {
+                                loadDataTable();
+                            }
+                        }
+                        break;
+                    case 'planning-qc':
+                        // Redirect atau buka Planning QC
+                        window.location.href = '@Url.Action("List", "QCHose")';
+                        break;
+                    case 'output-check':
+                        // Redirect atau buka Output Check
+                        alert('Output Check - Coming Soon');
+                        break;
+                    case 'detail-ng':
+                        // Redirect atau buka Detail NG
+                        alert('Detail NG - Coming Soon');
+                        break;
+                    case 'check-list':
+                        // Redirect atau buka Check List
+                        alert('Check List - Coming Soon');
+                        break;
+                    case 'ng-list':
+                        // Redirect atau buka NG List
+                        alert('NG List - Coming Soon');
+                        break;
+                    case 'refresh':
+                        // Refresh page
+                        location.reload();
+                        break;
+                }
+            });
+        });
+
+        // Close modal
+        if (btnCloseDataModal) {
+            btnCloseDataModal.addEventListener('click', function() {
+                dataTableModal.style.display = 'none';
+            });
+        }
+
+        // Close modal saat klik di overlay
+        if (dataTableModal) {
+            dataTableModal.addEventListener('click', function(e) {
+                if (e.target === dataTableModal) {
+                    dataTableModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Close modal dengan ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && dataTableModal && dataTableModal.style.display === 'flex') {
+                dataTableModal.style.display = 'none';
+            }
+        });
+
+        // Function to load data table
+        function loadDataTable() {
+            dataModalBody.innerHTML = `
+                <div class="data-loading">
+                    <i class="bi bi-arrow-repeat" style="animation: spin 1s linear infinite; font-size: 24px;"></i>
+                    <span>Memuat data...</span>
+                </div>
+            `;
+
+            fetch('@Url.Action("GetDataJson", "QCHose")?limit=100')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success && result.data && result.data.length > 0) {
+                        renderDataTable(result.data);
+                    } else {
+                        dataModalBody.innerHTML = `
+                            <div class="data-empty">
+                                <i class="bi bi-inbox"></i>
+                                <h3>Belum Ada Data</h3>
+                                <p>Data E_LWP masih kosong. Silakan input data terlebih dahulu.</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading data:', error);
+                    dataModalBody.innerHTML = `
+                        <div class="data-empty">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <h3>Error</h3>
+                            <p>Gagal memuat data. Silakan coba lagi.</p>
+                        </div>
+                    `;
+                });
+        }
+
+        // Function to render data table
+        function renderDataTable(data) {
+            const tableHTML = `
+                <div class="data-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Line</th>
+                                <th>Inspector</th>
+                                <th>Group</th>
+                                <th>Part Code</th>
+                                <th>Time Stop</th>
+                                <th>Qty Check</th>
+                                <th>Jenis NG</th>
+                                <th>Qty NG</th>
+                                <th>Line Stop</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(item => `
+                                <tr>
+                                    <td>${item.tanggalInput}</td>
+                                    <td>${item.lineChecking}</td>
+                                    <td>${item.namaInspector}</td>
+                                    <td>${item.groupChecking}</td>
+                                    <td>${item.partCode}</td>
+                                    <td>${item.timeStop}</td>
+                                    <td>${item.qtyCheck}</td>
+                                    <td>${item.jenisNG}</td>
+                                    <td>${item.qtyNG}</td>
+                                    <td>${item.lineStop}</td>
+                                    <td>
+                                        <span class="badge-status ${getStatusClass(item.statusChecking)}">
+                                            ${item.statusChecking}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 16px; text-align: center; color: #6b7280; font-size: 12px;">
+                    Menampilkan ${data.length} data terbaru
+                </div>
+            `;
+            
+            dataModalBody.innerHTML = tableHTML;
+        }
+
+        // Function to get status class
+        function getStatusClass(status) {
+            if (status === 'Checking') return 'badge-checking';
+            if (status === 'Done') return 'badge-done';
+            if (status === 'Stop') return 'badge-stop';
+            return '';
+        }
+
+        // Scroll ke atas dan auto-hide success message setelah submit berhasil
+        document.addEventListener('DOMContentLoaded', function() {
+            // Close Line Stop Warning Modal
+            const closeLineStopWarning = document.getElementById('closeLineStopWarning');
+            const lineStopWarningModal = document.getElementById('lineStopWarningModal');
+            if (closeLineStopWarning && lineStopWarningModal) {
+                closeLineStopWarning.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    lineStopWarningModal.style.display = 'none';
+                });
+                
+                // Close modal saat klik di luar
+                lineStopWarningModal.addEventListener('click', function(e) {
+                    if (e.target === lineStopWarningModal) {
+                        lineStopWarningModal.style.display = 'none';
+                    }
+                });
+            }
+
+            const successAlert = document.querySelector('.alert-success');
+            const formSubmitted = '@TempData["FormSubmitted"]';
+            
+            if (formSubmitted === 'True' || successAlert) {
+                // Scroll ke atas untuk melihat success message
+                setTimeout(function() {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 100);
+                
+                // Auto-hide success message setelah 5 detik
+                if (successAlert) {
+                    setTimeout(function() {
+                        successAlert.style.transition = 'opacity 0.5s ease-out';
+                        successAlert.style.opacity = '0';
+                        setTimeout(function() {
+                            successAlert.style.display = 'none';
+                        }, 500);
+                    }, 5000);
+                }
+                
+                // Jika modal data sedang terbuka, refresh datanya
+                const dataTableModal = document.getElementById('dataTableModal');
+                if (dataTableModal && dataTableModal.style.display === 'flex') {
+                    setTimeout(function() {
+                        if (typeof loadDataTable === 'function') {
+                            loadDataTable();
+                        }
+                    }, 500);
+                }
+            }
+        });
+    </script>
+}
+

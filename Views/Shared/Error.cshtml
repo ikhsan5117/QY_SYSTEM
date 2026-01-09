@@ -1,0 +1,29 @@
+@{
+    Layout = "_Layout";
+}
+
+<div class="error" style="padding: 20px; max-width: 800px; margin: 50px auto;">
+    <h1 class="text-danger">Error.</h1>
+    <h2 class="text-danger">An error occurred while processing your request.</h2>
+    
+    @if (ViewBag.Error != null)
+    {
+        <div style="background: #fee; border: 1px solid #fcc; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3>Error Details:</h3>
+            <p style="color: #c00; font-weight: bold;">@ViewBag.Error</p>
+        </div>
+    }
+    
+    @if (ViewBag.StackTrace != null)
+    {
+        <details style="margin-top: 20px;">
+            <summary style="cursor: pointer; color: #666;">Show Stack Trace</summary>
+            <pre style="background: #f5f5f5; padding: 15px; overflow-x: auto; font-size: 12px; margin-top: 10px;">@ViewBag.StackTrace</pre>
+        </details>
+    }
+    
+    <div style="margin-top: 30px;">
+        <a href="/Auth/Login" style="display: inline-block; padding: 10px 20px; background: #3b82f6; color: white; text-decoration: none; border-radius: 5px;">Kembali ke Login</a>
+        <a href="/Home/Index" style="display: inline-block; padding: 10px 20px; background: #10b981; color: white; text-decoration: none; border-radius: 5px; margin-left: 10px;">Coba Lagi</a>
+    </div>
+</div>

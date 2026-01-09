@@ -1,0 +1,1144 @@
+@model List<StandarDimensi>
+@{
+    ViewData["Title"] = "Analisis Trend Data";
+    Layout = "_LayoutDesktop";
+}
+
+<style>
+    .filter-card {
+        background: rgba(30, 41, 59, 0.6);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 
+            0 4px 16px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .filter-card:hover {
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.5),
+            0 0 20px rgba(59, 130, 246, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    .chart-container {
+        background: rgba(30, 41, 59, 0.6);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        position: relative;
+        height: 450px;
+        box-shadow: 
+            0 4px 16px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .metric-card {
+        background: rgba(30, 41, 59, 0.6);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        box-shadow: 
+            0 4px 16px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .metric-card:hover {
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.5),
+            0 0 20px rgba(59, 130, 246, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        border-color: rgba(59, 130, 246, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .metric-card .label {
+        font-size: 12px;
+        color: #94a3b8;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+    }
+    
+    .metric-card .value {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    
+    .metric-card .status {
+        font-size: 13px;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 8px;
+        display: inline-block;
+        backdrop-filter: blur(10px);
+    }
+    
+    .metric-card.cp .value { 
+        color: #10b981; 
+        filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.5));
+    }
+    .metric-card.cp .status { 
+        background: rgba(16, 185, 129, 0.2); 
+        color: #10b981; 
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+    }
+    
+    .metric-card.cpk .value { 
+        color: #f59e0b; 
+        filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.5));
+    }
+    .metric-card.cpk .status { 
+        background: rgba(245, 158, 11, 0.2); 
+        color: #f59e0b; 
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+    }
+    
+    .metric-card.summary .value { 
+        color: #3b82f6; 
+        filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
+    }
+    
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        z-index: 10;
+    }
+    
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(148, 163, 184, 0.2);
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    }
+    
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<div class="row g-4">
+    <div class="col-12">
+        <!-- Header -->
+        <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+            <i class="bi bi-graph-up" style="font-size: 28px; color: #3b82f6; filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));"></i>
+            <div>
+                <h2 style="margin: 0; font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 2px 10px rgba(59, 130, 246, 0.3));">Dashboard Analisis Qualitas</h2>
+                <p style="margin: 0; font-size: 14px; color: #94a3b8;">Trend data dan analisis capability process</p>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-card">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label style="font-size: 12px; color: #f1f5f9; font-weight: 600; margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 0.5px;">PILIH PRODUK</label>
+                    <select id="produkSelect" class="form-control-desktop" style="padding: 12px; font-size: 14px; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(148, 163, 184, 0.2); color: #f1f5f9; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);">
+                        <option value="" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">-- Pilih Produk --</option>
+                        @{
+                            var uniqueProducts = Model
+                                .Where(s => s.Produk != null)
+                                .GroupBy(s => new { s.ProdukId, s.Produk!.PartCode, s.Produk!.NamaProduk })
+                                .Select(g => new { 
+                                    StandarId = g.First().Id,
+                                    PartCode = g.Key.PartCode ?? "", 
+                                    NamaProduk = g.Key.NamaProduk ?? "" 
+                                })
+                                .OrderBy(p => p.PartCode);
+                        }
+                        @foreach (var produk in uniqueProducts)
+                        {
+                            <option value="@produk.StandarId" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">@produk.PartCode - @produk.NamaProduk</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label style="font-size: 12px; color: #f1f5f9; font-weight: 600; margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 0.5px;">KRITERIA DIMENSI</label>
+                    <select id="dimensiSelect" class="form-control-desktop" style="padding: 12px; font-size: 14px; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(148, 163, 184, 0.2); color: #f1f5f9; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);">
+                        <option value="" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">-- Pilih Dimensi --</option>
+                        <option value="Inner Diameter" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">Inner Diameter</option>
+                        <option value="Outer Diameter" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">Outer Diameter</option>
+                        <option value="Thickness" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">Thickness</option>
+                        <option value="Panjang" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">Panjang</option>
+                        <option value="Tinggi" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">Tinggi</option>
+                        <option value="Radius" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">Radius</option>
+                        <option value="Dimensi A" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">Dimensi A</option>
+                        <option value="Dimensi B" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">Dimensi B</option>
+                        <option value="Sudut" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">Sudut</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label style="font-size: 12px; color: #f1f5f9; font-weight: 600; margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 0.5px;">RENTANG WAKTU</label>
+                    <select id="rangeSelect" class="form-control-desktop" style="padding: 12px; font-size: 14px; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(148, 163, 184, 0.2); color: #f1f5f9; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);">
+                        <option value="today" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">Hari Ini</option>
+                        <option value="7" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">7 Hari Terakhir</option>
+                        <option value="30" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">30 Hari Terakhir</option>
+                        <option value="all" selected style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">Semua Data</option>
+                        <option value="custom" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">Pilih Tanggal...</option>
+                    </select>
+                </div>
+                <div class="col-md-3" id="datePickerContainer" style="display: none;">
+                    <label style="font-size: 12px; color: #f1f5f9; font-weight: 600; margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 0.5px;">DARI - SAMPAI</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="date" id="startDate" class="form-control-desktop" style="padding: 12px; font-size: 14px; flex: 1; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(148, 163, 184, 0.2); color: #f1f5f9; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);" />
+                        <input type="date" id="endDate" class="form-control-desktop" style="padding: 12px; font-size: 14px; flex: 1; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(148, 163, 184, 0.2); color: #f1f5f9; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="metrics-grid" id="metricsGrid" style="display: none;">
+            <div class="metric-card cp">
+                <div class="label">CP (Process Capability)</div>
+                <div class="value" id="cpValue">-</div>
+                <div class="status" id="cpStatus">Loading...</div>
+            </div>
+            <div class="metric-card cpk">
+                <div class="label">CPK (Process Capability Index)</div>
+                <div class="value" id="cpkValue">-</div>
+                <div class="status" id="cpkStatus">Loading...</div>
+            </div>
+            <div class="metric-card summary">
+                <div class="label">Ringkasan Data</div>
+                <div class="value" style="font-size: 24px; display: flex; flex-direction: column; gap: 6px;">
+                    <div><span style="font-size: 14px; color: #94a3b8;">Relarata:</span> <span id="avgValue" style="color: #3b82f6; filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));">-</span> mm</div>
+                    <div><span style="font-size: 14px; color: #94a3b8;">Std Deviasi:</span> <span id="stdValue" style="color: #3b82f6; filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));">-</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="chart-container" id="chartContainer">
+            <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+                <div style="text-align: center;">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 16px; color: #94a3b8; font-weight: 600;">Memuat data...</p>
+                </div>
+            </div>
+            <div id="noDataMessage" style="display: flex; align-items: center; justify-content: center; height: 100%; color: #94a3b8; font-size: 16px;">
+                <div style="text-align: center;">
+                    <i class="bi bi-graph-up" style="font-size: 64px; color: #64748b; margin-bottom: 16px; filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.2));"></i>
+                    <p style="margin: 0; font-weight: 600; color: #f1f5f9; background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Pilih produk dan dimensi untuk melihat trend data</p>
+                </div>
+            </div>
+            <canvas id="trendChart" style="display: none;"></canvas>
+            
+            <!-- NG Notification Area -->
+            <div id="ngNotificationArea" style="display: none; margin-top: 16px; padding: 20px; background: rgba(239, 68, 68, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 12px; box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);">
+                <div style="display: flex; align-items: start; gap: 12px;">
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 24px; color: #ef4444; flex-shrink: 0; filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));"></i>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 12px 0; color: #fca5a5; font-size: 16px; font-weight: 700;">
+                            ⚠️ Terdeteksi Nilai NG (Out of Specification)
+                        </h4>
+                        <div id="ngDetailsList" style="color: #fca5a5; font-size: 14px; line-height: 1.6;">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let trendChart = null;
+    let selectedProdukName = '';
+    let selectedDimensiLabel = '';
+    let allStandarData = @Html.Raw(Json.Serialize(Model.Select(s => new {
+        id = s.Id,
+        namaDimensi = s.NamaDimensi,
+        kodeProduk = s.Id.ToString(), // Use StandarId as identifier
+        produk = s.Produk?.NamaProduk,
+        partCode = s.Produk?.PartCode,
+        // Sisi A dimensions (primary)
+        innerDiameter_SisiA_Min = s.InnerDiameter_SisiA_Min,
+        innerDiameter_SisiA_Max = s.InnerDiameter_SisiA_Max,
+        outerDiameter_SisiA_Min = s.OuterDiameter_SisiA_Min,
+        outerDiameter_SisiA_Max = s.OuterDiameter_SisiA_Max,
+        thickness_SisiA_Min = s.Thickness_SisiA_Min,
+        thickness_SisiA_Max = s.Thickness_SisiA_Max,
+        // Other dimensions
+        panjang_Min = s.Panjang_Min,
+        panjang_Max = s.Panjang_Max,
+        tinggi_Min = s.Tinggi_Min,
+        tinggi_Max = s.Tinggi_Max,
+        radius_Min = s.Radius_Min,
+        radius_Max = s.Radius_Max,
+        dimensiA_Min = s.DimensiA_Min,
+        dimensiA_Max = s.DimensiA_Max,
+        dimensiB_Min = s.DimensiB_Min,
+        dimensiB_Max = s.DimensiB_Max,
+        sudut_Min = s.Sudut_Min,
+        sudut_Max = s.Sudut_Max
+    })));
+
+    const produkSelect = document.getElementById('produkSelect');
+    const dimensiSelect = document.getElementById('dimensiSelect');
+    
+    // When both produk and dimensi are selected, load data
+    function checkAndLoadData() {
+        const kodeProduk = produkSelect.value;
+        const dimensiType = dimensiSelect.value;
+        
+        console.log('checkAndLoadData called');
+        console.log('kodeProduk:', kodeProduk);
+        console.log('dimensiType:', dimensiType);
+        console.log('allStandarData:', allStandarData);
+        
+        if (kodeProduk && dimensiType) {
+            selectedProdukName = kodeProduk;
+            selectedDimensiLabel = dimensiType;
+            
+            // Find standar that matches this product and has this dimension
+            const standar = allStandarData.find(s => {
+                console.log('Checking standar:', s.kodeProduk, 'vs', kodeProduk);
+                if (s.kodeProduk !== kodeProduk) return false;
+                
+                // Check Sisi A dimensions first (primary)
+                if (dimensiType === 'Inner Diameter' && s.innerDiameter_SisiA_Min !== null) return true;
+                if (dimensiType === 'Outer Diameter' && s.outerDiameter_SisiA_Min !== null) return true;
+                if (dimensiType === 'Thickness' && s.thickness_SisiA_Min !== null) return true;
+                
+                // Check other dimensions
+                if (dimensiType === 'Panjang' && s.panjang_Min !== null) return true;
+                if (dimensiType === 'Tinggi' && s.tinggi_Min !== null) return true;
+                if (dimensiType === 'Radius' && s.radius_Min !== null) return true;
+                if (dimensiType === 'Dimensi A' && s.dimensiA_Min !== null) return true;
+                if (dimensiType === 'Dimensi B' && s.dimensiB_Min !== null) return true;
+                if (dimensiType === 'Sudut' && s.sudut_Min !== null) return true;
+                return false;
+            });
+            
+            console.log('Found standar:', standar);
+            
+            if (standar) {
+                loadTrendData(standar.id, dimensiType);
+            } else {
+                hideChart();
+                const noDataMessage = document.getElementById('noDataMessage');
+                noDataMessage.innerHTML = '<div style="text-align: center;">' +
+                    '<i class="bi bi-exclamation-circle" style="font-size: 64px; color: #f59e0b; margin-bottom: 16px; filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.5));"></i>' +
+                    '<p style="margin: 0; font-weight: 600; color: #f1f5f9; background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Dimensi ' + dimensiType + ' tidak tersedia untuk produk ini</p>' +
+                    '</div>';
+                noDataMessage.style.display = 'flex';
+            }
+        } else {
+            hideChart();
+        }
+    }
+    
+    produkSelect.addEventListener('change', checkAndLoadData);
+    dimensiSelect.addEventListener('change', checkAndLoadData);
+
+    // Event listener untuk range
+    document.getElementById('rangeSelect').addEventListener('change', function() {
+        const datePickerContainer = document.getElementById('datePickerContainer');
+        const selectValue = document.getElementById('dimensiSelect').value;
+        
+        if (this.value === 'custom') {
+            datePickerContainer.style.display = 'block';
+            // Set default dates
+            const today = new Date();
+            const lastWeek = new Date();
+            lastWeek.setDate(today.getDate() - 7);
+            document.getElementById('endDate').valueAsDate = today;
+            document.getElementById('startDate').valueAsDate = lastWeek;
+        } else {
+            datePickerContainer.style.display = 'none';
+            if (produkSelect.value && dimensiSelect.value) {
+                checkAndLoadData();
+            }
+        }
+    });
+    
+    async function loadTrendData(standarId, dimLabel) {
+        const rangeSelect = document.getElementById('rangeSelect');
+        const range = rangeSelect.value;
+        
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const noDataMessage = document.getElementById('noDataMessage');
+        const chartCanvas = document.getElementById('trendChart');
+        
+        loadingOverlay.style.display = 'flex';
+        noDataMessage.style.display = 'none';
+        chartCanvas.style.display = 'none';
+        
+        try {
+            const response = await fetch('/Dimensi/GetTrendData?standarId=' + standarId);
+            const data = await response.json();
+            
+            if (data.length === 0) {
+                loadingOverlay.style.display = 'none';
+                document.getElementById('metricsGrid').style.display = 'none';
+                noDataMessage.innerHTML = '<div style="text-align: center;">' +
+                    '<i class="bi bi-exclamation-circle" style="font-size: 64px; color: #f59e0b; margin-bottom: 16px; filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.5));"></i>' +
+                    '<p style="margin: 0; font-weight: 600; color: #f1f5f9; background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Tidak ada data pengukuran untuk dimensi ini</p>' +
+                    '</div>';
+                noDataMessage.style.display = 'flex';
+                return;
+            }
+            
+            // Detect dimension type based on requested dimension
+            const dimensionInfo = detectDimensionType(data[0], dimLabel);
+            
+            // For dual-side dimensions, collect both A and B values
+            let values, valuesA, valuesB;
+            if (dimensionInfo.hasDualSides) {
+                valuesA = data.map(d => dimensionInfo.getValueA(d)).filter(v => v !== null);
+                valuesB = data.map(d => dimensionInfo.getValueB(d)).filter(v => v !== null);
+                values = valuesA; // Use Sisi A for statistics
+            } else {
+                values = data.map(d => dimensionInfo.getValue(d)).filter(v => v !== null);
+            }
+            
+            if (values.length === 0) {
+                loadingOverlay.style.display = 'none';
+                document.getElementById('metricsGrid').style.display = 'none';
+                noDataMessage.innerHTML = '<div style="text-align: center;">' +
+                    '<i class="bi bi-exclamation-circle" style="font-size: 64px; color: #f59e0b; margin-bottom: 16px; filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.5));"></i>' +
+                    '<p style="margin: 0; font-weight: 600; color: #f1f5f9; background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Tidak ada data pengukuran untuk dimensi ini</p>' +
+                    '</div>';
+                noDataMessage.style.display = 'flex';
+                return;
+            }
+            
+            // Filter by date range
+            let filteredData = data;
+            
+            if (range === 'custom') {
+                const startDate = new Date(document.getElementById('startDate').value);
+                const endDate = new Date(document.getElementById('endDate').value);
+                endDate.setHours(23, 59, 59, 999);
+                
+                filteredData = data.filter(d => {
+                    const dataDate = new Date(d.tanggalInput);
+                    return dataDate >= startDate && dataDate <= endDate;
+                });
+            } else if (range === 'today') {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                
+                filteredData = data.filter(d => {
+                    const dataDate = new Date(d.tanggalInput);
+                    return dataDate >= today && dataDate < tomorrow;
+                });
+            } else if (range !== 'all') {
+                const days = parseInt(range);
+                const cutoffDate = new Date();
+                cutoffDate.setDate(cutoffDate.getDate() - days);
+                cutoffDate.setHours(0, 0, 0, 0);
+                filteredData = data.filter(d => new Date(d.tanggalInput) >= cutoffDate);
+            }
+            
+            // For dual sides, recalculate filtered values
+            let filteredValues, filteredValuesA, filteredValuesB;
+            if (dimensionInfo.hasDualSides) {
+                filteredValuesA = filteredData.map(d => dimensionInfo.getValueA(d)).filter(v => v !== null);
+                filteredValuesB = filteredData.map(d => dimensionInfo.getValueB(d)).filter(v => v !== null);
+                filteredValues = filteredValuesA; // Use Sisi A for statistics
+            } else {
+                filteredValues = filteredData.map(d => dimensionInfo.getValue(d)).filter(v => v !== null);
+            }
+            
+            // Calculate CP & CPK (using Sisi A for dual-side dimensions)
+            const lsl = dimensionInfo.hasDualSides ? dimensionInfo.minA : dimensionInfo.min;
+            const usl = dimensionInfo.hasDualSides ? dimensionInfo.maxA : dimensionInfo.max;
+            const stats = calculateStatistics(filteredValues, lsl, usl);
+            
+            // Update metrics
+            updateMetrics(stats, filteredValues.length);
+            
+            // Draw chart
+            drawChart(filteredData, dimensionInfo);
+            
+            loadingOverlay.style.display = 'none';
+            document.getElementById('metricsGrid').style.display = 'grid';
+            chartCanvas.style.display = 'block';
+            
+        } catch (error) {
+            console.error('Error loading trend data:', error);
+            loadingOverlay.style.display = 'none';
+            document.getElementById('metricsGrid').style.display = 'none';
+            noDataMessage.innerHTML = '<div style="text-align: center;">' +
+                '<i class="bi bi-x-circle" style="font-size: 64px; color: #ef4444; margin-bottom: 16px; filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));"></i>' +
+                '<p style="margin: 0; font-weight: 600; color: #f1f5f9; background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Gagal memuat data</p>' +
+                '<p style="margin-top: 8px; color: #94a3b8; font-size: 14px;">Terjadi kesalahan saat memuat data</p>' +
+                '</div>';
+            noDataMessage.style.display = 'flex';
+        }
+    }
+    
+    // Event listener untuk date picker
+    document.getElementById('startDate').addEventListener('change', function() {
+        applyCustomDateRange();
+    });
+    
+    document.getElementById('endDate').addEventListener('change', function() {
+        applyCustomDateRange();
+    });
+    
+    function applyCustomDateRange() {
+        const kodeProduk = produkSelect.value;
+        const dimensiType = dimensiSelect.value;
+        
+        if (kodeProduk && dimensiType) {
+            // Find standar that matches
+            const standar = allStandarData.find(s => {
+                if (s.kodeProduk !== kodeProduk) return false;
+                
+                // Check Sisi A dimensions first
+                if (dimensiType === 'Inner Diameter' && s.innerDiameter_SisiA_Min !== null) return true;
+                if (dimensiType === 'Outer Diameter' && s.outerDiameter_SisiA_Min !== null) return true;
+                if (dimensiType === 'Thickness' && s.thickness_SisiA_Min !== null) return true;
+                
+                // Check other dimensions
+                if (dimensiType === 'Panjang' && s.panjang_Min !== null) return true;
+                if (dimensiType === 'Tinggi' && s.tinggi_Min !== null) return true;
+                if (dimensiType === 'Radius' && s.radius_Min !== null) return true;
+                if (dimensiType === 'Dimensi A' && s.dimensiA_Min !== null) return true;
+                if (dimensiType === 'Dimensi B' && s.dimensiB_Min !== null) return true;
+                if (dimensiType === 'Sudut' && s.sudut_Min !== null) return true;
+                return false;
+            });
+            
+            if (standar) {
+                loadTrendData(standar.id, dimensiType);
+            }
+        }
+    }
+
+    function hideChart() {
+        document.getElementById('metricsGrid').style.display = 'none';
+        document.getElementById('noDataMessage').style.display = 'flex';
+        document.getElementById('trendChart').style.display = 'none';
+        document.getElementById('ngNotificationArea').style.display = 'none';
+        if (trendChart) {
+            trendChart.destroy();
+            trendChart = null;
+        }
+    }
+
+    function detectDimensionType(dataPoint, requestedDimension) {
+        // Check if dimension has both Sisi A and Sisi B
+        const dualSideDimensions = {
+            'Inner Diameter': {
+                keyA: 'nilaiInnerDiameter_SisiA',
+                keyB: 'nilaiInnerDiameter_SisiB',
+                minA: dataPoint.standarDimensi.innerDiameter_SisiA_Min,
+                maxA: dataPoint.standarDimensi.innerDiameter_SisiA_Max,
+                minB: dataPoint.standarDimensi.innerDiameter_SisiB_Min,
+                maxB: dataPoint.standarDimensi.innerDiameter_SisiB_Max
+            },
+            'Outer Diameter': {
+                keyA: 'nilaiOuterDiameter_SisiA',
+                keyB: 'nilaiOuterDiameter_SisiB',
+                minA: dataPoint.standarDimensi.outerDiameter_SisiA_Min,
+                maxA: dataPoint.standarDimensi.outerDiameter_SisiA_Max,
+                minB: dataPoint.standarDimensi.outerDiameter_SisiB_Min,
+                maxB: dataPoint.standarDimensi.outerDiameter_SisiB_Max
+            },
+            'Thickness': {
+                keyA: 'nilaiThickness_SisiA',
+                keyB: 'nilaiThickness_SisiB',
+                minA: dataPoint.standarDimensi.thickness_SisiA_Min,
+                maxA: dataPoint.standarDimensi.thickness_SisiA_Max,
+                minB: dataPoint.standarDimensi.thickness_SisiB_Min,
+                maxB: dataPoint.standarDimensi.thickness_SisiB_Max
+            }
+        };
+        
+        // Check if this dimension has dual sides
+        if (dualSideDimensions[requestedDimension]) {
+            const dim = dualSideDimensions[requestedDimension];
+            if (dim.minA !== null && dim.maxA !== null) {
+                return {
+                    label: requestedDimension,
+                    hasDualSides: true,
+                    keyA: dim.keyA,
+                    keyB: dim.keyB,
+                    minA: dim.minA,
+                    maxA: dim.maxA,
+                    minB: dim.minB,
+                    maxB: dim.maxB,
+                    getValueA: (d) => d[dim.keyA],
+                    getValueB: (d) => d[dim.keyB],
+                    targetA: (dim.minA + dim.maxA) / 2,
+                    targetB: dim.minB !== null && dim.maxB !== null ? (dim.minB + dim.maxB) / 2 : null
+                };
+            }
+        }
+        
+        // Single side dimensions
+        const types = [
+            { key: 'nilaiPanjang', min: dataPoint.standarDimensi.panjang_Min, max: dataPoint.standarDimensi.panjang_Max, label: 'Panjang' },
+            { key: 'nilaiTinggi', min: dataPoint.standarDimensi.tinggi_Min, max: dataPoint.standarDimensi.tinggi_Max, label: 'Tinggi' },
+            { key: 'nilaiRadius', min: dataPoint.standarDimensi.radius_Min, max: dataPoint.standarDimensi.radius_Max, label: 'Radius' },
+            { key: 'nilaiDimensiA', min: dataPoint.standarDimensi.dimensiA_Min, max: dataPoint.standarDimensi.dimensiA_Max, label: 'Dimensi A' },
+            { key: 'nilaiDimensiB', min: dataPoint.standarDimensi.dimensiB_Min, max: dataPoint.standarDimensi.dimensiB_Max, label: 'Dimensi B' },
+            { key: 'nilaiSudut', min: dataPoint.standarDimensi.sudut_Min, max: dataPoint.standarDimensi.sudut_Max, label: 'Sudut' }
+        ];
+        
+        for (let type of types) {
+            if (type.label === requestedDimension && type.min !== null && type.max !== null) {
+                return {
+                    ...type,
+                    hasDualSides: false,
+                    getValue: (d) => d[type.key],
+                    target: (type.min + type.max) / 2
+                };
+            }
+        }
+        
+        throw new Error('No valid dimension type found');
+    }
+
+    function calculateStatistics(values, lsl, usl) {
+        const n = values.length;
+        const mean = values.reduce((a, b) => a + b, 0) / n;
+        const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / n;
+        const stdDev = Math.sqrt(variance);
+        const target = (lsl + usl) / 2;
+        
+        // CP = (USL - LSL) / (6 * σ)
+        const cp = (usl - lsl) / (6 * stdDev);
+        
+        // CPK = min((USL - μ) / (3 * σ), (μ - LSL) / (3 * σ))
+        const cpkUpper = (usl - mean) / (3 * stdDev);
+        const cpkLower = (mean - lsl) / (3 * stdDev);
+        const cpk = Math.min(cpkUpper, cpkLower);
+        
+        return { cp, cpk, mean, stdDev, target };
+    }
+
+    function updateMetrics(stats, dataCount) {
+        document.getElementById('cpValue').textContent = stats.cp.toFixed(2);
+        document.getElementById('cpkValue').textContent = stats.cpk.toFixed(2);
+        document.getElementById('avgValue').textContent = stats.mean.toFixed(2);
+        document.getElementById('stdValue').textContent = stats.stdDev.toFixed(3);
+        
+        // CP Status
+        let cpStatus = '';
+        if (stats.cp >= 1.33) cpStatus = 'Baik';
+        else if (stats.cp >= 1.0) cpStatus = 'Cukup Baik';
+        else cpStatus = 'Perlu Perbaikan';
+        document.getElementById('cpStatus').textContent = cpStatus;
+        
+        // CPK Status
+        let cpkStatus = '';
+        if (stats.cpk >= 1.33) cpkStatus = 'Capable';
+        else if (stats.cpk >= 1.0) cpkStatus = 'Marginal';
+        else cpkStatus = 'Not Capable';
+        document.getElementById('cpkStatus').textContent = cpkStatus;
+    }
+
+    function drawChart(data, dimensionInfo) {
+        if (trendChart) {
+            trendChart.destroy();
+        }
+        
+        const ctx = document.getElementById('trendChart').getContext('2d');
+        
+        const labels = data.map((d, i) => {
+            const date = new Date(d.tanggalInput);
+            return (i + 1) + ' (' + date.getDate() + '/' + (date.getMonth() + 1) + ')';
+        });
+        
+        const datasets = [];
+        
+        if (dimensionInfo.hasDualSides) {
+            // Dual-side dimensions: Show both Sisi A and Sisi B
+            const valuesA = data.map(d => dimensionInfo.getValueA(d));
+            const valuesB = data.map(d => dimensionInfo.getValueB(d));
+            
+            const targetLineA = Array(data.length).fill(dimensionInfo.targetA);
+            const upperLineA = Array(data.length).fill(dimensionInfo.maxA);
+            const lowerLineA = Array(data.length).fill(dimensionInfo.minA);
+            
+            // Color coding for Sisi A
+            const pointColorsA = valuesA.map(val => {
+                if (val === null) return 'transparent';
+                if (val < dimensionInfo.minA || val > dimensionInfo.maxA) return '#ef4444';
+                return '#10b981';
+            });
+            
+            const pointRadiusA = valuesA.map(val => {
+                if (val === null) return 0;
+                if (val < dimensionInfo.minA || val > dimensionInfo.maxA) return 8;
+                return 5;
+            });
+            
+            // Color coding for Sisi B (if exists)
+            let pointColorsB, pointRadiusB;
+            if (dimensionInfo.minB !== null && dimensionInfo.maxB !== null) {
+                pointColorsB = valuesB.map(val => {
+                    if (val === null) return 'transparent';
+                    if (val < dimensionInfo.minB || val > dimensionInfo.maxB) return '#ef4444';
+                    return '#10b981';
+                });
+                
+                pointRadiusB = valuesB.map(val => {
+                    if (val === null) return 0;
+                    if (val < dimensionInfo.minB || val > dimensionInfo.maxB) return 8;
+                    return 5;
+                });
+            }
+            
+            // Add Target, Max, Min lines for Sisi A
+            datasets.push(
+                {
+                    label: 'Target (Sisi A)',
+                    data: targetLineA,
+                    borderColor: '#10b981',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    tension: 0,
+                    order: 3
+                },
+                {
+                    label: 'Spesifikasi Max (Sisi A)',
+                    data: upperLineA,
+                    borderColor: '#f97316',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    tension: 0,
+                    order: 3
+                },
+                {
+                    label: 'Spesifikasi Min (Sisi A)',
+                    data: lowerLineA,
+                    borderColor: '#f97316',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    tension: 0,
+                    order: 3
+                }
+            );
+            
+            // Add Sisi B spec lines if exists
+            if (dimensionInfo.minB !== null && dimensionInfo.maxB !== null) {
+                const targetLineB = Array(data.length).fill(dimensionInfo.targetB);
+                const upperLineB = Array(data.length).fill(dimensionInfo.maxB);
+                const lowerLineB = Array(data.length).fill(dimensionInfo.minB);
+                
+                datasets.push(
+                    {
+                        label: 'Target (Sisi B)',
+                        data: targetLineB,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [3, 3],
+                        pointRadius: 0,
+                        tension: 0,
+                        order: 3
+                    },
+                    {
+                        label: 'Spesifikasi Max (Sisi B)',
+                        data: upperLineB,
+                        borderColor: '#ec4899',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [3, 3],
+                        pointRadius: 0,
+                        tension: 0,
+                        order: 3
+                    },
+                    {
+                        label: 'Spesifikasi Min (Sisi B)',
+                        data: lowerLineB,
+                        borderColor: '#ec4899',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [3, 3],
+                        pointRadius: 0,
+                        tension: 0,
+                        order: 3
+                    }
+                );
+            }
+            
+            // Add Actual data for Sisi A with segment color
+            datasets.push({
+                label: 'Actual Sisi A',
+                data: valuesA,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 3,
+                pointRadius: pointRadiusA,
+                pointBackgroundColor: pointColorsA,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointStyle: 'circle',
+                tension: 0.3,
+                fill: false,
+                order: 1,
+                segment: {
+                    borderColor: ctx => {
+                        const p0 = ctx.p0.parsed.y;
+                        const p1 = ctx.p1.parsed.y;
+                        const isP0OutOfSpec = p0 < dimensionInfo.minA || p0 > dimensionInfo.maxA;
+                        const isP1OutOfSpec = p1 < dimensionInfo.minA || p1 > dimensionInfo.maxA;
+                        return (isP0OutOfSpec || isP1OutOfSpec) ? '#ef4444' : '#3b82f6';
+                    }
+                }
+            });
+            
+            // Add Actual data for Sisi B with segment color
+            if (dimensionInfo.minB !== null && dimensionInfo.maxB !== null) {
+                datasets.push({
+                    label: 'Actual Sisi B',
+                    data: valuesB,
+                    borderColor: '#a855f7',
+                    backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: pointRadiusB,
+                    pointBackgroundColor: pointColorsB,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointStyle: 'triangle',
+                    tension: 0.3,
+                    fill: false,
+                    order: 1,
+                    segment: {
+                        borderColor: ctx => {
+                            const p0 = ctx.p0.parsed.y;
+                            const p1 = ctx.p1.parsed.y;
+                            const isP0OutOfSpec = p0 < dimensionInfo.minB || p0 > dimensionInfo.maxB;
+                            const isP1OutOfSpec = p1 < dimensionInfo.minB || p1 > dimensionInfo.maxB;
+                            return (isP0OutOfSpec || isP1OutOfSpec) ? '#ef4444' : '#a855f7';
+                        }
+                    }
+                });
+            }
+            
+        } else {
+            // Single-side dimension
+            const values = data.map(d => dimensionInfo.getValue(d));
+            const targetLine = Array(data.length).fill(dimensionInfo.target);
+            const upperLine = Array(data.length).fill(dimensionInfo.max);
+            const lowerLine = Array(data.length).fill(dimensionInfo.min);
+            
+            const pointColors = values.map(val => {
+                if (val < dimensionInfo.min || val > dimensionInfo.max) {
+                    return '#ef4444';
+                }
+                return '#10b981';
+            });
+            
+            const pointRadius = values.map(val => {
+                if (val < dimensionInfo.min || val > dimensionInfo.max) {
+                    return 8;
+                }
+                return 5;
+            });
+            
+            datasets.push(
+                {
+                    label: 'Target',
+                    data: targetLine,
+                    borderColor: '#10b981',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    tension: 0,
+                    order: 2
+                },
+                {
+                    label: 'Spesifikasi Max',
+                    data: upperLine,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    tension: 0,
+                    order: 2
+                },
+                {
+                    label: 'Spesifikasi Min',
+                    data: lowerLine,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    tension: 0,
+                    order: 2
+                },
+                {
+                    label: 'Actual',
+                    data: values,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: pointRadius,
+                    pointBackgroundColor: pointColors,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    order: 1,
+                    segment: {
+                        borderColor: ctx => {
+                            const p0 = ctx.p0.parsed.y;
+                            const p1 = ctx.p1.parsed.y;
+                            const isP0OutOfSpec = p0 < dimensionInfo.min || p0 > dimensionInfo.max;
+                            const isP1OutOfSpec = p1 < dimensionInfo.min || p1 > dimensionInfo.max;
+                            return (isP0OutOfSpec || isP1OutOfSpec) ? '#ef4444' : '#3b82f6';
+                        }
+                    }
+                }
+            );
+        }
+        
+        trendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: { size: 12, weight: '600' }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Trend Dimensi: ' + dimensionInfo.label + ' - ' + selectedProdukName,
+                        font: { size: 16, weight: '700' },
+                        padding: { bottom: 20 }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 13, weight: '600' },
+                        bodyFont: { size: 12 },
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                const val = context.parsed.y;
+                                
+                                if (val === null) return label + ': N/A';
+                                
+                                if (label === 'Actual Sisi A') {
+                                    const status = (val >= dimensionInfo.minA && val <= dimensionInfo.maxA) ? '✓ OK' : '✗ NG';
+                                    const statusColor = (val >= dimensionInfo.minA && val <= dimensionInfo.maxA) ? '🟢' : '🔴';
+                                    return [
+                                        label + ': ' + val.toFixed(2) + ' mm',
+                                        'Status: ' + statusColor + ' ' + status,
+                                        'Range: ' + dimensionInfo.minA.toFixed(2) + ' - ' + dimensionInfo.maxA.toFixed(2) + ' mm'
+                                    ];
+                                } else if (label === 'Actual Sisi B') {
+                                    const status = (val >= dimensionInfo.minB && val <= dimensionInfo.maxB) ? '✓ OK' : '✗ NG';
+                                    const statusColor = (val >= dimensionInfo.minB && val <= dimensionInfo.maxB) ? '🟢' : '🔴';
+                                    return [
+                                        label + ': ' + val.toFixed(2) + ' mm',
+                                        'Status: ' + statusColor + ' ' + status,
+                                        'Range: ' + dimensionInfo.minB.toFixed(2) + ' - ' + dimensionInfo.maxB.toFixed(2) + ' mm'
+                                    ];
+                                } else if (label === 'Actual') {
+                                    const status = (val >= dimensionInfo.min && val <= dimensionInfo.max) ? '✓ OK' : '✗ NG';
+                                    const statusColor = (val >= dimensionInfo.min && val <= dimensionInfo.max) ? '🟢' : '🔴';
+                                    return [
+                                        label + ': ' + val.toFixed(2) + ' mm',
+                                        'Status: ' + statusColor + ' ' + status,
+                                        'Range: ' + dimensionInfo.min.toFixed(2) + ' - ' + dimensionInfo.max.toFixed(2) + ' mm'
+                                    ];
+                                }
+                                
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += val.toFixed(2) + ' mm';
+                                return label;
+                            },
+                            labelTextColor: function(context) {
+                                const label = context.dataset.label || '';
+                                const val = context.parsed.y;
+                                
+                                if (label === 'Actual Sisi A') {
+                                    return (val >= dimensionInfo.minA && val <= dimensionInfo.maxA) ? '#10b981' : '#ef4444';
+                                } else if (label === 'Actual Sisi B') {
+                                    return (val >= dimensionInfo.minB && val <= dimensionInfo.maxB) ? '#10b981' : '#ef4444';
+                                } else if (label === 'Actual') {
+                                    return (val >= dimensionInfo.min && val <= dimensionInfo.max) ? '#10b981' : '#ef4444';
+                                }
+                                return '#ffffff';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Nilai (mm)',
+                            font: { size: 13, weight: '600' }
+                        },
+                        grid: {
+                            color: '#f1f5f9'
+                        },
+                        ticks: {
+                            font: { size: 11 }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Sample (Tanggal)',
+                            font: { size: 13, weight: '600' }
+                        },
+                        grid: {
+                            color: '#f8fafc'
+                        },
+                        ticks: {
+                            font: { size: 11 },
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Show NG notification if any values are out of spec
+        showNGNotification(data, dimensionInfo);
+    }
+    
+    function showNGNotification(data, dimensionInfo) {
+        const ngArea = document.getElementById('ngNotificationArea');
+        const ngDetailsList = document.getElementById('ngDetailsList');
+        
+        let ngItems = [];
+        
+        if (dimensionInfo.hasDualSides) {
+            // Check Sisi A
+            data.forEach((d, index) => {
+                const valueA = dimensionInfo.getValueA(d);
+                if (valueA !== null && (valueA < dimensionInfo.minA || valueA > dimensionInfo.maxA)) {
+                    const date = new Date(d.tanggalInput);
+                    const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                    ngItems.push({
+                        sample: index + 1,
+                        date: formattedDate,
+                        side: 'Sisi A',
+                        value: valueA.toFixed(2),
+                        min: dimensionInfo.minA.toFixed(2),
+                        max: dimensionInfo.maxA.toFixed(2)
+                    });
+                }
+                
+                // Check Sisi B if exists
+                if (dimensionInfo.minB !== null && dimensionInfo.maxB !== null) {
+                    const valueB = dimensionInfo.getValueB(d);
+                    if (valueB !== null && (valueB < dimensionInfo.minB || valueB > dimensionInfo.maxB)) {
+                        const date = new Date(d.tanggalInput);
+                        const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                        ngItems.push({
+                            sample: index + 1,
+                            date: formattedDate,
+                            side: 'Sisi B',
+                            value: valueB.toFixed(2),
+                            min: dimensionInfo.minB.toFixed(2),
+                            max: dimensionInfo.maxB.toFixed(2)
+                        });
+                    }
+                }
+            });
+        } else {
+            // Single-side dimension
+            data.forEach((d, index) => {
+                const value = dimensionInfo.getValue(d);
+                if (value !== null && (value < dimensionInfo.min || value > dimensionInfo.max)) {
+                    const date = new Date(d.tanggalInput);
+                    const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                    ngItems.push({
+                        sample: index + 1,
+                        date: formattedDate,
+                        side: '',
+                        value: value.toFixed(2),
+                        min: dimensionInfo.min.toFixed(2),
+                        max: dimensionInfo.max.toFixed(2)
+                    });
+                }
+            });
+        }
+        
+        if (ngItems.length > 0) {
+            let html = `<p style="margin: 0 0 12px 0; font-weight: 600; color: #fca5a5;">Ditemukan <strong style="color: #fca5a5; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);">${ngItems.length} sample NG</strong>:</p>`;
+            html += '<ul style="margin: 0; padding-left: 20px; list-style: none;">';
+            
+            ngItems.forEach(item => {
+                const sideText = item.side ? ` (${item.side})` : '';
+                html += `<li style="margin-bottom: 8px; padding: 10px 14px; background: rgba(239, 68, 68, 0.1); backdrop-filter: blur(10px); border-left: 4px solid #ef4444; border-radius: 8px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);">`;
+                html += `<strong style="color: #fca5a5;">Sample ${item.sample}${sideText}</strong> - ${item.date}<br>`;
+                html += `<span style="color: #fca5a5;">Nilai: <strong>${item.value} mm</strong> (Spec: ${item.min} - ${item.max} mm)</span>`;
+                html += `</li>`;
+            });
+            
+            html += '</ul>';
+            ngDetailsList.innerHTML = html;
+            ngArea.style.display = 'block';
+        } else {
+            ngArea.style.display = 'none';
+        }
+    }
+</script>
+}

@@ -1,0 +1,573 @@
+@model InputAktual
+@{
+    ViewData["Title"] = "Detail Input";
+    Layout = "_LayoutDesktop";
+    
+    // Calculate overall status (check Sisi A and Sisi B dimension types)
+    var hasAnySisiA = Model.NilaiInnerDiameter_SisiA.HasValue || Model.NilaiOuterDiameter_SisiA.HasValue || Model.NilaiThickness_SisiA.HasValue;
+    var hasAnySisiB = Model.NilaiInnerDiameter_SisiB.HasValue || Model.NilaiOuterDiameter_SisiB.HasValue || Model.NilaiThickness_SisiB.HasValue;
+    var hasAnyOther = Model.NilaiPanjang.HasValue || Model.NilaiTinggi.HasValue || Model.NilaiRadius.HasValue || 
+                      Model.NilaiDimensiA.HasValue || Model.NilaiDimensiB.HasValue || Model.NilaiSudut.HasValue;
+    
+    // Use Status from database or calculate using IsAllOK property
+    var isAllOK = !string.IsNullOrEmpty(Model.Status) ? Model.Status == "OK" : Model.IsAllOK;
+    
+    var headerColor = isAllOK ? "#10b981" : "#ef4444";
+    var headerGradient = isAllOK ? "linear-gradient(135deg, #10b981, #059669)" : "linear-gradient(135deg, #ef4444, #dc2626)";
+}
+
+<div class="row g-4">
+    <div class="col-lg-10 offset-lg-1">
+        <!-- Header Card -->
+        <div class="card-desktop" style="margin-bottom: 24px; background: @headerGradient; color: white;">
+            <div style="text-align: center; padding: 32px 20px;">
+                <div style="width: 100px; height: 100px; margin: 0 auto 20px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                    @if (isAllOK)
+                    {
+                        <i class="bi bi-check-circle-fill" style="font-size: 60px; color: white;"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-x-circle-fill" style="font-size: 60px; color: white;"></i>
+                    }
+                </div>
+                <h2 style="margin-bottom: 12px; font-size: 28px; font-weight: 700;">@(isAllOK ? "SEMUA DIMENSI OK" : "ADA DIMENSI NG")</h2>
+                <p style="margin: 0; font-size: 16px; opacity: 0.95;">
+                    Detail Hasil Pengecekan Dimensi Produk
+                </p>
+            </div>
+        </div>
+
+        <!-- Info Produk Card -->
+        <div class="card-desktop" style="margin-bottom: 24px;">
+            <div class="card-header-desktop" style="border-bottom: 2px solid var(--border-color);">
+                <h2 class="card-title-desktop">
+                    <i class="bi bi-info-circle-fill"></i> Informasi Produk
+                </h2>
+            </div>
+            
+            <div class="row g-3" style="padding-top: 8px;">
+                <div class="col-md-6">
+                    <div style="padding: 16px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(99, 102, 241, 0.02)); border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.1);">
+                        <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px;">
+                            <i class="bi bi-box-seam"></i> PRODUK
+                        </div>
+                        <div style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
+                            @Model.StandarDimensi?.Produk?.NamaProduk
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-secondary);">
+                            <i class="bi bi-tag"></i> @Model.StandarDimensi?.NamaDimensi
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div style="padding: 16px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0.02)); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.1);">
+                        <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px;">
+                            <i class="bi bi-person"></i> OPERATOR
+                        </div>
+                        <div style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
+                            @Model.StandarDimensi?.Produk?.Operator
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-secondary);">
+                            <i class="bi bi-calendar-check"></i> @Model.TanggalInput.ToString("dd MMMM yyyy, HH:mm")
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div style="padding: 16px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.02)); border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.1);">
+                        <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px;">
+                            <i class="bi bi-person-badge"></i> PIC
+                        </div>
+                        <div style="font-size: 16px; font-weight: 700; color: var(--text-primary);">
+                            @(string.IsNullOrEmpty(Model.NamaPIC) ? "-" : Model.NamaPIC)
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div style="padding: 16px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.02)); border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.1);">
+                        <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px;">
+                            <i class="bi bi-building"></i> PLANT
+                        </div>
+                        <div style="font-size: 16px; font-weight: 700; color: var(--text-primary);">
+                            @(string.IsNullOrEmpty(Model.Plant) ? "-" : Model.Plant)
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div style="padding: 16px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.05), rgba(168, 85, 247, 0.02)); border-radius: 12px; border: 1px solid rgba(168, 85, 247, 0.1);">
+                        <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px;">
+                            <i class="bi bi-people"></i> GRUP
+                        </div>
+                        <div style="font-size: 16px; font-weight: 700; color: var(--text-primary);">
+                            @(string.IsNullOrEmpty(Model.Grup) ? "-" : Model.Grup)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ringkasan Data Pengukuran -->
+        <div class="card-desktop" style="margin-bottom: 24px;">
+            <div class="card-header-desktop" style="border-bottom: 2px solid var(--border-color);">
+                <h2 class="card-title-desktop">
+                    <i class="bi bi-clipboard-data-fill" style="color: #3b82f6;"></i> Ringkasan Data Pengukuran
+                </h2>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover" style="margin: 0;">
+                    <thead>
+                        <tr style="background: var(--bg-secondary);">
+                            <th style="padding: 16px; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border-color);">Dimensi</th>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border-color); text-align: center;">Min</th>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border-color); text-align: center;">Max</th>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border-color); text-align: center;">Aktual</th>
+                            <th style="padding: 16px; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border-color); text-align: center; width: 100px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- SISI A - Inner Diameter -->
+                        @if (Model.NilaiInnerDiameter_SisiA.HasValue)
+                        {
+                            var min = Model.StandarDimensi?.InnerDiameter_SisiA_Min ?? 0;
+                            var max = Model.StandarDimensi?.InnerDiameter_SisiA_Max ?? 0;
+                            var actual = Model.NilaiInnerDiameter_SisiA.Value;
+                            var isOK = actual >= min && actual <= max;
+                            var statusColor = isOK ? "#10b981" : "#ef4444";
+                            var statusBg = isOK ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)";
+                            
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="bi bi-circle" style="font-size: 20px; color: #3b82f6;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Inner Ø SISI A</div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">Inner Diameter Side A</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@min.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@max.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 18px; font-weight: 700; color: @statusColor;">@actual.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center;">
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; background: @statusBg; color: @statusColor; border-radius: 8px; font-weight: 700; font-size: 14px; border: 2px solid @statusColor;">
+                                        <i class="bi @(isOK ? "bi-check-circle-fill" : "bi-x-circle-fill")" style="font-size: 18px;"></i>
+                                        @(isOK ? "OK" : "NG")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+
+                        <!-- SISI A - Outer Diameter -->
+                        @if (Model.NilaiOuterDiameter_SisiA.HasValue)
+                        {
+                            var min = Model.StandarDimensi?.OuterDiameter_SisiA_Min ?? 0;
+                            var max = Model.StandarDimensi?.OuterDiameter_SisiA_Max ?? 0;
+                            var actual = Model.NilaiOuterDiameter_SisiA.Value;
+                            var isOK = actual >= min && actual <= max;
+                            var statusColor = isOK ? "#10b981" : "#ef4444";
+                            var statusBg = isOK ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)";
+                            
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="bi bi-arrows-expand" style="font-size: 20px; color: #10b981;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Outer Ø SISI A</div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">Outer Diameter Side A</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@min.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@max.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 18px; font-weight: 700; color: @statusColor;">@actual.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center;">
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; background: @statusBg; color: @statusColor; border-radius: 8px; font-weight: 700; font-size: 14px; border: 2px solid @statusColor;">
+                                        <i class="bi @(isOK ? "bi-check-circle-fill" : "bi-x-circle-fill")" style="font-size: 18px;"></i>
+                                        @(isOK ? "OK" : "NG")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+
+                        <!-- SISI A - Thickness -->
+                        @if (Model.NilaiThickness_SisiA.HasValue)
+                        {
+                            var min = Model.StandarDimensi?.Thickness_SisiA_Min ?? 0;
+                            var max = Model.StandarDimensi?.Thickness_SisiA_Max ?? 0;
+                            var actual = Model.NilaiThickness_SisiA.Value;
+                            var isOK = actual >= min && actual <= max;
+                            var statusColor = isOK ? "#10b981" : "#ef4444";
+                            var statusBg = isOK ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)";
+                            
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="bi bi-rulers" style="font-size: 20px; color: #f59e0b;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Thickness SISI A</div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">Ketebalan Side A</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@min.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@max.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 18px; font-weight: 700; color: @statusColor;">@actual.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center;">
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; background: @statusBg; color: @statusColor; border-radius: 8px; font-weight: 700; font-size: 14px; border: 2px solid @statusColor;">
+                                        <i class="bi @(isOK ? "bi-check-circle-fill" : "bi-x-circle-fill")" style="font-size: 18px;"></i>
+                                        @(isOK ? "OK" : "NG")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+
+                        <!-- SISI B - Inner Diameter -->
+                        @if (Model.NilaiInnerDiameter_SisiB.HasValue)
+                        {
+                            var min = Model.StandarDimensi?.InnerDiameter_SisiB_Min ?? 0;
+                            var max = Model.StandarDimensi?.InnerDiameter_SisiB_Max ?? 0;
+                            var actual = Model.NilaiInnerDiameter_SisiB.Value;
+                            var isOK = actual >= min && actual <= max;
+                            var statusColor = isOK ? "#10b981" : "#ef4444";
+                            var statusBg = isOK ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)";
+                            
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="bi bi-circle" style="font-size: 20px; color: #8b5cf6;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Inner Ø SISI B</div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">Inner Diameter Side B</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@min.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@max.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 18px; font-weight: 700; color: @statusColor;">@actual.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center;">
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; background: @statusBg; color: @statusColor; border-radius: 8px; font-weight: 700; font-size: 14px; border: 2px solid @statusColor;">
+                                        <i class="bi @(isOK ? "bi-check-circle-fill" : "bi-x-circle-fill")" style="font-size: 18px;"></i>
+                                        @(isOK ? "OK" : "NG")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+
+                        <!-- SISI B - Outer Diameter -->
+                        @if (Model.NilaiOuterDiameter_SisiB.HasValue)
+                        {
+                            var min = Model.StandarDimensi?.OuterDiameter_SisiB_Min ?? 0;
+                            var max = Model.StandarDimensi?.OuterDiameter_SisiB_Max ?? 0;
+                            var actual = Model.NilaiOuterDiameter_SisiB.Value;
+                            var isOK = actual >= min && actual <= max;
+                            var statusColor = isOK ? "#10b981" : "#ef4444";
+                            var statusBg = isOK ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)";
+                            
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(236, 72, 153, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="bi bi-arrows-expand" style="font-size: 20px; color: #ec4899;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Outer Ø SISI B</div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">Outer Diameter Side B</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@min.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@max.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 18px; font-weight: 700; color: @statusColor;">@actual.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center;">
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; background: @statusBg; color: @statusColor; border-radius: 8px; font-weight: 700; font-size: 14px; border: 2px solid @statusColor;">
+                                        <i class="bi @(isOK ? "bi-check-circle-fill" : "bi-x-circle-fill")" style="font-size: 18px;"></i>
+                                        @(isOK ? "OK" : "NG")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+
+                        <!-- SISI B - Thickness -->
+                        @if (Model.NilaiThickness_SisiB.HasValue)
+                        {
+                            var min = Model.StandarDimensi?.Thickness_SisiB_Min ?? 0;
+                            var max = Model.StandarDimensi?.Thickness_SisiB_Max ?? 0;
+                            var actual = Model.NilaiThickness_SisiB.Value;
+                            var isOK = actual >= min && actual <= max;
+                            var statusColor = isOK ? "#10b981" : "#ef4444";
+                            var statusBg = isOK ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)";
+                            
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="bi bi-rulers" style="font-size: 20px; color: #ef4444;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Thickness SISI B</div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">Ketebalan Side B</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@min.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@max.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 18px; font-weight: 700; color: @statusColor;">@actual.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center;">
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; background: @statusBg; color: @statusColor; border-radius: 8px; font-weight: 700; font-size: 14px; border: 2px solid @statusColor;">
+                                        <i class="bi @(isOK ? "bi-check-circle-fill" : "bi-x-circle-fill")" style="font-size: 18px;"></i>
+                                        @(isOK ? "OK" : "NG")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+
+                        <!-- Panjang -->
+                        @if (Model.NilaiPanjang.HasValue)
+                        {
+                            var isOK = Model.IsPanjang_OK;
+                            var statusColor = isOK ? "#10b981" : "#ef4444";
+                            var statusBg = isOK ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)";
+                            
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(168, 85, 247, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="bi bi-arrows-vertical" style="font-size: 20px; color: #a855f7;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Panjang</div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">Length</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@Model.StandarDimensi?.Panjang_Min?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@Model.StandarDimensi?.Panjang_Max?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 18px; font-weight: 700; color: @statusColor;">@Model.NilaiPanjang?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center;">
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; background: @statusBg; color: @statusColor; border-radius: 8px; font-weight: 700; font-size: 14px; border: 2px solid @statusColor;">
+                                        <i class="bi @(isOK ? "bi-check-circle-fill" : "bi-x-circle-fill")" style="font-size: 18px;"></i>
+                                        @(isOK ? "OK" : "NG")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+
+                        <!-- Tinggi -->
+                        @if (Model.NilaiTinggi.HasValue)
+                        {
+                            var isOK = Model.IsTinggi_OK;
+                            var statusColor = isOK ? "#10b981" : "#ef4444";
+                            var statusBg = isOK ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)";
+                            
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(236, 72, 153, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="bi bi-arrow-up-short" style="font-size: 20px; color: #ec4899;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Tinggi</div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">Height</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@Model.StandarDimensi?.Tinggi_Min?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@Model.StandarDimensi?.Tinggi_Max?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 18px; font-weight: 700; color: @statusColor;">@Model.NilaiTinggi?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center;">
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; background: @statusBg; color: @statusColor; border-radius: 8px; font-weight: 700; font-size: 14px; border: 2px solid @statusColor;">
+                                        <i class="bi @(isOK ? "bi-check-circle-fill" : "bi-x-circle-fill")" style="font-size: 18px;"></i>
+                                        @(isOK ? "OK" : "NG")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+
+                        <!-- Radius -->
+                        @if (Model.NilaiRadius.HasValue)
+                        {
+                            var isOK = Model.IsRadius_OK;
+                            var statusColor = isOK ? "#10b981" : "#ef4444";
+                            var statusBg = isOK ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)";
+                            
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="bi bi-circle-half" style="font-size: 20px; color: #0ea5e9;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Radius</div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">Jari-jari</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@Model.StandarDimensi?.Radius_Min?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@Model.StandarDimensi?.Radius_Max?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 18px; font-weight: 700; color: @statusColor;">@Model.NilaiRadius?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center;">
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; background: @statusBg; color: @statusColor; border-radius: 8px; font-weight: 700; font-size: 14px; border: 2px solid @statusColor;">
+                                        <i class="bi @(isOK ? "bi-check-circle-fill" : "bi-x-circle-fill")" style="font-size: 18px;"></i>
+                                        @(isOK ? "OK" : "NG")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+
+                        <!-- Dimensi A (old field untuk backward compatibility) -->
+                        @if (Model.NilaiDimensiA.HasValue)
+                        {
+                            var isOK = Model.IsDimensiA_OK;
+                            var statusColor = isOK ? "#10b981" : "#ef4444";
+                            var statusBg = isOK ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)";
+                            
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="bi bi-circle" style="font-size: 20px; color: #3b82f6;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Dimensi A</div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">Diameter</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@Model.StandarDimensi?.DimensiA_Min?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@Model.StandarDimensi?.DimensiA_Max?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 18px; font-weight: 700; color: @statusColor;">@Model.NilaiDimensiA?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center;">
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; background: @statusBg; color: @statusColor; border-radius: 8px; font-weight: 700; font-size: 14px; border: 2px solid @statusColor;">
+                                        <i class="bi @(isOK ? "bi-check-circle-fill" : "bi-x-circle-fill")" style="font-size: 18px;"></i>
+                                        @(isOK ? "OK" : "NG")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+
+                        <!-- Dimensi B (old field untuk backward compatibility) -->
+                        @if (Model.NilaiDimensiB.HasValue)
+                        {
+                            var isOK = Model.IsDimensiB_OK;
+                            var statusColor = isOK ? "#10b981" : "#ef4444";
+                            var statusBg = isOK ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)";
+                            
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="bi bi-arrows-vertical" style="font-size: 20px; color: #10b981;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Dimensi B</div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">Panjang</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@Model.StandarDimensi?.DimensiB_Min?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@Model.StandarDimensi?.DimensiB_Max?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 18px; font-weight: 700; color: @statusColor;">@Model.NilaiDimensiB?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center;">
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; background: @statusBg; color: @statusColor; border-radius: 8px; font-weight: 700; font-size: 14px; border: 2px solid @statusColor;">
+                                        <i class="bi @(isOK ? "bi-check-circle-fill" : "bi-x-circle-fill")" style="font-size: 18px;"></i>
+                                        @(isOK ? "OK" : "NG")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+
+                        <!-- Sudut -->
+                        @if (Model.NilaiSudut.HasValue)
+                        {
+                            var isOK = Model.IsSudut_OK;
+                            var statusColor = isOK ? "#10b981" : "#ef4444";
+                            var statusBg = isOK ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)";
+                            
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="bi bi-triangle" style="font-size: 20px; color: #f59e0b;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Sudut</div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">Derajat (°)</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@Model.StandarDimensi?.Sudut_Min?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text-primary);">@Model.StandarDimensi?.Sudut_Max?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center; font-size: 18px; font-weight: 700; color: @statusColor;">@Model.NilaiSudut?.ToString("0.00")</td>
+                                <td style="padding: 16px; text-align: center;">
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; background: @statusBg; color: @statusColor; border-radius: 8px; font-weight: 700; font-size: 14px; border: 2px solid @statusColor;">
+                                        <i class="bi @(isOK ? "bi-check-circle-fill" : "bi-x-circle-fill")" style="font-size: 18px;"></i>
+                                        @(isOK ? "OK" : "NG")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Catatan Operator Card -->
+        @if (!string.IsNullOrEmpty(Model.CatatanOperator))
+        {
+            <div class="card-desktop" style="margin-bottom: 24px;">
+                <div class="card-header-desktop" style="border-bottom: 2px solid var(--border-color);">
+                    <h2 class="card-title-desktop">
+                        <i class="bi bi-chat-left-text-fill"></i> Catatan Operator
+                    </h2>
+                </div>
+                
+                <div style="padding: 20px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.02)); border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                    <div style="display: flex; gap: 16px; align-items: start;">
+                        <div style="flex-shrink: 0;">
+                            <i class="bi bi-chat-quote-fill" style="font-size: 32px; color: #f59e0b;"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="margin: 0; font-size: 15px; color: var(--text-primary); line-height: 1.7;">
+                                "@Model.CatatanOperator"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 12px; justify-content: center; padding: 20px 0;">
+            <a asp-action="Riwayat" class="btn-secondary-desktop" style="padding: 14px 32px; font-size: 16px;">
+                <i class="bi bi-arrow-left-circle"></i> Kembali ke Riwayat
+            </a>
+            <button onclick="window.print()" class="btn-success-desktop" style="padding: 14px 32px; font-size: 16px;">
+                <i class="bi bi-file-pdf"></i> Unduh Laporan (PDF)
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+@@media print {
+    .sidebar-desktop,
+    .btn-secondary-desktop,
+    .btn-success-desktop {
+        display: none !important;
+    }
+    
+    .card-desktop {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+</style>

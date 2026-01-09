@@ -1,0 +1,280 @@
+@model StandarDimensi
+@{
+    ViewData["Title"] = "Edit Standar Dimensi";
+    Layout = "_LayoutDesktop";
+    var produk = ViewBag.Produk as Produk;
+}
+
+<div class="row g-4">
+    <div class="col-lg-10 offset-lg-1">
+        <!-- Header Card -->
+        <div class="card-desktop" style="margin-bottom: 24px;">
+            <div style="text-align: center; padding: 20px 0;">
+                <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-pencil-square" style="font-size: 40px; color: white;"></i>
+                </div>
+                <h2 style="margin-bottom: 8px; font-size: 24px;">Edit Standar Dimensi</h2>
+                <p style="color: var(--text-secondary); margin: 0;">Perbarui batas toleransi untuk pengecekan dimensi</p>
+            </div>
+        </div>
+
+        <!-- Produk Info Card -->
+        <div class="card-desktop" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0.02)); border: 1px solid rgba(16, 185, 129, 0.2);">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-box-seam-fill" style="font-size: 24px; color: white;"></i>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 4px;">PRODUK</div>
+                    <div style="font-size: 18px; font-weight: 700;">@produk?.NamaProduk</div>
+                    <div style="font-size: 13px; color: var(--text-secondary);"><i class="bi bi-person"></i> @produk?.Operator</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="card-desktop">
+            <form asp-action="EditStandar" method="post">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="ProdukId" />
+                
+                <!-- 6 Dimensi Sections -->
+                <!-- Inner Diameter -->
+                <div style="margin-bottom: 32px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-circle" style="font-size: 20px; color: #3b82f6;"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 700;">Inner Diameter</h3>
+                            <p style="margin: 0; font-size: 12px; color: var(--text-secondary);">Diameter bagian dalam (mm)</p>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group-desktop">
+                                <label asp-for="InnerDiameter_Min" class="form-label-desktop">
+                                    <i class="bi bi-arrow-down-circle"></i> Batas Bawah (Min)
+                                </label>
+                                <div style="position: relative;">
+                                    <input asp-for="InnerDiameter_Min" type="number" step="0.01" class="form-control-desktop" placeholder="0.00" style="padding-right: 50px;" />
+                                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; font-weight: 600;">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group-desktop">
+                                <label asp-for="InnerDiameter_Max" class="form-label-desktop">
+                                    <i class="bi bi-arrow-up-circle"></i> Batas Atas (Max)
+                                </label>
+                                <div style="position: relative;">
+                                    <input asp-for="InnerDiameter_Max" type="number" step="0.01" class="form-control-desktop" placeholder="0.00" style="padding-right: 50px;" />
+                                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; font-weight: 600;">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outer Diameter -->
+                <div style="margin-bottom: 32px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-record-circle" style="font-size: 20px; color: #10b981;"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 700;">Outer Diameter</h3>
+                            <p style="margin: 0; font-size: 12px; color: var(--text-secondary);">Diameter bagian luar (mm)</p>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group-desktop">
+                                <label asp-for="OuterDiameter_Min" class="form-label-desktop">
+                                    <i class="bi bi-arrow-down-circle"></i> Batas Bawah (Min)
+                                </label>
+                                <div style="position: relative;">
+                                    <input asp-for="OuterDiameter_Min" type="number" step="0.01" class="form-control-desktop" placeholder="0.00" style="padding-right: 50px;" />
+                                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; font-weight: 600;">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group-desktop">
+                                <label asp-for="OuterDiameter_Max" class="form-label-desktop">
+                                    <i class="bi bi-arrow-up-circle"></i> Batas Atas (Max)
+                                </label>
+                                <div style="position: relative;">
+                                    <input asp-for="OuterDiameter_Max" type="number" step="0.01" class="form-control-desktop" placeholder="0.00" style="padding-right: 50px;" />
+                                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; font-weight: 600;">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thickness -->
+                <div style="margin-bottom: 32px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-arrows-collapse" style="font-size: 20px; color: #f59e0b;"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 700;">Thickness</h3>
+                            <p style="margin: 0; font-size: 12px; color: var(--text-secondary);">Ketebalan material (mm)</p>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group-desktop">
+                                <label asp-for="Thickness_Min" class="form-label-desktop">
+                                    <i class="bi bi-arrow-down-circle"></i> Batas Bawah (Min)
+                                </label>
+                                <div style="position: relative;">
+                                    <input asp-for="Thickness_Min" type="number" step="0.01" class="form-control-desktop" placeholder="0.00" style="padding-right: 50px;" />
+                                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; font-weight: 600;">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group-desktop">
+                                <label asp-for="Thickness_Max" class="form-label-desktop">
+                                    <i class="bi bi-arrow-up-circle"></i> Batas Atas (Max)
+                                </label>
+                                <div style="position: relative;">
+                                    <input asp-for="Thickness_Max" type="number" step="0.01" class="form-control-desktop" placeholder="0.00" style="padding-right: 50px;" />
+                                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; font-weight: 600;">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panjang -->
+                <div style="margin-bottom: 32px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-arrows-expand" style="font-size: 20px; color: #8b5cf6;"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 700;">Panjang</h3>
+                            <p style="margin: 0; font-size: 12px; color: var(--text-secondary);">Panjang keseluruhan (mm)</p>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group-desktop">
+                                <label asp-for="Panjang_Min" class="form-label-desktop">
+                                    <i class="bi bi-arrow-down-circle"></i> Batas Bawah (Min)
+                                </label>
+                                <div style="position: relative;">
+                                    <input asp-for="Panjang_Min" type="number" step="0.01" class="form-control-desktop" placeholder="0.00" style="padding-right: 50px;" />
+                                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; font-weight: 600;">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group-desktop">
+                                <label asp-for="Panjang_Max" class="form-label-desktop">
+                                    <i class="bi bi-arrow-up-circle"></i> Batas Atas (Max)
+                                </label>
+                                <div style="position: relative;">
+                                    <input asp-for="Panjang_Max" type="number" step="0.01" class="form-control-desktop" placeholder="0.00" style="padding-right: 50px;" />
+                                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; font-weight: 600;">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tinggi -->
+                <div style="margin-bottom: 32px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-arrow-down-up" style="font-size: 20px; color: #ef4444;"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 700;">Tinggi</h3>
+                            <p style="margin: 0; font-size: 12px; color: var(--text-secondary);">Tinggi keseluruhan (mm)</p>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group-desktop">
+                                <label asp-for="Tinggi_Min" class="form-label-desktop">
+                                    <i class="bi bi-arrow-down-circle"></i> Batas Bawah (Min)
+                                </label>
+                                <div style="position: relative;">
+                                    <input asp-for="Tinggi_Min" type="number" step="0.01" class="form-control-desktop" placeholder="0.00" style="padding-right: 50px;" />
+                                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; font-weight: 600;">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group-desktop">
+                                <label asp-for="Tinggi_Max" class="form-label-desktop">
+                                    <i class="bi bi-arrow-up-circle"></i> Batas Atas (Max)
+                                </label>
+                                <div style="position: relative;">
+                                    <input asp-for="Tinggi_Max" type="number" step="0.01" class="form-control-desktop" placeholder="0.00" style="padding-right: 50px;" />
+                                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; font-weight: 600;">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Radius -->
+                <div style="margin-bottom: 32px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(20, 184, 166, 0.05)); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-pie-chart" style="font-size: 20px; color: #14b8a6;"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 700;">Radius</h3>
+                            <p style="margin: 0; font-size: 12px; color: var(--text-secondary);">Radius lengkungan (mm)</p>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group-desktop">
+                                <label asp-for="Radius_Min" class="form-label-desktop">
+                                    <i class="bi bi-arrow-down-circle"></i> Batas Bawah (Min)
+                                </label>
+                                <div style="position: relative;">
+                                    <input asp-for="Radius_Min" type="number" step="0.01" class="form-control-desktop" placeholder="0.00" style="padding-right: 50px;" />
+                                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; font-weight: 600;">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group-desktop">
+                                <label asp-for="Radius_Max" class="form-label-desktop">
+                                    <i class="bi bi-arrow-up-circle"></i> Batas Atas (Max)
+                                </label>
+                                <div style="position: relative;">
+                                    <input asp-for="Radius_Max" type="number" step="0.01" class="form-control-desktop" placeholder="0.00" style="padding-right: 50px;" />
+                                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; font-weight: 600;">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div style="border-top: 1px solid var(--border-color); padding-top: 24px; margin-top: 32px; display: flex; gap: 12px; justify-content: flex-end;">
+                    <a asp-action="Detail" asp-route-id="@Model.ProdukId" class="btn-secondary-desktop" style="padding: 12px 24px;">
+                        <i class="bi bi-x-circle"></i> Batal
+                    </a>
+                    <button type="submit" class="btn-success-desktop" style="padding: 12px 32px;">
+                        <i class="bi bi-check-circle"></i> Update Standar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

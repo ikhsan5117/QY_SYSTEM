@@ -1,0 +1,346 @@
+@{
+    ViewData["Title"] = "Input Data QC Hose";
+    Layout = "_LayoutDesktop";
+}
+
+<style>
+    .qchose-page {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 20px 16px 100px 16px;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #111827;
+    }
+
+    .qchose-header {
+        position: relative;
+    }
+
+    .qchose-header-back {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #f3f4f6;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: #111827;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .qchose-header-back:hover {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .qchose-header-title {
+        font-size: 24px;
+        font-weight: 800;
+        text-align: center;
+        letter-spacing: 1px;
+        margin-bottom: 4px;
+    }
+
+    .qchose-header-subtitle {
+        text-align: center;
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 20px;
+    }
+
+    .qchose-section {
+        background-color: #ffffff;
+        border-radius: 16px;
+        padding: 16px 16px 4px 16px;
+        box-shadow: 0 3px 8px rgba(15, 23, 42, 0.15);
+        margin-bottom: 16px;
+    }
+
+    .qchose-label {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #111827;
+        margin-bottom: 6px;
+    }
+
+    .qchose-select,
+    .qchose-input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .qchose-select:focus,
+    .qchose-input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
+    }
+
+    .qchose-radio-group {
+        display: flex;
+        gap: 32px;
+        align-items: center;
+        margin-top: 4px;
+        margin-bottom: 4px;
+    }
+
+    .qchose-radio-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+    }
+
+    .qchose-inline-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 4px;
+    }
+
+    .qchose-partcode-input {
+        flex: 1;
+    }
+
+    .qchose-btn-qr {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: #111827;
+    }
+
+    .qchose-btn-dimensi {
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: none;
+        background-color: #facc15;
+        color: #111827;
+        font-weight: 700;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .qchose-time-stop {
+        margin-top: 8px;
+        font-size: 14px;
+    }
+
+    .qchose-time-stop-label {
+        color: #ef4444;
+        font-weight: 600;
+        margin-right: 4px;
+    }
+
+    .qchose-time-stop-value {
+        font-weight: 700;
+        letter-spacing: 0.1em;
+    }
+
+    .qchose-section-title {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .qchose-btn-primary,
+    .qchose-btn-secondary {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 15px;
+        border: none;
+        margin-top: 8px;
+    }
+
+    .qchose-btn-primary {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+    }
+
+    .qchose-btn-secondary {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+
+    .qchose-status-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 12px;
+    }
+
+    .qchose-status-label {
+        font-size: 15px;
+        font-weight: 600;
+        color: #16a34a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .qchose-status-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 999px;
+        background-color: #22c55e;
+        box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.35);
+    }
+
+    .qchose-status-time {
+        font-family: "SF Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 16px;
+        letter-spacing: 0.15em;
+    }
+</style>
+
+<div class="qchose-page">
+    <div class="qchose-header" style="margin-bottom: 16px;">
+        <a href="@Url.Action("List", "QCHose")" class="qchose-header-back">
+            <i class="bi bi-arrow-left"></i>
+            Kembali
+        </a>
+        <div class="qchose-header-title">INPUT DATA QC HOSE</div>
+        <div class="qchose-header-subtitle" id="qcHoseNow"></div>
+    </div>
+
+    <div class="qchose-section">
+        <div class="qchose-label">Line Checking</div>
+        <select class="qchose-select">
+            <option>- Pilih line -</option>
+        </select>
+
+        <div class="qchose-label" style="margin-top: 12px;">Nama Inspector</div>
+        <select class="qchose-select">
+            <option>- Pilih Nama -</option>
+        </select>
+
+        <div class="qchose-label" style="margin-top: 12px;">Group Checking</div>
+        <div class="qchose-radio-group">
+            <label class="qchose-radio-item">
+                <input type="radio" name="GroupChecking" value="A" checked />
+                <span>A</span>
+            </label>
+            <label class="qchose-radio-item">
+                <input type="radio" name="GroupChecking" value="B" />
+                <span>B</span>
+            </label>
+        </div>
+
+        <div class="qchose-label" style="margin-top: 12px;">Part Code</div>
+        <div class="qchose-inline-row">
+            <input class="qchose-input qchose-partcode-input" placeholder="Masukan part code" />
+            <button type="button" class="qchose-btn-qr" title="Scan QR">
+                <i class="bi bi-qr-code-scan"></i>
+            </button>
+            <button type="button" class="qchose-btn-dimensi">
+                Dimensi
+            </button>
+        </div>
+
+        <div class="qchose-time-stop">
+            <span class="qchose-time-stop-label">Time Stop :</span>
+            <span class="qchose-time-stop-value" id="qcHoseTimeStop">0:0:0:0</span>
+        </div>
+    </div>
+
+    <div class="qchose-section">
+        <div class="qchose-section-title">Qty NG</div>
+        <select class="qchose-select">
+            <option>- Pilih Jenis NG -</option>
+        </select>
+
+        <div class="qchose-inline-row" style="margin-top: 8px;">
+            <input class="qchose-input" placeholder="Nama OPR" />
+            <input class="qchose-input" style="max-width: 140px;" placeholder="Qty (pcs)" />
+        </div>
+
+        <button type="button" class="qchose-btn-primary">
+            UPDATE NG
+        </button>
+    </div>
+
+    <div class="qchose-section">
+        <div class="qchose-section-title">Qty Check</div>
+        <input class="qchose-input" placeholder="Qty (pcs)" />
+
+        <button type="button" class="qchose-btn-secondary">
+            SELESAI CHECK
+        </button>
+    </div>
+
+    <div class="qchose-section">
+        <div class="qchose-section-title">Line Stop</div>
+        <select class="qchose-select">
+            <option>- Pilih Line Stop -</option>
+        </select>
+
+        <div class="qchose-status-row">
+            <div class="qchose-status-label">
+                Checking
+                <span class="qchose-status-dot"></span>
+            </div>
+            <div class="qchose-status-time" id="qcHoseStatusTime">0:0:0:0</div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Header datetime & timer dummy (client-side only, tidak tersimpan ke server)
+        (function () {
+            const timeStopEl = document.getElementById('qcHoseTimeStop');
+            const statusTimeEl = document.getElementById('qcHoseStatusTime');
+            const nowEl = document.getElementById('qcHoseNow');
+
+            // Update jam & tanggal realtime (berdasarkan waktu device)
+            if (nowEl) {
+                const updateNow = () => {
+                    const d = new Date();
+                    const pad = (n) => n.toString().padStart(2, '0');
+                    const formatted = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+                    nowEl.textContent = formatted;
+                };
+                updateNow();
+                setInterval(updateNow, 1000);
+            }
+
+            // Timer hanya untuk efek visual di bagian \"Checking\"
+            if (statusTimeEl) {
+                let seconds = 0;
+                setInterval(() => {
+                    seconds++;
+                    const h = Math.floor(seconds / 3600);
+                    const m = Math.floor((seconds % 3600) / 60);
+                    const s = seconds % 60;
+                    const display = `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}:0`;
+                    statusTimeEl.textContent = display;
+                    if (timeStopEl) {
+                        timeStopEl.textContent = display;
+                    }
+                }, 1000);
+            }
+        })();
+    </script>
+}
+
+

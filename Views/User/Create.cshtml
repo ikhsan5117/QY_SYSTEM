@@ -1,0 +1,131 @@
+@model User
+@{
+    ViewData["Title"] = "Tambah User Baru";
+    Layout = "_LayoutDesktop";
+}
+
+<div class="row g-4">
+    <div class="col-12">
+        <!-- Header with Back Button -->
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+            <a asp-action="Index" class="btn-icon-desktop" style="background: #f1f5f9;">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h2 style="margin: 0; font-size: 24px; color: #1e293b; font-weight: 700;">Tambah User Baru</h2>
+                <p style="margin: 0; font-size: 14px; color: #64748b;">Lengkapi form untuk membuat akun user baru</p>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; padding: 32px; max-width: 800px;">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                
+                <!-- Username -->
+                <div class="mb-4">
+                    <label class="form-label-desktop">
+                        <i class="bi bi-person-badge"></i> Username
+                    </label>
+                    <input asp-for="Username" class="form-control-desktop" placeholder="Masukkan username" required />
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                    <small style="color: #64748b; font-size: 12px; display: block; margin-top: 6px;">
+                        <i class="bi bi-info-circle"></i> Username digunakan untuk login
+                    </small>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-4">
+                    <label class="form-label-desktop">
+                        <i class="bi bi-lock-fill"></i> Password
+                    </label>
+                    <input asp-for="Password" type="password" class="form-control-desktop" placeholder="Masukkan password" required />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                    <small style="color: #64748b; font-size: 12px; display: block; margin-top: 6px;">
+                        <i class="bi bi-info-circle"></i> Minimal 6 karakter
+                    </small>
+                </div>
+
+                <!-- Nama Lengkap -->
+                <div class="mb-4">
+                    <label class="form-label-desktop">
+                        <i class="bi bi-person-fill"></i> Nama Lengkap
+                    </label>
+                    <input asp-for="NamaLengkap" class="form-control-desktop" placeholder="Masukkan nama lengkap" required />
+                    <span asp-validation-for="NamaLengkap" class="text-danger"></span>
+                </div>
+
+                <!-- Role -->
+                <div class="mb-4">
+                    <label class="form-label-desktop">
+                        <i class="bi bi-shield-fill-check"></i> Role
+                    </label>
+                    <select asp-for="Role" class="form-control-desktop" required>
+                        <option value="">-- Pilih Role --</option>
+                        <option value="Admin">Admin</option>
+                        <option value="User">User</option>
+                    </select>
+                    <span asp-validation-for="Role" class="text-danger"></span>
+                    <small style="color: #64748b; font-size: 12px; display: block; margin-top: 6px;">
+                        <i class="bi bi-info-circle"></i> Admin: Full access | User: Input data only
+                    </small>
+                </div>
+
+                <div class="row">
+                    <!-- Plant -->
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label-desktop">
+                            <i class="bi bi-building"></i> Plant
+                        </label>
+                        <input asp-for="Plant" class="form-control-desktop" placeholder="Contoh: Plant 1" required />
+                        <span asp-validation-for="Plant" class="text-danger"></span>
+                    </div>
+
+                    <!-- Grup -->
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label-desktop">
+                            <i class="bi bi-people-fill"></i> Grup
+                        </label>
+                        <input asp-for="Grup" class="form-control-desktop" placeholder="Contoh: Production" required />
+                        <span asp-validation-for="Grup" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="mb-4">
+                    <label class="form-label-desktop">
+                        <i class="bi bi-toggle-on"></i> Status
+                    </label>
+                    <div style="display: flex; gap: 24px; margin-top: 12px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="radio" asp-for="IsActive" value="true" checked style="width: 18px; height: 18px; accent-color: #3b82f6;" />
+                            <span style="color: #059669; font-weight: 600;">
+                                <i class="bi bi-check-circle-fill"></i> Aktif
+                            </span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="radio" asp-for="IsActive" value="false" style="width: 18px; height: 18px; accent-color: #dc2626;" />
+                            <span style="color: #dc2626; font-weight: 600;">
+                                <i class="bi bi-x-circle-fill"></i> Nonaktif
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 2px solid #e2e8f0;">
+                    <button type="submit" class="btn-primary-desktop" style="flex: 1;">
+                        <i class="bi bi-check-circle-fill"></i> Simpan User
+                    </button>
+                    <a asp-action="Index" class="btn-secondary-desktop" style="flex: 1; text-align: center;">
+                        <i class="bi bi-x-circle"></i> Batal
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

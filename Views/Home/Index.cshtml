@@ -1,0 +1,417 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_LayoutDesktop";
+}
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div style="flex: 1;">
+                <div class="stat-card-title">Total Produk</div>
+                <div class="stat-card-value">@Model.TotalProduk</div>
+                <div class="stat-card-description">Produk terdaftar</div>
+            </div>
+            <div class="stat-card-icon icon-primary">
+                <i class="bi bi-box-seam"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div style="flex: 1;">
+                <div class="stat-card-title">Input Hari Ini</div>
+                <div class="stat-card-value">@Model.TotalInputHariIni</div>
+                <div class="stat-card-description">Data input hari ini</div>
+            </div>
+            <div class="stat-card-icon icon-success">
+                <i class="bi bi-clipboard-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div style="flex: 1;">
+                <div class="stat-card-title">Total OK</div>
+                <div class="stat-card-value" style="color: var(--color-success);">@Model.TotalOK</div>
+                <div class="stat-card-description">@Model.PersentaseOK% keberhasilan</div>
+            </div>
+            <div class="stat-card-icon icon-success">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div style="flex: 1;">
+                <div class="stat-card-title">Total NG</div>
+                <div class="stat-card-value" style="color: var(--color-danger);">@Model.TotalNG</div>
+                <div class="stat-card-description">Perlu perhatian</div>
+            </div>
+            <div class="stat-card-icon icon-danger">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="row g-4" style="margin-bottom: 30px;">
+    <!-- Left Column - Charts -->
+    <div class="col-lg-8">
+        <!-- OK/NG Chart -->
+        <div class="card-desktop" style="margin-bottom: 24px;">
+            <div class="card-header-desktop">
+                <h2 class="card-title-desktop">
+                    <i class="bi bi-pie-chart"></i> Rasio OK/NG Bulan Ini
+                </h2>
+                <span class="badge-desktop badge-primary">
+                    @Model.TotalInputBulanIni Total Input
+                </span>
+            </div>
+            <div class="row g-0">
+                <div class="col-md-6">
+                    <div class="chart-container" style="height: 300px; padding: 20px;">
+                        <canvas id="okNgChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6" style="display: flex; align-items: center; justify-content: center; padding: 20px;">
+                    <div style="text-align: center; width: 100%;">
+                        <div style="font-size: 64px; font-weight: 700; color: var(--color-success); line-height: 1; margin-bottom: 12px;">
+                            @Model.PersentaseOK%
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 16px; margin-bottom: 24px; font-weight: 600;">
+                            Tingkat Keberhasilan
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 300px; margin: 0 auto;">
+                            <div style="padding: 16px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border-radius: 12px; border: 2px solid rgba(16, 185, 129, 0.2);">
+                                <div style="font-size: 32px; font-weight: 700; color: var(--color-success);">@Model.TotalOK</div>
+                                <div style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">OK</div>
+                            </div>
+                            <div style="padding: 16px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05)); border-radius: 12px; border: 2px solid rgba(239, 68, 68, 0.2);">
+                                <div style="font-size: 32px; font-weight: 700; color: var(--color-danger);">@Model.TotalNG</div>
+                                <div style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">NG</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="card-desktop">
+            <div class="card-header-desktop">
+                <h2 class="card-title-desktop">
+                    <i class="bi bi-clock-history"></i> Input Terbaru
+                </h2>
+                <a asp-controller="Dimensi" asp-action="Riwayat" class="btn-secondary-desktop">
+                    <i class="bi bi-arrow-right"></i> Lihat Semua
+                </a>
+            </div>
+            
+            @if (Model.RecentInputs.Count == 0)
+            {
+                <div style="text-align: center; padding: 60px 20px;">
+                    <i class="bi bi-inbox" style="font-size: 64px; color: var(--text-secondary); display: block; margin-bottom: 16px;"></i>
+                    <h3 style="color: var(--text-secondary); margin-bottom: 8px;">Belum Ada Data Input</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 24px;">Mulai dengan menginput data dimensi produk</p>
+                    <a asp-controller="Dimensi" asp-action="Input" class="btn-primary-desktop">
+                        <i class="bi bi-plus-circle"></i> Mulai Input Data
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div style="overflow-x: auto;">
+                    <table class="table-desktop">
+                        <thead>
+                            <tr>
+                                <th style="width: 140px;">Tanggal</th>
+                                <th>Produk</th>
+                                <th style="width: 120px; text-align: center;">Dimensi</th>
+                                <th style="width: 100px; text-align: center;">Status</th>
+                                <th style="width: 80px; text-align: center;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.RecentInputs)
+                            {
+                                // Check all dimensions for OK status
+                                bool isOK = true;
+                                if (item.NilaiInnerDiameter.HasValue && !item.IsInnerDiameter_OK) isOK = false;
+                                if (item.NilaiOuterDiameter.HasValue && !item.IsOuterDiameter_OK) isOK = false;
+                                if (item.NilaiThickness.HasValue && !item.IsThickness_OK) isOK = false;
+                                if (item.NilaiPanjang.HasValue && !item.IsPanjang_OK) isOK = false;
+                                if (item.NilaiTinggi.HasValue && !item.IsTinggi_OK) isOK = false;
+                                if (item.NilaiRadius.HasValue && !item.IsRadius_OK) isOK = false;
+                                if (item.NilaiDimensiA.HasValue && !item.IsDimensiA_OK) isOK = false;
+                                if (item.NilaiDimensiB.HasValue && !item.IsDimensiB_OK) isOK = false;
+                                if (item.NilaiSudut.HasValue && !item.IsSudut_OK) isOK = false;
+                                
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 600; color: var(--text-primary);">
+                                            @item.TanggalInput.ToString("dd/MM/yyyy")
+                                        </div>
+                                        <div style="font-size: 12px; color: var(--text-secondary);">
+                                            @item.TanggalInput.ToString("HH:mm")
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 600; color: var(--text-primary);">
+                                            @item.StandarDimensi?.Produk?.NamaProduk
+                                        </div>
+                                        <div style="font-size: 12px; color: var(--text-secondary);">
+                                            @item.StandarDimensi?.NamaDimensi
+                                        </div>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <span class="badge-desktop badge-info" style="font-size: 11px;">
+                                            @{
+                                                int dimensiCount = 0;
+                                                if (item.NilaiInnerDiameter.HasValue) dimensiCount++;
+                                                if (item.NilaiOuterDiameter.HasValue) dimensiCount++;
+                                                if (item.NilaiThickness.HasValue) dimensiCount++;
+                                                if (item.NilaiPanjang.HasValue) dimensiCount++;
+                                                if (item.NilaiTinggi.HasValue) dimensiCount++;
+                                                if (item.NilaiRadius.HasValue) dimensiCount++;
+                                                if (item.NilaiDimensiA.HasValue) dimensiCount++;
+                                                if (item.NilaiDimensiB.HasValue) dimensiCount++;
+                                                if (item.NilaiSudut.HasValue) dimensiCount++;
+                                            }
+                                            @dimensiCount Dimensi
+                                        </span>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        @if (isOK)
+                                        {
+                                            <span class="badge-desktop badge-success" style="display: inline-flex; align-items: center; gap: 4px;">
+                                                <i class="bi bi-check-circle-fill"></i> OK
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-desktop badge-danger" style="display: inline-flex; align-items: center; gap: 4px;">
+                                                <i class="bi bi-x-circle-fill"></i> NG
+                                            </span>
+                                        }
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <a asp-controller="Dimensi" asp-action="Detail" asp-route-id="@item.Id" 
+                                           class="btn-icon-desktop" title="Lihat Detail">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Right Column - SOP & Standar Info -->
+    <div class="col-lg-4">
+        <!-- SOP Quick Access -->
+        <div class="card-desktop" style="margin-bottom: 24px;">
+            <div class="card-header-desktop">
+                <h2 class="card-title-desktop">
+                    <i class="bi bi-file-earmark-text"></i> SOP Checking
+                </h2>
+            </div>
+            <div style="padding: 0 20px 20px;">
+                <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 16px;">
+                    <div style="font-size: 48px; font-weight: 700; color: white; line-height: 1; margin-bottom: 8px;">
+                        @Model.TotalProdukDenganSOP
+                    </div>
+                    <div style="color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 600;">
+                        Produk dengan SOP
+                    </div>
+                </div>
+                
+                @if (Model.ProdukWithSOP.Count > 0)
+                {
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 12px; text-transform: uppercase;">
+                            Daftar Produk SOP
+                        </div>
+                        <div style="max-height: 200px; overflow-y: auto;">
+                            @foreach (var produk in Model.ProdukWithSOP.Take(5))
+                            {
+                                <div style="display: flex; align-items: center; gap: 12px; padding: 10px; margin-bottom: 8px; background: var(--bg-primary); border-radius: 8px; border: 1px solid var(--border-color);">
+                                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <i class="bi bi-box-seam" style="color: white; font-size: 18px;"></i>
+                                    </div>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div style="font-weight: 600; font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            @produk.NamaProduk
+                                        </div>
+                                        <div style="font-size: 11px; color: var(--text-secondary);">
+                                            @produk.Operator
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                
+                <a asp-controller="SOP" asp-action="Checking" class="btn-primary-desktop" style="width: 100%; justify-content: center;">
+                    <i class="bi bi-camera-video"></i> Buka SOP Checking
+                </a>
+            </div>
+        </div>
+
+        <!-- Standar Dimensi Info -->
+        <div class="card-desktop">
+            <div class="card-header-desktop">
+                <h2 class="card-title-desktop">
+                    <i class="bi bi-rulers"></i> Standar Dimensi
+                </h2>
+                <a asp-controller="Produk" asp-action="Index" class="btn-secondary-desktop" style="font-size: 12px; padding: 6px 12px;">
+                    Lihat
+                </a>
+            </div>
+            <div style="padding: 0 20px 20px;">
+                <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px;">
+                    <div style="text-align: center; padding: 16px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border-radius: 12px; border: 2px solid rgba(16, 185, 129, 0.2);">
+                        <div style="font-size: 32px; font-weight: 700; color: var(--color-success); line-height: 1; margin-bottom: 4px;">
+                            @Model.TotalStandarDimensi
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">
+                            Total Standar Dimensi
+                        </div>
+                    </div>
+                </div>
+                
+                @if (Model.RecentStandarDimensi.Count > 0)
+                {
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 12px; text-transform: uppercase;">
+                            Standar Terbaru
+                        </div>
+                        <div style="max-height: 240px; overflow-y: auto;">
+                            @foreach (var standar in Model.RecentStandarDimensi)
+                            {
+                                <div style="padding: 12px; margin-bottom: 8px; background: var(--bg-primary); border-radius: 8px; border: 1px solid var(--border-color);">
+                                    <div style="font-weight: 600; font-size: 13px; color: var(--text-primary); margin-bottom: 4px;">
+                                        @standar.NamaDimensi
+                                    </div>
+                                    <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">
+                                        @standar.Produk?.NamaProduk
+                                    </div>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                        @if (standar.InnerDiameter_Min.HasValue)
+                                        {
+                                            <span class="badge-desktop badge-info" style="font-size: 10px;">Inner Ø</span>
+                                        }
+                                        @if (standar.OuterDiameter_Min.HasValue)
+                                        {
+                                            <span class="badge-desktop badge-info" style="font-size: 10px;">Outer Ø</span>
+                                        }
+                                        @if (standar.Thickness_Min.HasValue)
+                                        {
+                                            <span class="badge-desktop badge-info" style="font-size: 10px;">Thickness</span>
+                                        }
+                                        @if (standar.Panjang_Min.HasValue)
+                                        {
+                                            <span class="badge-desktop badge-info" style="font-size: 10px;">Panjang</span>
+                                        }
+                                        @if (standar.Tinggi_Min.HasValue)
+                                        {
+                                            <span class="badge-desktop badge-info" style="font-size: 10px;">Tinggi</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                
+                @if (Context.Session.GetString("Role") == "Admin")
+                {
+                    <a asp-controller="Produk" asp-action="Create" class="btn-success-desktop" style="width: 100%; justify-content: center;">
+                        <i class="bi bi-plus-circle"></i> Tambah Standar
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4" style="margin-top: 30px;">
+    <div class="col-md-4">
+        <div class="card-desktop" style="text-align: center; padding: 32px; border: 2px dashed var(--color-primary); background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.02));">
+            <div style="width: 70px; height: 70px; margin: 0 auto 16px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-plus-circle-fill" style="font-size: 32px; color: white;"></i>
+            </div>
+            <h3 style="margin-bottom: 10px; color: var(--text-primary); font-size: 18px;">Input Dimensi</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 13px;">Input data pengukuran dimensi</p>
+            <a asp-controller="Dimensi" asp-action="Input" class="btn-primary-desktop" style="font-size: 14px; padding: 10px 24px;">
+                Mulai Input
+            </a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-desktop" style="text-align: center; padding: 32px; border: 2px dashed var(--color-warning); background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.02));">
+            <div style="width: 70px; height: 70px; margin: 0 auto 16px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-graph-up" style="font-size: 32px; color: white;"></i>
+            </div>
+            <h3 style="margin-bottom: 10px; color: var(--text-primary); font-size: 18px;">Analisis Trend</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 13px;">Lihat analisis CP & CPK</p>
+            <a asp-controller="Dimensi" asp-action="Analisis" class="btn-warning-desktop" style="font-size: 14px; padding: 10px 24px;">
+                Lihat Analisis
+            </a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-desktop" style="text-align: center; padding: 32px; border: 2px dashed var(--color-success); background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0.02));">
+            <div style="width: 70px; height: 70px; margin: 0 auto 16px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-camera-video" style="font-size: 32px; color: white;"></i>
+            </div>
+            <h3 style="margin-bottom: 10px; color: var(--text-primary); font-size: 18px;">SOP Checking</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 13px;">Akses SOP dengan QR Code</p>
+            <a asp-controller="SOP" asp-action="Checking" class="btn-success-desktop" style="font-size: 14px; padding: 10px 24px;">
+                Buka SOP
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // OK/NG Pie Chart
+        const okNgCtx = document.getElementById('okNgChart').getContext('2d');
+        new Chart(okNgCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['OK', 'NG'],
+                datasets: [{
+                    data: [@Model.TotalOK, @Model.TotalNG],
+                    backgroundColor: ['#10b981', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: { size: 12, weight: '600' }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

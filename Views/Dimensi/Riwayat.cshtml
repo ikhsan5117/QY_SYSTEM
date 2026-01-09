@@ -1,0 +1,313 @@
+@model List<InputAktual>
+@{
+    ViewData["Title"] = "Riwayat Pengecekan";
+    Layout = "_LayoutDesktop";
+}
+
+<div class="row g-4">
+    <div class="col-12">
+        <!-- Header -->
+        <div style="margin-bottom: 12px; padding: 12px 0; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="bi bi-clock-history" style="font-size: 20px; color: #3b82f6; filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));"></i>
+                <h2 style="margin: 0; font-size: 20px; font-weight: 700; background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 2px 10px rgba(59, 130, 246, 0.3));">Riwayat Pengecekan</h2>
+                <span style="background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px); color: #f1f5f9; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; border: 1px solid rgba(148, 163, 184, 0.2); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);">@Model.Count data</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button onclick="window.print()" class="btn-secondary-desktop" style="padding: 8px 16px; font-size: 13px; background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px); color: #f1f5f9; border: 1px solid rgba(148, 163, 184, 0.2); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                    <i class="bi bi-printer"></i> Cetak
+                </button>
+                <a asp-controller="Dimensi" asp-action="Input" class="btn-success-desktop" style="padding: 8px 16px; font-size: 13px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.2); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                    <i class="bi bi-plus-circle"></i> Input Baru
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter -->
+        <div style="margin-bottom: 12px; padding: 16px; background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; display: flex; gap: 12px; align-items: end; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);">
+            <div style="flex: 1;">
+                <input type="text" 
+                       id="searchInput" 
+                       class="form-control-desktop" 
+                       placeholder="Cari produk atau dimensi..." 
+                       style="margin: 0; padding: 10px 14px; font-size: 13px; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(148, 163, 184, 0.2); color: #f1f5f9; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);" />
+            </div>
+            <div style="width: 160px;">
+                <select id="statusFilter" class="form-control-desktop" style="margin: 0; padding: 10px 14px; font-size: 13px; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(148, 163, 184, 0.2); color: #f1f5f9; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);">
+                    <option value="" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">Semua Status</option>
+                    <option value="OK" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">✓ OK</option>
+                    <option value="NG" style="background: rgba(15, 23, 42, 0.95); color: #f1f5f9;">✗ NG</option>
+                </select>
+            </div>
+            <button onclick="resetFilter()" class="btn-secondary-desktop" style="padding: 10px 14px; font-size: 13px; background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px); color: #f1f5f9; border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </button>
+        </div>
+
+        <!-- Table -->
+        <div style="background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 16px; max-height: calc(100vh - 240px); overflow-y: auto; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);">
+            <table class="table-desktop" id="riwayatTable" style="margin: 0;">
+                <thead style="position: sticky; top: 0; z-index: 10; backdrop-filter: blur(20px) saturate(180%);">
+                    <tr style="background: rgba(15, 23, 42, 0.8); border-bottom: 2px solid rgba(148, 163, 184, 0.2);">
+                        <th style="width: 40px; text-align: center; color: #94a3b8; font-weight: 700; padding: 14px 8px; font-size: 12px; background: rgba(15, 23, 42, 0.8); text-transform: uppercase; letter-spacing: 0.5px;">No</th>
+                        <th style="width: 110px; color: #94a3b8; font-weight: 700; padding: 14px 12px; font-size: 12px; background: rgba(15, 23, 42, 0.8); text-transform: uppercase; letter-spacing: 0.5px;">Tanggal & Waktu</th>
+                        <th style="width: 140px; color: #94a3b8; font-weight: 700; padding: 14px 12px; font-size: 12px; background: rgba(15, 23, 42, 0.8); text-transform: uppercase; letter-spacing: 0.5px;">Kode Produk</th>
+                        <th style="width: 100px; color: #94a3b8; font-weight: 700; padding: 14px 12px; font-size: 12px; background: rgba(15, 23, 42, 0.8); text-transform: uppercase; letter-spacing: 0.5px;">PIC</th>
+                        <th style="width: 90px; text-align: center; color: #94a3b8; font-weight: 700; padding: 14px 8px; font-size: 12px; background: rgba(15, 23, 42, 0.8); text-transform: uppercase; letter-spacing: 0.5px;">Plant</th>
+                        <th style="width: 90px; text-align: center; color: #94a3b8; font-weight: 700; padding: 14px 8px; font-size: 12px; background: rgba(15, 23, 42, 0.8); text-transform: uppercase; letter-spacing: 0.5px;">Grup</th>
+                        <th style="width: 80px; text-align: center; color: #94a3b8; font-weight: 700; padding: 14px 8px; font-size: 12px; background: rgba(15, 23, 42, 0.8); text-transform: uppercase; letter-spacing: 0.5px;">Status</th>
+                        <th style="width: 100px; text-align: center; color: #94a3b8; font-weight: 700; padding: 14px 8px; font-size: 12px; background: rgba(15, 23, 42, 0.8); text-transform: uppercase; letter-spacing: 0.5px;">Aksi</th>
+                    </tr>
+                </thead>
+                    <tbody>
+                        @if (Model.Any())
+                        {
+                            var no = 1;
+                            foreach (var item in Model.OrderByDescending(x => x.TanggalInput))
+                            {
+                                // Use Status from database or calculate using IsAllOK property
+                                var isOK = !string.IsNullOrEmpty(item.Status) ? item.Status == "OK" : item.IsAllOK;
+                                var statusClass = isOK ? "status-ok" : "status-ng";
+                                var statusIcon = isOK ? "bi-check-circle-fill" : "bi-x-circle-fill";
+                                var statusText = isOK ? "OK" : "NG";
+                                
+                                // Ambil nilai aktual pertama yang ada (prioritas field baru)
+                                var nilaiAktual = item.NilaiInnerDiameter ?? item.NilaiOuterDiameter ?? item.NilaiThickness ?? 
+                                                 item.NilaiPanjang ?? item.NilaiTinggi ?? item.NilaiRadius ??
+                                                 item.NilaiDimensiA ?? item.NilaiDimensiB ?? item.NilaiSudut ?? 0;
+                                var minValue = item.StandarDimensi?.InnerDiameter_Min ?? item.StandarDimensi?.OuterDiameter_Min ?? 
+                                              item.StandarDimensi?.Thickness_Min ?? item.StandarDimensi?.Panjang_Min ?? 
+                                              item.StandarDimensi?.Tinggi_Min ?? item.StandarDimensi?.Radius_Min ??
+                                              item.StandarDimensi?.DimensiA_Min ?? item.StandarDimensi?.DimensiB_Min ?? 
+                                              item.StandarDimensi?.Sudut_Min ?? 0;
+                                var maxValue = item.StandarDimensi?.InnerDiameter_Max ?? item.StandarDimensi?.OuterDiameter_Max ?? 
+                                              item.StandarDimensi?.Thickness_Max ?? item.StandarDimensi?.Panjang_Max ?? 
+                                              item.StandarDimensi?.Tinggi_Max ?? item.StandarDimensi?.Radius_Max ??
+                                              item.StandarDimensi?.DimensiA_Max ?? item.StandarDimensi?.DimensiB_Max ?? 
+                                              item.StandarDimensi?.Sudut_Max ?? 0;
+                                
+                                <tr style="border-bottom: 1px solid rgba(148, 163, 184, 0.1); transition: all 0.2s ease;">
+                                    <td style="text-align: center; font-weight: 600; color: #94a3b8; padding: 12px 8px;">@no</td>
+                                    <td style="color: #f1f5f9; padding: 12px;">
+                                        <div style="font-size: 13px; font-weight: 600;">@item.TanggalInput.ToString("dd MMM yyyy")</div>
+                                        <div style="font-size: 11px; color: #94a3b8;">@item.TanggalInput.ToString("HH:mm")</div>
+                                    </td>
+                                    <td style="color: #f1f5f9; padding: 12px;">
+                                        <div style="font-size: 13px; font-weight: 700; color: #3b82f6; filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.5));">@item.StandarDimensi?.NamaDimensi</div>
+                                        <div style="font-size: 11px; color: #94a3b8;">@item.StandarDimensi?.Produk?.NamaProduk</div>
+                                    </td>
+                                    <td style="color: #f1f5f9; padding: 12px;">
+                                        @if (!string.IsNullOrEmpty(item.NamaPIC))
+                                        {
+                                            <span style="font-size: 13px; font-weight: 500;">@item.NamaPIC</span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color: #64748b; font-size: 13px;">-</span>
+                                        }
+                                    </td>
+                                    <td style="text-align: center; color: #f1f5f9; padding: 12px 8px;">
+                                        @if (!string.IsNullOrEmpty(item.Plant))
+                                        {
+                                            <span style="background: rgba(59, 130, 246, 0.2); backdrop-filter: blur(10px); color: #60a5fa; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; display: inline-block; border: 1px solid rgba(59, 130, 246, 0.3); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);">@item.Plant</span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color: #64748b;">-</span>
+                                        }
+                                    </td>
+                                    <td style="text-align: center; color: #f1f5f9; padding: 12px 8px;">
+                                        @if (!string.IsNullOrEmpty(item.Grup))
+                                        {
+                                            <span style="background: rgba(245, 158, 11, 0.2); backdrop-filter: blur(10px); color: #fbbf24; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; display: inline-block; border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);">@item.Grup</span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color: #64748b;">-</span>
+                                        }
+                                    </td>
+                                    <td style="text-align: center; padding: 12px 8px;">
+                                        <span style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; font-weight: 700; font-size: 12px; border-radius: 8px; @(isOK ? "background: rgba(16, 185, 129, 0.2); backdrop-filter: blur(10px); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);" : "background: rgba(239, 68, 68, 0.2); backdrop-filter: blur(10px); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);")">
+                                            <i class="bi @statusIcon" style="font-size: 14px;"></i> @statusText
+                                        </span>
+                                    </td>
+                                    <td style="text-align: center; padding: 12px 8px;">
+                                        <div style="display: flex; gap: 6px; justify-content: center;">
+                                            <a asp-action="Detail" asp-route-id="@item.Id" 
+                                               style="padding: 8px 10px; font-size: 14px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3), 0 0 15px rgba(59, 130, 246, 0.2); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
+                                               title="Detail" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3), 0 0 15px rgba(59, 130, 246, 0.2)'">
+                                                <i class="bi bi-eye-fill"></i>
+                                            </a>
+                                            <button onclick="confirmDelete(@item.Id, '@item.StandarDimensi?.NamaDimensi', '@item.StandarDimensi?.Produk?.NamaProduk', '@item.TanggalInput.ToString("dd MMM yyyy HH:mm")')" 
+                                               style="padding: 8px 10px; font-size: 14px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3), 0 0 15px rgba(239, 68, 68, 0.2); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
+                                               title="Hapus" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(239, 68, 68, 0.4), 0 0 20px rgba(239, 68, 68, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.3), 0 0 15px rgba(239, 68, 68, 0.2)'">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                no++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 60px 20px; color: #94a3b8;">
+                                    <div>
+                                        <i class="bi bi-inbox" style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.5; color: #64748b; filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.2));"></i>
+                                        <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #f1f5f9; background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Belum Ada Data</div>
+                                        <div style="font-size: 13px; margin-bottom: 20px; color: #94a3b8;">Silakan lakukan input pengecekan dimensi terlebih dahulu</div>
+                                        <a asp-controller="Dimensi" asp-action="Input" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.2); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.4), 0 0 25px rgba(59, 130, 246, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.2)'">
+                                            <i class="bi bi-plus-circle"></i> Input Sekarang
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus -->
+<div id="deleteModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; max-width: 600px; width: 90%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
+        <!-- Header Merah -->
+        <div style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 32px 24px; text-align: center; border-radius: 12px 12px 0 0;">
+            <div style="width: 80px; height: 80px; margin: 0 auto 16px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                <i class="bi bi-exclamation-triangle-fill" style="font-size: 40px;"></i>
+            </div>
+            <h3 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700;">KONFIRMASI PENGHAPUSAN</h3>
+            <p style="margin: 0; font-size: 14px; opacity: 0.95;">Tindakan ini tidak dapat dibatalkan!</p>
+        </div>
+
+        <!-- Peringatan -->
+        <div style="padding: 20px 24px; background: #fef2f2; border-left: 4px solid #ef4444; margin: 20px 24px 0;">
+            <div style="display: flex; gap: 12px; align-items: start;">
+                <i class="bi bi-shield-exclamation" style="font-size: 24px; color: #ef4444; flex-shrink: 0;"></i>
+                <div>
+                    <div style="font-weight: 700; color: #991b1b; margin-bottom: 4px; font-size: 14px;">Peringatan</div>
+                    <div style="font-size: 13px; color: #7f1d1d;">Anda akan menghapus data input pengecekan ini secara <strong>PERMANEN</strong>. Data yang dihapus tidak dapat dikembalikan.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data yang Akan Dihapus -->
+        <div style="padding: 24px; border-bottom: 1px solid #e5e7eb;">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 700; color: #374151;">Data yang Akan Dihapus</h4>
+            <div style="display: grid; grid-template-columns: 140px 1fr; gap: 12px; font-size: 14px;">
+                <div style="font-weight: 600; color: #6b7280;">PRODUK</div>
+                <div style="font-weight: 700; color: #1f2937;" id="deleteProduk"></div>
+                
+                <div style="font-weight: 600; color: #6b7280;">DIMENSI</div>
+                <div style="font-weight: 700; color: #3b82f6;" id="deleteDimensi"></div>
+                
+                <div style="font-weight: 600; color: #6b7280;">TANGGAL INPUT</div>
+                <div style="color: #1f2937;" id="deleteTanggal"></div>
+            </div>
+        </div>
+
+        <!-- Tombol Aksi -->
+        <div style="padding: 20px 24px; display: flex; gap: 12px;">
+            <button onclick="closeDeleteModal()" 
+                    style="flex: 1; padding: 14px 24px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s;">
+                <i class="bi bi-x-circle"></i> Batal, Kembali ke Riwayat
+            </button>
+            <form id="deleteForm" method="post" style="flex: 1; margin: 0;">
+                @Html.AntiForgeryToken()
+                <button type="submit" 
+                        style="width: 100%; padding: 14px 24px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); transition: all 0.2s;">
+                    <i class="bi bi-trash-fill"></i> YA, HAPUS DATA INI SEKARANG
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Delete Modal Functions
+    function confirmDelete(id, dimensi, produk, tanggal) {
+        document.getElementById('deleteProduk').textContent = produk;
+        document.getElementById('deleteDimensi').textContent = dimensi;
+        document.getElementById('deleteTanggal').textContent = tanggal;
+        document.getElementById('deleteForm').action = '/Dimensi/DeleteConfirmed/' + id;
+        
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // Close modal on outside click
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+
+    // Close modal on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDeleteModal();
+        }
+    });
+
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        filterTable();
+    });
+
+    document.getElementById('statusFilter').addEventListener('change', function() {
+        filterTable();
+    });
+
+    function filterTable() {
+        const searchValue = document.getElementById('searchInput').value.toLowerCase();
+        const statusValue = document.getElementById('statusFilter').value;
+        const table = document.getElementById('riwayatTable');
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const cells = row.getElementsByTagName('td');
+            
+            if (cells.length > 1) {
+                const produk = cells[2].textContent.toLowerCase();
+                const pic = cells[3].textContent.toLowerCase();
+                const plant = cells[4].textContent.toLowerCase();
+                const grup = cells[5].textContent.toLowerCase();
+                const dimensi = cells[6].textContent.toLowerCase();
+                const status = cells[7].textContent.trim();
+                
+                const matchSearch = produk.includes(searchValue) || pic.includes(searchValue) || 
+                                  plant.includes(searchValue) || grup.includes(searchValue) || 
+                                  dimensi.includes(searchValue);
+                const matchStatus = !statusValue || status === statusValue;
+                
+                row.style.display = (matchSearch && matchStatus) ? '' : 'none';
+            }
+        }
+
+        // Renumber visible rows
+        let visibleNo = 1;
+        for (let i = 0; i < rows.length; i++) {
+            if (rows[i].style.display !== 'none' && rows[i].getElementsByTagName('td').length > 1) {
+                rows[i].getElementsByTagName('td')[0].textContent = visibleNo++;
+            }
+        }
+    }
+
+    function resetFilter() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('statusFilter').value = '';
+        filterTable();
+    }
+</script>
+}

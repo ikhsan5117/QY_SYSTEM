@@ -1,0 +1,297 @@
+@model List<Produk>
+@{
+    ViewData["Title"] = "Data Produk";
+    Layout = "_LayoutDesktop";
+}
+
+<!-- Header Actions -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap;">
+    <div class="search-bar-desktop">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Cari produk..." id="searchInput" />
+    </div>
+    <div style="display: flex; gap: 12px;">
+        @if (Context.Session.GetString("Role") == "Admin")
+        {
+            <button type="button" class="btn-secondary-desktop" onclick="document.getElementById('excelFileInput').click()">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Upload Excel
+            </button>
+            <a asp-action="DownloadTemplate" class="btn-secondary-desktop">
+                <i class="bi bi-download"></i> Download Template
+            </a>
+            <a asp-action="Create" class="btn-primary-desktop">
+                <i class="bi bi-plus-circle"></i> Tambah Produk Baru
+            </a>
+        }
+    </div>
+</div>
+
+<!-- Hidden Form for Excel Upload -->
+<form id="excelUploadForm" asp-action="UploadExcel" method="post" enctype="multipart/form-data" style="display: none;">
+    @Html.AntiForgeryToken()
+    <input type="file" id="excelFileInput" name="excelFile" accept=".xlsx,.xls" onchange="confirmUpload()" />
+</form>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="text-align: center; color: white;">
+        <div class="spinner-border" style="width: 4rem; height: 4rem; border-width: 0.4rem;" role="status"></div>
+        <h3 style="margin-top: 20px; font-weight: 600;">Uploading Excel...</h3>
+        <p style="margin-top: 10px; opacity: 0.9;">Mohon tunggu, sedang memproses data</p>
+    </div>
+</div>
+
+<!-- Produk Table -->
+<div class="card-desktop" style="max-height: calc(100vh - 200px); display: flex; flex-direction: column;">
+    <div class="card-header-desktop" style="flex-shrink: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <h2 class="card-title-desktop">Daftar Produk</h2>
+                <span style="color: var(--text-secondary); font-size: 14px;">Total: @Model.Count produk</span>
+            </div>
+            <div id="bulkActions" style="display: none; gap: 12px; align-items: center;">
+                <span id="selectedCount" style="color: var(--color-primary); font-weight: 600;"></span>
+                <button type="button" class="btn-danger" onclick="deleteSelected()" style="padding: 8px 16px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;">
+                    <i class="bi bi-trash"></i> Hapus Terpilih
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    @if (Model.Count == 0)
+    {
+        <div style="text-align: center; padding: 60px 20px;">
+            <i class="bi bi-inbox" style="font-size: 64px; color: var(--text-secondary); display: block; margin-bottom: 16px;"></i>
+            <h3 style="color: var(--text-secondary); margin-bottom: 8px;">Belum Ada Produk</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 24px;">Mulai dengan menambahkan produk baru</p>
+            <a asp-action="Create" class="btn-primary-desktop">
+                <i class="bi bi-plus-circle"></i> Tambah Produk
+            </a>
+        </div>
+    }
+    else
+    {
+        <div style="overflow-y: auto; flex: 1;">
+            <table class="table-desktop" id="produkTable" style="margin: 0;">
+                <thead style="position: sticky; top: 0; background: white; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <tr>
+                        <th style="width: 50px;">
+                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" style="cursor: pointer; width: 18px; height: 18px;" />
+                        </th>
+                        <th>Part Code</th>
+                        <th>Nama Produk</th>
+                        <th>Operator / PIC</th>
+                        <th>Tanggal Input</th>
+                        <th>Standar Dimensi</th>
+                        <th style="text-align: center;">Aksi</th>
+                    </tr>
+                </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="produk-row">
+                        <td>
+                            <input type="checkbox" class="produk-checkbox" value="@item.Id" onchange="updateBulkActions()" style="cursor: pointer; width: 18px; height: 18px;" />
+                        </td>
+                        <td>
+                            <span style="font-weight: 700; color: var(--color-primary); font-size: 14px; background: #eff6ff; padding: 4px 12px; border-radius: 6px; display: inline-block;">
+                                <i class="bi bi-tag"></i> @item.PartCode
+                            </span>
+                        </td>
+                        <td>
+                            <strong style="font-size: 15px;">@item.NamaProduk</strong>
+                        </td>
+                        <td>
+                            <i class="bi bi-person" style="color: var(--color-primary);"></i>
+                            @item.Operator
+                        </td>
+                        <td>
+                            <i class="bi bi-calendar" style="color: var(--text-secondary);"></i>
+                            @item.TanggalInput.ToString("dd MMMM yyyy")
+                        </td>
+                        <td>
+                            <span class="badge-desktop badge-success">
+                                <i class="bi bi-rulers"></i> Lihat Standar
+                            </span>
+                        </td>
+                        <td style="text-align: center;">
+                            <a asp-action="Detail" asp-route-id="@item.Id" class="btn-icon-desktop" title="Detail">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn-icon-desktop" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn-icon-desktop btn-danger" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Show TempData messages as toast after page loaded
+        window.addEventListener('load', function() {
+            @if (TempData["Success"] != null)
+            {
+                <text>
+                if (typeof toast !== 'undefined') {
+                    toast.success('@TempData["Success"]');
+                }
+                </text>
+            }
+            @if (TempData["Warning"] != null)
+            {
+                <text>
+                if (typeof toast !== 'undefined') {
+                    toast.warning('@TempData["Warning"]');
+                }
+                </text>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <text>
+                if (typeof toast !== 'undefined') {
+                    toast.error('@TempData["Error"]');
+                }
+                </text>
+            }
+        });
+
+        // Search functionality
+        document.getElementById('searchInput')?.addEventListener('input', function(e) {
+            const searchText = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.produk-row');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchText) ? '' : 'none';
+            });
+        });
+
+        // Excel upload confirmation with loading
+        function confirmUpload() {
+            const fileInput = document.getElementById('excelFileInput');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                const fileName = file.name;
+                const fileSize = (file.size / 1024).toFixed(2);
+                
+                if (typeof toast !== 'undefined') {
+                    toast.confirm(
+                        `Upload file: <strong>${fileName}</strong> (${fileSize} KB)?<br><br>Pastikan file menggunakan template yang benar.`,
+                        function() {
+                            document.getElementById('loadingOverlay').style.display = 'flex';
+                            document.getElementById('excelUploadForm').submit();
+                        },
+                        function() {
+                            fileInput.value = '';
+                        }
+                    );
+                } else {
+                    if (confirm(`Upload file: ${fileName} (${fileSize} KB)? Pastikan file menggunakan template yang benar.`)) {
+                        document.getElementById('loadingOverlay').style.display = 'flex';
+                        document.getElementById('excelUploadForm').submit();
+                    } else {
+                        fileInput.value = '';
+                    }
+                }
+            }
+        }
+
+        // Select all checkboxes
+        function toggleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.produk-checkbox');
+            checkboxes.forEach(cb => cb.checked = checkbox.checked);
+            updateBulkActions();
+        }
+
+        // Update bulk actions visibility
+        function updateBulkActions() {
+            const checkboxes = document.querySelectorAll('.produk-checkbox:checked');
+            const bulkActions = document.getElementById('bulkActions');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            if (checkboxes.length > 0) {
+                bulkActions.style.display = 'flex';
+                selectedCount.textContent = `${checkboxes.length} produk terpilih`;
+            } else {
+                bulkActions.style.display = 'none';
+                document.getElementById('selectAll').checked = false;
+            }
+        }
+
+        // Delete selected products
+        function deleteSelected() {
+            const checkboxes = document.querySelectorAll('.produk-checkbox:checked');
+            const ids = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (ids.length === 0) {
+                if (typeof toast !== 'undefined') {
+                    toast.warning('Pilih produk yang ingin dihapus terlebih dahulu');
+                } else {
+                    alert('Pilih produk yang ingin dihapus terlebih dahulu');
+                }
+                return;
+            }
+            
+            if (typeof toast !== 'undefined') {
+                toast.confirm(
+                    `Apakah Anda yakin ingin menghapus ${ids.length} produk terpilih? Data yang dihapus tidak dapat dikembalikan.`,
+                function() {
+                // Create form and submit
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("DeleteMultiple", "Produk")';
+                
+                // Add anti-forgery token
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = token;
+                form.appendChild(tokenInput);
+                
+                // Add IDs
+                ids.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'ids';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+                
+                document.body.appendChild(form);
+                form.submit();
+            });
+            } else {
+                if (confirm(`Apakah Anda yakin ingin menghapus ${ids.length} produk terpilih? Data yang dihapus tidak dapat dikembalikan.`)) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '@Url.Action("DeleteMultiple", "Produk")';
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '__RequestVerificationToken';
+                    tokenInput.value = token;
+                    form.appendChild(tokenInput);
+                    ids.forEach(id => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'ids';
+                        input.value = id;
+                        form.appendChild(input);
+                    });
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            }
+        }
+    </script>
+}

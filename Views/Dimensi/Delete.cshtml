@@ -1,0 +1,104 @@
+@model InputAktual
+@{
+    ViewData["Title"] = "Hapus Data Input";
+    Layout = "_LayoutDesktop";
+}
+
+<div class="row g-4">
+    <div class="col-lg-8 offset-lg-2">
+        <!-- Header -->
+        <div style="margin-bottom: 20px; padding: 24px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 12px; text-align: center;">
+            <div style="width: 80px; height: 80px; margin: 0 auto 16px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-exclamation-triangle-fill" style="font-size: 48px;"></i>
+            </div>
+            <h2 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700;">KONFIRMASI PENGHAPUSAN</h2>
+            <p style="margin: 0; font-size: 14px; opacity: 0.95;">Tindakan ini tidak dapat dibatalkan!</p>
+        </div>
+
+        <!-- Warning -->
+        <div style="margin-bottom: 20px; padding: 16px; background: #fef2f2; border: 2px solid #fecaca; border-radius: 12px;">
+            <div style="display: flex; gap: 12px; align-items: start;">
+                <i class="bi bi-shield-exclamation" style="font-size: 32px; color: #ef4444;"></i>
+                <div>
+                    <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 700; color: #dc2626;">Peringatan</h4>
+                    <p style="margin: 0; font-size: 13px; color: #1e293b; line-height: 1.6;">
+                        Anda akan menghapus data input pengecekan ini secara <strong>PERMANEN</strong>. Data yang dihapus tidak dapat dikembalikan.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Data -->
+        <div class="card-desktop" style="border: 2px solid #e2e8f0; margin-bottom: 20px;">
+            <div style="padding: 16px; background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">Data yang Akan Dihapus</h3>
+            </div>
+            <div style="padding: 20px;">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div style="font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 4px; text-transform: uppercase;">Produk</div>
+                        <div style="font-size: 16px; font-weight: 700; color: #1e293b;">@Model.StandarDimensi?.Produk?.NamaProduk</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 4px; text-transform: uppercase;">Operator</div>
+                        <div style="font-size: 16px; font-weight: 700; color: #1e293b;">@Model.StandarDimensi?.Produk?.Operator</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 4px; text-transform: uppercase;">Dimensi</div>
+                        <div style="font-size: 16px; font-weight: 700; color: #3b82f6;">@Model.StandarDimensi?.NamaDimensi</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 4px; text-transform: uppercase;">Tanggal Input</div>
+                        <div style="font-size: 16px; font-weight: 700; color: #1e293b;">@Model.TanggalInput.ToString("dd MMM yyyy HH:mm")</div>
+                    </div>
+                </div>
+
+                @if (Model.NilaiDimensiA.HasValue || Model.NilaiDimensiB.HasValue || Model.NilaiSudut.HasValue)
+                {
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                        <div style="font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 8px; text-transform: uppercase;">Nilai Pengukuran</div>
+                        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                            @if (Model.NilaiDimensiA.HasValue)
+                            {
+                                <div>
+                                    <div style="font-size: 11px; color: #64748b;">Dimensi A</div>
+                                    <div style="font-size: 18px; font-weight: 700; color: #1e293b;">@Model.NilaiDimensiA?.ToString("0.00") <span style="font-size: 12px;">mm</span></div>
+                                </div>
+                            }
+                            @if (Model.NilaiDimensiB.HasValue)
+                            {
+                                <div>
+                                    <div style="font-size: 11px; color: #64748b;">Dimensi B</div>
+                                    <div style="font-size: 18px; font-weight: 700; color: #1e293b;">@Model.NilaiDimensiB?.ToString("0.00") <span style="font-size: 12px;">mm</span></div>
+                                </div>
+                            }
+                            @if (Model.NilaiSudut.HasValue)
+                            {
+                                <div>
+                                    <div style="font-size: 11px; color: #64748b;">Sudut</div>
+                                    <div style="font-size: 18px; font-weight: 700; color: #1e293b;">@Model.NilaiSudut?.ToString("0.00") <span style="font-size: 12px;">°</span></div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Form Delete -->
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button type="submit" style="width: 100%; padding: 14px 24px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="bi bi-trash-fill" style="font-size: 18px;"></i>
+                    YA, HAPUS DATA INI SEKARANG
+                </button>
+                <a asp-action="Riwayat" style="width: 100%; padding: 14px 24px; background: #e2e8f0; color: #64748b; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="bi bi-x-circle"></i>
+                    Batal, Kembali ke Riwayat
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

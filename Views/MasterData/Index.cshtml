@@ -1,0 +1,2081 @@
+@{
+    ViewData["Title"] = "Master Data E_LWP";
+    Layout = "_LayoutDesktop";
+}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        background-attachment: fixed;
+        min-height: 100vh;
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.05) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* Override content-area padding untuk full width di tablet */
+    @@media (min-width: 768px) {
+        body.desktop-view .main-content .content-area {
+            padding: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+    }
+
+    .master-data-container {
+        padding: 8px 8px;
+        margin: 8px auto 16px auto;
+        max-width: 100%;
+        width: 100%;
+        position: relative;
+        box-sizing: border-box;
+    }
+
+    .master-data-block {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+        backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 24px;
+        padding: 24px 24px;
+        margin-bottom: 12px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.4),
+            0 0 40px rgba(59, 130, 246, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .master-data-block:hover {
+        transform: translateY(-4px);
+        box-shadow: 
+            0 24px 70px rgba(0, 0, 0, 0.5),
+            0 0 50px rgba(59, 130, 246, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    .master-data-block::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        border-radius: 24px 24px 0 0;
+    }
+
+    /* Particle effect untuk master-data-block */
+    .master-data-block::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            radial-gradient(circle at 15% 20%, rgba(96, 165, 250, 0.3) 0, transparent 60%),
+            radial-gradient(circle at 85% 80%, rgba(167, 139, 250, 0.25) 0, transparent 60%),
+            radial-gradient(3px 3px at 25% 35%, rgba(255, 255, 255, 0.7), transparent 65%),
+            radial-gradient(3.5px 3.5px at 75% 45%, rgba(255, 255, 255, 0.6), transparent 65%),
+            radial-gradient(3px 3px at 50% 70%, rgba(255, 255, 255, 0.5), transparent 65%);
+        mix-blend-mode: normal;
+        opacity: 0.8;
+        pointer-events: none;
+        border-radius: 24px;
+    }
+
+    /* Statistics Container - Bar Chart */
+    .stats-container {
+        margin-bottom: 32px;
+        animation: fadeInUp 0.6s ease;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+        backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 24px;
+        padding: 32px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.4),
+            0 0 40px rgba(59, 130, 246, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        width: 100%;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stats-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        border-radius: 24px 24px 0 0;
+        z-index: 3;
+    }
+
+    /* Animated gradient background */
+    .stats-container::after {
+        content: "";
+        position: absolute;
+        inset: -50%;
+        background: 
+            linear-gradient(45deg, 
+                rgba(59, 130, 246, 0.1) 0%, 
+                rgba(99, 102, 241, 0.15) 25%, 
+                rgba(139, 92, 246, 0.1) 50%, 
+                rgba(236, 72, 153, 0.15) 75%, 
+                rgba(59, 130, 246, 0.1) 100%);
+        background-size: 200% 200%;
+        animation: gradientMove 8s ease infinite;
+        pointer-events: none;
+        border-radius: 24px;
+        z-index: 0;
+    }
+
+    @@keyframes gradientMove {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    .chart-container-wrapper {
+        width: 100%;
+        position: relative;
+        z-index: 1;
+    }
+
+    .chart-container-wrapper::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            radial-gradient(5px 5px at 10% 20%, rgba(255, 255, 255, 1), transparent 60%),
+            radial-gradient(5.5px 5.5px at 25% 35%, rgba(255, 255, 255, 0.95), transparent 60%),
+            radial-gradient(5px 5px at 40% 15%, rgba(255, 255, 255, 0.9), transparent 60%),
+            radial-gradient(6px 6px at 55% 45%, rgba(255, 255, 255, 0.85), transparent 60%),
+            radial-gradient(5.5px 5.5px at 70% 25%, rgba(255, 255, 255, 0.9), transparent 60%),
+            radial-gradient(5px 5px at 85% 55%, rgba(255, 255, 255, 0.85), transparent 60%),
+            radial-gradient(4.5px 4.5px at 15% 65%, rgba(255, 255, 255, 0.8), transparent 60%),
+            radial-gradient(5px 5px at 30% 75%, rgba(255, 255, 255, 0.85), transparent 60%),
+            radial-gradient(5.5px 5.5px at 45% 60%, rgba(255, 255, 255, 0.9), transparent 60%),
+            radial-gradient(5px 5px at 60% 80%, rgba(255, 255, 255, 0.8), transparent 60%),
+            radial-gradient(6px 6px at 75% 70%, rgba(255, 255, 255, 0.85), transparent 60%),
+            radial-gradient(5px 5px at 90% 40%, rgba(255, 255, 255, 0.9), transparent 60%),
+            radial-gradient(4.5px 4.5px at 20% 50%, rgba(255, 255, 255, 0.85), transparent 60%),
+            radial-gradient(5.5px 5.5px at 35% 85%, rgba(255, 255, 255, 0.8), transparent 60%),
+            radial-gradient(5px 5px at 50% 30%, rgba(255, 255, 255, 0.9), transparent 60%),
+            radial-gradient(6px 6px at 65% 60%, rgba(255, 255, 255, 0.85), transparent 60%),
+            radial-gradient(5px 5px at 80% 15%, rgba(255, 255, 255, 0.9), transparent 60%),
+            radial-gradient(4.5px 4.5px at 95% 75%, rgba(255, 255, 255, 0.8), transparent 60%),
+            radial-gradient(5.5px 5.5px at 12% 45%, rgba(255, 255, 255, 0.85), transparent 60%),
+            radial-gradient(5px 5px at 28% 28%, rgba(255, 255, 255, 0.9), transparent 60%),
+            radial-gradient(6px 6px at 42% 72%, rgba(255, 255, 255, 0.85), transparent 60%),
+            radial-gradient(5px 5px at 58% 38%, rgba(255, 255, 255, 0.9), transparent 60%),
+            radial-gradient(5.5px 5.5px at 72% 62%, rgba(255, 255, 255, 0.85), transparent 60%),
+            radial-gradient(5px 5px at 88% 88%, rgba(255, 255, 255, 0.8), transparent 60%);
+        pointer-events: none;
+        z-index: 2;
+        opacity: 1;
+        mix-blend-mode: normal;
+    }
+
+    .chart-title {
+        font-size: 24px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 50%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 24px;
+        text-align: center;
+        letter-spacing: 0.5px;
+        filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3));
+        text-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+        position: relative;
+        z-index: 3;
+    }
+
+    #statsBarChart {
+        max-height: 400px;
+        width: 100% !important;
+        position: relative;
+        z-index: 3;
+    }
+
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    @@keyframes shimmer {
+        0% {
+            background-position: -1000px 0;
+        }
+        100% {
+            background-position: 1000px 0;
+        }
+    }
+
+    .master-data-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid rgba(148, 163, 184, 0.2);
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .master-data-header-main {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .master-data-title {
+        font-size: 26px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 50%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        letter-spacing: -0.5px;
+        filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3));
+    }
+
+    .master-data-title::before {
+        content: '';
+        width: 4px;
+        height: 32px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    }
+
+    .master-data-header-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .master-data-subtitle {
+        font-size: 13px;
+        color: #94a3b8;
+    }
+
+    .master-data-subtitle strong {
+        color: #60a5fa;
+        font-weight: 600;
+        text-shadow: 0 0 8px rgba(96, 165, 250, 0.3);
+    }
+
+    .master-data-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 2px;
+    }
+
+    .master-data-pill {
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.3));
+        backdrop-filter: blur(10px);
+        color: #93c5fd;
+        font-size: 11px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+    }
+
+    .master-data-pill i {
+        font-size: 13px;
+    }
+
+    .master-data-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .master-data-section {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+        backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        box-shadow: 
+            0 10px 30px rgba(0, 0, 0, 0.3),
+            0 0 20px rgba(59, 130, 246, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease;
+        animation-fill-mode: both;
+    }
+
+    .master-data-section:nth-child(1) { animation-delay: 0.1s; }
+    .master-data-section:nth-child(2) { animation-delay: 0.2s; }
+    .master-data-section:nth-child(3) { animation-delay: 0.3s; }
+    .master-data-section:nth-child(4) { animation-delay: 0.4s; }
+    .master-data-section:nth-child(5) { animation-delay: 0.5s; }
+    .master-data-section:nth-child(6) { animation-delay: 0.6s; }
+
+    .master-data-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+        transition: width 0.3s ease;
+    }
+
+    .master-data-section:hover::before {
+        width: 6px;
+    }
+
+    .master-data-section:hover {
+        transform: translateY(-4px);
+        box-shadow: 
+            0 14px 40px rgba(0, 0, 0, 0.4),
+            0 0 30px rgba(59, 130, 246, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    /* Color coding untuk setiap section */
+    .master-data-section[data-section="line"]::before {
+        background: linear-gradient(180deg, #3b82f6, #2563eb);
+    }
+
+    .master-data-section[data-section="inspector"]::before {
+        background: linear-gradient(180deg, #8b5cf6, #7c3aed);
+    }
+
+    .master-data-section[data-section="group"]::before {
+        background: linear-gradient(180deg, #22c55e, #16a34a);
+    }
+
+    .master-data-section[data-section="ng"]::before {
+        background: linear-gradient(180deg, #ef4444, #dc2626);
+    }
+
+    .master-data-section[data-section="part"]::before {
+        background: linear-gradient(180deg, #f59e0b, #d97706);
+    }
+
+    .master-data-section[data-section="stop"]::before {
+        background: linear-gradient(180deg, #64748b, #475569);
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding-left: 12px;
+        filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.3));
+    }
+
+    .section-title-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-title i {
+        color: #3b82f6;
+        font-size: 18px;
+        filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+    }
+
+    .section-badge {
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        box-shadow: 
+            0 2px 8px rgba(59, 130, 246, 0.4),
+            0 0 15px rgba(59, 130, 246, 0.3);
+        animation: pulse 2s infinite;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .add-form {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.8));
+        backdrop-filter: blur(10px);
+        padding: 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        box-shadow: 
+            0 4px 16px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .add-input {
+        flex: 1;
+        min-width: 200px;
+        padding: 12px 16px;
+        border: 2px solid rgba(148, 163, 184, 0.2);
+        border-radius: 10px;
+        font-size: 14px;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: #f1f5f9;
+    }
+
+    .add-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 
+            0 0 0 3px rgba(59, 130, 246, 0.2),
+            0 0 20px rgba(59, 130, 246, 0.3);
+        background: rgba(15, 23, 42, 0.8);
+    }
+
+    .add-input::placeholder {
+        color: #64748b;
+    }
+
+    .btn-add {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-add::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-add:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .btn-add:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+    }
+
+    .btn-add:active {
+        transform: translateY(0);
+    }
+
+    .btn-add i {
+        font-size: 16px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .btn-add span {
+        position: relative;
+        z-index: 1;
+    }
+
+    .data-table {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
+        backdrop-filter: blur(20px) saturate(180%);
+        box-shadow: 
+            0 4px 16px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .data-table-header {
+        display: grid;
+        grid-template-columns: 1.4fr 1.8fr 0.9fr;
+        gap: 12px;
+        padding: 14px 16px;
+        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #8b5cf6 100%);
+        backdrop-filter: blur(10px);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: white;
+        box-shadow: 
+            0 4px 16px rgba(37, 99, 235, 0.4),
+            0 0 20px rgba(59, 130, 246, 0.3);
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .data-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .data-item {
+        display: grid;
+        grid-template-columns: 1.4fr 1.8fr 0.9fr;
+        gap: 12px;
+        align-items: center;
+        padding: 14px 16px;
+        font-size: 14px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(30, 41, 59, 0.4);
+    }
+
+    .data-item:nth-child(even) {
+        background: rgba(15, 23, 42, 0.5);
+    }
+
+    .data-item:hover {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.1));
+        box-shadow: 
+            inset 0 0 0 0.5px rgba(96, 165, 250, 0.2),
+            0 2px 12px rgba(59, 130, 246, 0.2);
+    }
+
+    .data-item:last-child {
+        border-bottom: none;
+    }
+
+    .data-item-value {
+        font-weight: 700;
+        color: #f1f5f9;
+        font-size: 15px;
+    }
+
+    .data-item-desc {
+        color: #94a3b8;
+        font-size: 13px;
+    }
+
+    .btn-edit-item {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-edit-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-edit-item:active {
+        transform: translateY(0);
+    }
+
+    .btn-delete-item {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-delete-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-delete-item:active {
+        transform: translateY(0);
+    }
+
+    .data-item-actions {
+        display: inline-flex;
+        justify-content: flex-end;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+    /* Modal Edit */
+    .modal-edit {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.9));
+        backdrop-filter: blur(10px);
+        animation: fadeIn 0.3s ease;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .modal-edit-content {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+        backdrop-filter: blur(20px) saturate(180%);
+        margin: 10% auto;
+        padding: 32px;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.5),
+            0 0 40px rgba(59, 130, 246, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        position: relative;
+        animation: slideDown 0.3s ease;
+    }
+
+    @@keyframes slideDown {
+        from {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-edit-content::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        border-radius: 20px 20px 0 0;
+    }
+
+    .modal-edit-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .modal-edit-title {
+        font-size: 24px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 50%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3));
+    }
+
+    .modal-edit-title i {
+        color: #3b82f6;
+        filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+    }
+
+    .modal-edit-close {
+        background: rgba(30, 41, 59, 0.6);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        font-size: 20px;
+        cursor: pointer;
+        color: #cbd5e1;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modal-edit-close:hover {
+        background: rgba(239, 68, 68, 0.2);
+        border-color: rgba(239, 68, 68, 0.4);
+        color: #fee2e2;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .modal-edit-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .modal-edit-form label {
+        font-weight: 600;
+        color: #cbd5e1;
+        font-size: 14px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .modal-edit-form label i {
+        color: #3b82f6;
+        font-size: 16px;
+        filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+    }
+
+    .modal-edit-input {
+        padding: 12px 16px;
+        border: 2px solid rgba(148, 163, 184, 0.2);
+        border-radius: 10px;
+        font-size: 14px;
+        width: 100%;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: #f1f5f9;
+    }
+
+    .modal-edit-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 
+            0 0 0 3px rgba(59, 130, 246, 0.2),
+            0 0 20px rgba(59, 130, 246, 0.3);
+        background: rgba(15, 23, 42, 0.8);
+    }
+
+    .modal-edit-input::placeholder {
+        color: #64748b;
+    }
+
+    .modal-edit-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 8px;
+    }
+
+    .btn-modal-save {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    }
+
+    .btn-modal-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+    }
+
+    .btn-modal-cancel {
+        padding: 12px 24px;
+        background: rgba(30, 41, 59, 0.6);
+        backdrop-filter: blur(10px);
+        color: #cbd5e1;
+        border: 2px solid rgba(148, 163, 184, 0.2);
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-modal-cancel:hover {
+        background: rgba(30, 41, 59, 0.8);
+        border-color: rgba(148, 163, 184, 0.4);
+        color: #f1f5f9;
+        box-shadow: 0 0 15px rgba(148, 163, 184, 0.2);
+    }
+
+    .empty-state {
+        color: #94a3b8;
+        font-size: 14px;
+        font-style: italic;
+        padding: 24px 16px;
+        text-align: center;
+        background: linear-gradient(90deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 50%, rgba(30, 41, 59, 0.6) 100%);
+        background-size: 200% 100%;
+        border-radius: 8px;
+        animation: shimmer 2s infinite;
+        position: relative;
+        overflow: hidden;
+        border: 1px dashed rgba(148, 163, 184, 0.3);
+    }
+
+    .empty-state::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    /* Header Buttons */
+    .btn-header {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-header:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+
+    .btn-header.btn-gray {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+    }
+
+    .btn-header.btn-gray:hover {
+        box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+    }
+
+    .btn-header i {
+        font-size: 16px;
+    }
+
+    /* Responsive Design */
+    @@media (min-width: 1024px) {
+        .master-data-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .stats-container {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    /* EXPANDED TABLET BREAKPOINT - More aggressive with !important */
+    @@media (max-width: 1200px) and (min-width: 600px) {
+        .stats-container {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+        
+        .master-data-container {
+            padding: 8px 8px;
+            margin: 0;
+        }
+        
+        /* TABLET FIX: Force 3 columns with adjusted widths */
+        .master-data-section .data-table-header,
+        .master-data-section .data-item {
+            grid-template-columns: 1.2fr 1.3fr 1fr !important;
+            gap: 8px !important;
+            font-size: 12px !important;
+            padding: 10px 12px !important;
+        }
+        
+        /* Smaller header text */
+        .master-data-section .data-table-header {
+            font-size: 10px !important;
+            padding: 10px 12px !important;
+        }
+        
+        /* Ensure text wraps properly */
+        .master-data-section .data-item-value,
+        .master-data-section .data-item-desc {
+            overflow-wrap: break-word !important;
+            word-wrap: break-word !important;
+            hyphens: auto !important;
+            font-size: 12px !important;
+        }
+        
+        .master-data-section .data-item-desc {
+            font-size: 11px !important;
+        }
+        
+        /* Compact action buttons */
+        .master-data-section .data-item-actions {
+            flex-direction: column !important;
+            gap: 4px !important;
+            align-items: stretch !important;
+        }
+        
+        .master-data-section .btn-edit-item,
+        .master-data-section .btn-delete-item {
+            width: 100% !important;
+            justify-content: center !important;
+            padding: 8px 10px !important;
+            font-size: 11px !important;
+            min-height: 40px !important;
+        }
+        
+        .master-data-section .btn-edit-item i,
+        .master-data-section .btn-delete-item i {
+            font-size: 12px !important;
+        }
+        
+        /* Compact section titles */
+        .section-title {
+            font-size: 13px !important;
+        }
+        
+        /* Full-width add form */
+        .add-form {
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+            padding: 12px !important;
+        }
+        
+        .add-input {
+            flex: 1 1 100% !important;
+            min-width: 100% !important;
+            padding: 10px 14px !important;
+            font-size: 13px !important;
+        }
+        
+        .btn-add {
+            flex: 1 1 100% !important;
+            justify-content: center !important;
+            min-height: 44px !important;
+            padding: 10px 20px !important;
+            font-size: 13px !important;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .master-data-container {
+            padding: 6px 6px;
+            margin: 4px;
+        }
+
+        .master-data-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .master-data-title {
+            font-size: 24px;
+        }
+
+        .master-data-header-actions {
+            width: 100%;
+        }
+
+        .btn-header {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .stats-container {
+            padding: 24px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+        }
+
+        #statsBarChart {
+            max-height: 300px;
+        }
+
+        .add-form {
+            flex-direction: column;
+        }
+
+        .add-input {
+            width: 100%;
+        }
+
+        .btn-add {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .data-table-header,
+        .data-item {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .data-item-actions {
+            justify-content: flex-start;
+            margin-top: 8px;
+        }
+
+        .section-title {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .stats-container {
+            padding: 20px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        #statsBarChart {
+            max-height: 250px;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .stats-container {
+            padding: 16px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        #statsBarChart {
+            max-height: 200px;
+        }
+    }
+</style>
+
+@{
+    // Calculate counts and percentages at the top level so they can be used throughout the page
+    var lineCount = (ViewBag.LineChecking as List<MasterData>)?.Count ?? 0;
+    var inspectorCount = (ViewBag.Inspectors as List<MasterData>)?.Count ?? 0;
+    var groupCount = (ViewBag.GroupChecking as List<MasterData>)?.Count ?? 0;
+    var ngCount = (ViewBag.JenisNG as List<MasterData>)?.Count ?? 0;
+    var partCount = (ViewBag.PartCode as List<MasterData>)?.Count ?? 0;
+    var stopCount = (ViewBag.LineStop as List<MasterData>)?.Count ?? 0;
+    var totalMaster = lineCount + inspectorCount + groupCount + ngCount + partCount + stopCount;
+}
+
+<div class="master-data-container">
+    <div class="master-data-block">
+        <div class="master-data-header">
+            <div class="master-data-header-main">
+                <h2 class="master-data-title">
+                    <i class="bi bi-database"></i>
+                    Master Data E_LWP
+                </h2>
+                <div class="master-data-subtitle">
+                    Mengelola konfigurasi <strong>master data</strong> untuk proses <strong>E_LWP</strong> agar input data tetap konsisten dan cepat.
+                </div>
+                <div class="master-data-meta">
+                    <span class="master-data-pill">
+                        <i class="bi bi-collection"></i> @totalMaster item master
+                    </span>
+                    <span class="master-data-pill">
+                        <i class="bi bi-sliders"></i> 6 kategori
+                    </span>
+                    <span class="master-data-pill">
+                        <i class="bi bi-clock-history"></i> @DateTime.Now.ToString("dd/MM/yyyy")
+                    </span>
+                </div>
+            </div>
+            <div class="master-data-header-actions">
+                <a href="@Url.Action("List", "QCHose")" class="btn-header btn-gray">
+                    <i class="bi bi-table"></i> Lihat Tabel Data
+                </a>
+                <a href="@Url.Action("Create", "QCHose")" class="btn-header">
+                    <i class="bi bi-plus-circle"></i> Input Data Baru
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="master-data-block">
+        <!-- Statistics - Bar Chart -->
+        <div class="stats-container">
+            <div class="chart-container-wrapper">
+                <h3 class="chart-title">Data Analysis Overview</h3>
+                <canvas id="statsBarChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="master-data-block">
+        <div class="master-data-grid">
+        <!-- TAMBAH LINE CHECKING -->
+        <div class="master-data-section" data-section="line">
+        <div class="section-title">
+            <div class="section-title-left">
+                <i class="bi bi-diagram-3"></i>
+                TAMBAH LINE CHECKING
+            </div>
+            <span class="section-badge">@((ViewBag.LineChecking as List<MasterData>)?.Count ?? 0)</span>
+        </div>
+        <div class="add-form">
+            <input type="text" id="lineCheckingInput" class="add-input" placeholder="Masukkan Line Checking (contoh: Line 1, Line 2)" />
+            <input type="text" id="lineCheckingDesc" class="add-input" placeholder="Deskripsi (opsional)" />
+            <button type="button" class="btn-add" onclick="addMasterData(event, 'LineChecking', 'lineCheckingInput', 'lineCheckingDesc', 'lineCheckingList')">
+                <i class="bi bi-plus-circle"></i> <span>Tambah</span>
+            </button>
+        </div>
+        <div class="data-table">
+            <div class="data-table-header">
+                <span>Nilai</span>
+                <span>Deskripsi</span>
+                <span style="text-align: right;">Aksi</span>
+            </div>
+            <div class="data-list" id="lineCheckingList">
+            @if (ViewBag.LineChecking != null && ((List<MasterData>)ViewBag.LineChecking).Any())
+            {
+                @foreach (var item in (List<MasterData>)ViewBag.LineChecking)
+                {
+                    <div class="data-item" data-id="@item.Id" data-tipe="@item.Tipe" data-nilai="@item.Nilai" data-deskripsi="@(item.Deskripsi ?? "")">
+                        <span class="data-item-value">@item.Nilai</span>
+                        <span class="data-item-desc">
+                            @if (!string.IsNullOrEmpty(item.Deskripsi))
+                            {
+                                @item.Deskripsi
+                            }
+                        </span>
+                        <div class="data-item-actions">
+                            <button type="button" class="btn-edit-item" onclick="editMasterDataFromElement(this)">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button type="button" class="btn-delete-item" onclick="deleteMasterData(@item.Id, 'LineChecking')">
+                                <i class="bi bi-trash"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">Belum ada data Line Checking</div>
+            }
+            </div>
+        </div>
+    </div>
+
+        <!-- TAMBAH NAMA INSPECTOR -->
+        <div class="master-data-section" data-section="inspector">
+        <div class="section-title">
+            <div class="section-title-left">
+                <i class="bi bi-person"></i>
+                TAMBAH NAMA INSPECTOR
+            </div>
+            <span class="section-badge">@((ViewBag.Inspectors as List<MasterData>)?.Count ?? 0)</span>
+        </div>
+        <div class="add-form">
+            <input type="text" id="inspectorInput" class="add-input" placeholder="Masukkan Nama Inspector" />
+            <input type="text" id="inspectorDesc" class="add-input" placeholder="Deskripsi (opsional)" />
+            <button type="button" class="btn-add" onclick="addMasterData(event, 'Inspector', 'inspectorInput', 'inspectorDesc', 'inspectorList')">
+                <i class="bi bi-plus-circle"></i> <span>Tambah</span>
+            </button>
+        </div>
+        <div class="data-table">
+            <div class="data-table-header">
+                <span>Nilai</span>
+                <span>Deskripsi</span>
+                <span style="text-align: right;">Aksi</span>
+            </div>
+            <div class="data-list" id="inspectorList">
+            @if (ViewBag.Inspectors != null && ((List<MasterData>)ViewBag.Inspectors).Any())
+            {
+                @foreach (var item in (List<MasterData>)ViewBag.Inspectors)
+                {
+                    <div class="data-item" data-id="@item.Id" data-tipe="@item.Tipe" data-nilai="@item.Nilai" data-deskripsi="@(item.Deskripsi ?? "")">
+                        <span class="data-item-value">@item.Nilai</span>
+                        <span class="data-item-desc">
+                            @if (!string.IsNullOrEmpty(item.Deskripsi))
+                            {
+                                @item.Deskripsi
+                            }
+                        </span>
+                        <div class="data-item-actions">
+                            <button type="button" class="btn-edit-item" onclick="editMasterDataFromElement(this)">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button type="button" class="btn-delete-item" onclick="deleteMasterData(@item.Id, 'Inspector')">
+                                <i class="bi bi-trash"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">Belum ada data Inspector</div>
+            }
+            </div>
+        </div>
+    </div>
+
+        <!-- TAMBAH GRUP CHECKING -->
+        <div class="master-data-section" data-section="group">
+        <div class="section-title">
+            <div class="section-title-left">
+                <i class="bi bi-people"></i>
+                TAMBAH GRUP CHECKING
+            </div>
+            <span class="section-badge">@((ViewBag.GroupChecking as List<MasterData>)?.Count ?? 0)</span>
+        </div>
+        <div class="add-form">
+            <input type="text" id="groupCheckingInput" class="add-input" placeholder="Masukkan Group (contoh: A, B, C, D)" />
+            <input type="text" id="groupCheckingDesc" class="add-input" placeholder="Deskripsi (opsional)" />
+            <button type="button" class="btn-add" onclick="addMasterData(event, 'GroupChecking', 'groupCheckingInput', 'groupCheckingDesc', 'groupCheckingList')">
+                <i class="bi bi-plus-circle"></i> <span>Tambah</span>
+            </button>
+        </div>
+        <div class="data-table">
+            <div class="data-table-header">
+                <span>Nilai</span>
+                <span>Deskripsi</span>
+                <span style="text-align: right;">Aksi</span>
+            </div>
+            <div class="data-list" id="groupCheckingList">
+            @if (ViewBag.GroupChecking != null && ((List<MasterData>)ViewBag.GroupChecking).Any())
+            {
+                @foreach (var item in (List<MasterData>)ViewBag.GroupChecking)
+                {
+                    <div class="data-item" data-id="@item.Id" data-tipe="@item.Tipe" data-nilai="@item.Nilai" data-deskripsi="@(item.Deskripsi ?? "")">
+                        <span class="data-item-value">@item.Nilai</span>
+                        <span class="data-item-desc">
+                            @if (!string.IsNullOrEmpty(item.Deskripsi))
+                            {
+                                @item.Deskripsi
+                            }
+                        </span>
+                        <div class="data-item-actions">
+                            <button type="button" class="btn-edit-item" onclick="editMasterDataFromElement(this)">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button type="button" class="btn-delete-item" onclick="deleteMasterData(@item.Id, 'GroupChecking')">
+                                <i class="bi bi-trash"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">Belum ada data Group Checking</div>
+            }
+            </div>
+        </div>
+    </div>
+
+        <!-- TAMBAH JENIS NG -->
+        <div class="master-data-section" data-section="ng">
+        <div class="section-title">
+            <div class="section-title-left">
+                <i class="bi bi-x-circle"></i>
+                TAMBAH JENIS NG
+            </div>
+            <span class="section-badge">@((ViewBag.JenisNG as List<MasterData>)?.Count ?? 0)</span>
+        </div>
+        <div class="add-form">
+            <input type="text" id="jenisNGInput" class="add-input" placeholder="Masukkan Jenis NG (contoh: Dimensi, Visual, Fungsi)" />
+            <input type="text" id="jenisNGDesc" class="add-input" placeholder="Deskripsi (opsional)" />
+            <button type="button" class="btn-add" onclick="addMasterData(event, 'JenisNG', 'jenisNGInput', 'jenisNGDesc', 'jenisNGList')">
+                <i class="bi bi-plus-circle"></i> <span>Tambah</span>
+            </button>
+        </div>
+        <div class="data-table">
+            <div class="data-table-header">
+                <span>Nilai</span>
+                <span>Deskripsi</span>
+                <span style="text-align: right;">Aksi</span>
+            </div>
+            <div class="data-list" id="jenisNGList">
+            @if (ViewBag.JenisNG != null && ((List<MasterData>)ViewBag.JenisNG).Any())
+            {
+                @foreach (var item in (List<MasterData>)ViewBag.JenisNG)
+                {
+                    <div class="data-item" data-id="@item.Id" data-tipe="@item.Tipe" data-nilai="@item.Nilai" data-deskripsi="@(item.Deskripsi ?? "")">
+                        <span class="data-item-value">@item.Nilai</span>
+                        <span class="data-item-desc">
+                            @if (!string.IsNullOrEmpty(item.Deskripsi))
+                            {
+                                @item.Deskripsi
+                            }
+                        </span>
+                        <div class="data-item-actions">
+                            <button type="button" class="btn-edit-item" onclick="editMasterDataFromElement(this)">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button type="button" class="btn-delete-item" onclick="deleteMasterData(@item.Id, 'JenisNG')">
+                                <i class="bi bi-trash"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">Belum ada data Jenis NG</div>
+            }
+            </div>
+        </div>
+    </div>
+
+        <!-- TAMBAH PART CODE -->
+        <div class="master-data-section" data-section="part">
+        <div class="section-title">
+            <div class="section-title-left">
+                <i class="bi bi-upc-scan"></i>
+                TAMBAH PART CODE
+            </div>
+            <span class="section-badge">@((ViewBag.PartCode as List<MasterData>)?.Count ?? 0)</span>
+        </div>
+        <div class="add-form">
+            <input type="text" id="partCodeInput" class="add-input" placeholder="Masukkan Part Code (contoh: ABC123, XYZ456)" />
+            <input type="text" id="partCodeDesc" class="add-input" placeholder="Deskripsi (opsional)" />
+            <button type="button" class="btn-add" onclick="addMasterData(event, 'PartCode', 'partCodeInput', 'partCodeDesc', 'partCodeList')">
+                <i class="bi bi-plus-circle"></i> <span>Tambah</span>
+            </button>
+        </div>
+        <div class="data-table">
+            <div class="data-table-header">
+                <span>Nilai</span>
+                <span>Deskripsi</span>
+                <span style="text-align: right;">Aksi</span>
+            </div>
+            <div id="partCodeList" class="data-list">
+            @if (ViewBag.PartCode != null && ((List<MasterData>)ViewBag.PartCode).Any())
+            {
+                @foreach (var item in (List<MasterData>)ViewBag.PartCode)
+                {
+                    <div class="data-item" data-id="@item.Id" data-tipe="@item.Tipe" data-nilai="@item.Nilai" data-deskripsi="@(item.Deskripsi ?? "")">
+                        <span class="data-item-value">@item.Nilai</span>
+                        <span class="data-item-desc">
+                            @if (!string.IsNullOrEmpty(item.Deskripsi))
+                            {
+                                @item.Deskripsi
+                            }
+                        </span>
+                        <div class="data-item-actions">
+                            <button type="button" class="btn-edit-item" onclick="editMasterDataFromElement(this)">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button type="button" class="btn-delete-item" onclick="deleteMasterData(@item.Id, '@item.Tipe')">
+                                <i class="bi bi-trash"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">Belum ada data Part Code</div>
+            }
+            </div>
+        </div>
+    </div>
+
+        <!-- TAMBAH LINE STOP -->
+        <div class="master-data-section" data-section="stop">
+        <div class="section-title">
+            <div class="section-title-left">
+                <i class="bi bi-pause-circle"></i>
+                TAMBAH LINE STOP
+            </div>
+            <span class="section-badge">@((ViewBag.LineStop as List<MasterData>)?.Count ?? 0)</span>
+        </div>
+        <div class="add-form">
+            <input type="text" id="lineStopInput" class="add-input" placeholder="Masukkan Line Stop (contoh: Line 1, Line 2)" />
+            <input type="text" id="lineStopDesc" class="add-input" placeholder="Deskripsi (opsional)" />
+            <button type="button" class="btn-add" onclick="addMasterData(event, 'LineStop', 'lineStopInput', 'lineStopDesc', 'lineStopList')">
+                <i class="bi bi-plus-circle"></i> <span>Tambah</span>
+            </button>
+        </div>
+        <div class="data-table">
+            <div class="data-table-header">
+                <span>Nilai</span>
+                <span>Deskripsi</span>
+                <span style="text-align: right;">Aksi</span>
+            </div>
+            <div class="data-list" id="lineStopList">
+            @if (ViewBag.LineStop != null && ((List<MasterData>)ViewBag.LineStop).Any())
+            {
+                @foreach (var item in (List<MasterData>)ViewBag.LineStop)
+                {
+                    <div class="data-item" data-id="@item.Id" data-tipe="@item.Tipe" data-nilai="@item.Nilai" data-deskripsi="@(item.Deskripsi ?? "")">
+                        <span class="data-item-value">@item.Nilai</span>
+                        <span class="data-item-desc">
+                            @if (!string.IsNullOrEmpty(item.Deskripsi))
+                            {
+                                @item.Deskripsi
+                            }
+                        </span>
+                        <div class="data-item-actions">
+                            <button type="button" class="btn-edit-item" onclick="editMasterDataFromElement(this)">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <button type="button" class="btn-delete-item" onclick="deleteMasterData(@item.Id, 'LineStop')">
+                                <i class="bi bi-trash"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">Belum ada data Line Stop</div>
+            }
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Modal Edit Master Data -->
+<div id="editModal" class="modal-edit">
+    <div class="modal-edit-content">
+        <div class="modal-edit-header">
+            <h3 class="modal-edit-title">Edit Master Data</h3>
+            <button type="button" class="modal-edit-close" onclick="closeEditModal()">&times;</button>
+        </div>
+        <form class="modal-edit-form" onsubmit="saveEditMasterData(event)">
+            <input type="hidden" id="editId" />
+            <input type="hidden" id="editTipe" />
+            
+            <div>
+                <label>
+                    <i class="bi bi-tag"></i> Nilai
+                </label>
+                <input type="text" id="editNilai" class="modal-edit-input" required placeholder="Masukkan nilai" />
+            </div>
+            
+            <div>
+                <label>
+                    <i class="bi bi-file-text"></i> Deskripsi (Opsional)
+                </label>
+                <input type="text" id="editDeskripsi" class="modal-edit-input" placeholder="Masukkan deskripsi" />
+            </div>
+            
+            <div class="modal-edit-actions">
+                <button type="button" class="btn-modal-cancel" onclick="closeEditModal()">Batal</button>
+                <button type="submit" class="btn-modal-save">
+                    <i class="bi bi-check-circle"></i> Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Hidden form untuk AntiForgeryToken -->
+<form style="display: none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        // Initialize Bar Chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('statsBarChart');
+            if (ctx) {
+                const lineCount = @lineCount;
+                const inspectorCount = @inspectorCount;
+                const groupCount = @groupCount;
+                const ngCount = @ngCount;
+                const partCount = @partCount;
+                const stopCount = @stopCount;
+
+                const chartData = [lineCount, inspectorCount, groupCount, ngCount, partCount, stopCount];
+                const maxValue = Math.max(...chartData, 5);
+
+                // Helper function to create gradient (will be called after chart initialization)
+                const createGradient = (chartContext, colorStart, colorEnd) => {
+                    const chart = chartContext.chart;
+                    const ctx = chart.ctx;
+                    const chartArea = chart.chartArea;
+                    if (!chartArea) return colorStart; // Chart not yet initialized
+                    
+                    const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                    gradient.addColorStop(0, colorStart);
+                    gradient.addColorStop(1, colorEnd);
+                    return gradient;
+                };
+
+                const chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['LINE CHECKING', 'INSPECTOR', 'GROUP CHECKING', 'JENIS NG', 'PART CODE', 'LINE STOP'],
+                        datasets: [
+                            {
+                                type: 'bar',
+                                label: 'Data Count',
+                                data: chartData,
+                                backgroundColor: function(context) {
+                                    const chart = context.chart;
+                                    const ctx = chart.ctx;
+                                    const chartArea = chart.chartArea;
+                                    if (!chartArea) {
+                                        const colors = ['#3b82f6', '#8b5cf6', '#22c55e', '#ef4444', '#f59e0b', '#64748b'];
+                                        return colors[context.dataIndex % colors.length];
+                                    }
+                                    
+                                    const gradients = [
+                                        () => { const g = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top); g.addColorStop(0, '#2563eb'); g.addColorStop(0.5, '#3b82f6'); g.addColorStop(1, '#60a5fa'); return g; },
+                                        () => { const g = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top); g.addColorStop(0, '#7c3aed'); g.addColorStop(0.5, '#8b5cf6'); g.addColorStop(1, '#a78bfa'); return g; },
+                                        () => { const g = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top); g.addColorStop(0, '#16a34a'); g.addColorStop(0.5, '#22c55e'); g.addColorStop(1, '#4ade80'); return g; },
+                                        () => { const g = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top); g.addColorStop(0, '#dc2626'); g.addColorStop(0.5, '#ef4444'); g.addColorStop(1, '#f87171'); return g; },
+                                        () => { const g = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top); g.addColorStop(0, '#d97706'); g.addColorStop(0.5, '#f59e0b'); g.addColorStop(1, '#fbbf24'); return g; },
+                                        () => { const g = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top); g.addColorStop(0, '#475569'); g.addColorStop(0.5, '#64748b'); g.addColorStop(1, '#94a3b8'); return g; }
+                                    ];
+                                    return gradients[context.dataIndex % gradients.length]();
+                                },
+                                borderColor: [
+                                    '#1e40af',
+                                    '#6d28d9',
+                                    '#15803d',
+                                    '#b91c1c',
+                                    '#b45309',
+                                    '#334155'
+                                ],
+                                borderWidth: 2.5,
+                                borderRadius: {
+                                    topLeft: 8,
+                                    topRight: 8,
+                                    bottomLeft: 0,
+                                    bottomRight: 0
+                                },
+                                borderSkipped: false,
+                            },
+                            {
+                                type: 'line',
+                                label: 'Trend Line',
+                                data: chartData,
+                                borderColor: 'rgba(139, 92, 246, 0.9)',
+                                backgroundColor: 'transparent',
+                                borderWidth: 3,
+                                fill: false,
+                                tension: 0.4,
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                pointBackgroundColor: [
+                                    'rgba(59, 130, 246, 1)',
+                                    'rgba(139, 92, 246, 1)',
+                                    'rgba(34, 197, 94, 1)',
+                                    'rgba(239, 68, 68, 1)',
+                                    'rgba(245, 158, 11, 1)',
+                                    'rgba(100, 116, 139, 1)'
+                                ],
+                                pointBorderColor: '#ffffff',
+                                pointBorderWidth: 2.5,
+                                pointStyle: 'circle',
+                                yAxisID: 'y',
+                                order: 0, // Render line behind bars
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        aspectRatio: 2,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 20,
+                                    font: {
+                                        size: 13,
+                                        weight: 600
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                titleFont: {
+                                    size: 14,
+                                    weight: 600
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                displayColors: true,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        label += context.parsed.y;
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                                y: {
+                                beginAtZero: true,
+                                max: Math.max(5, Math.max(lineCount, inspectorCount, groupCount, ngCount, partCount, stopCount) + 1),
+                                ticks: {
+                                    stepSize: 1,
+                                    font: {
+                                        size: 12,
+                                        weight: 600
+                                    },
+                                    color: '#94a3b8'
+                                },
+                                grid: {
+                                    color: 'rgba(148, 163, 184, 0.1)',
+                                    drawBorder: false
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        size: 11,
+                                        weight: 600
+                                    },
+                                    color: '#94a3b8',
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                },
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeOutQuart'
+                        }
+                    },
+                    plugins: [{
+                        id: 'gradientBars2D',
+                        afterDatasetDraw: (chart, args) => {
+                            // Only process bar dataset
+                            if (args.meta.type !== 'bar') return;
+                            
+                            const ctx = chart.ctx;
+                            const chartArea = chart.chartArea;
+                            const meta = args.meta;
+                            if (meta.data.length === 0 || !chartArea) return;
+
+                            meta.data.forEach((bar) => {
+                                const x = bar.x;
+                                const y = bar.y;
+                                const base = chartArea.bottom;
+                                const width = bar.width;
+                                const height = base - y;
+
+                                if (height <= 0) return;
+
+                                ctx.save();
+
+                                // Add highlight on top for 3D/2D effect
+                                const highlightHeight = Math.min(height * 0.3, 20);
+                                const highlightGradient = ctx.createLinearGradient(x - width/2, y, x - width/2, y + highlightHeight);
+                                highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
+                                highlightGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
+                                highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                                
+                                const radius = 8;
+                                ctx.fillStyle = highlightGradient;
+                                ctx.beginPath();
+                                ctx.moveTo(x - width/2 + radius, y);
+                                ctx.lineTo(x + width/2 - radius, y);
+                                ctx.quadraticCurveTo(x + width/2, y, x + width/2, y + radius);
+                                ctx.lineTo(x + width/2, y + highlightHeight);
+                                ctx.lineTo(x - width/2, y + highlightHeight);
+                                ctx.lineTo(x - width/2, y + radius);
+                                ctx.quadraticCurveTo(x - width/2, y, x - width/2 + radius, y);
+                                ctx.closePath();
+                                ctx.fill();
+
+                                ctx.restore();
+                            });
+                        }
+                    }, {
+                        id: 'gradientLineFill',
+                        afterDatasetDraw: (chart, args) => {
+                            // Only process line dataset
+                            if (args.meta.type !== 'line') return;
+                            
+                            const ctx = chart.ctx;
+                            const chartArea = chart.chartArea;
+                            const meta = args.meta;
+                            if (meta.data.length === 0 || !chartArea) return;
+
+                            // Draw gradient fill under line
+                            ctx.save();
+                            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                            gradient.addColorStop(0, 'rgba(139, 92, 246, 0.25)');
+                            gradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.12)');
+                            gradient.addColorStop(1, 'rgba(139, 92, 246, 0.05)');
+                            
+                            ctx.fillStyle = gradient;
+                            ctx.beginPath();
+                            ctx.moveTo(meta.data[0].x, chartArea.bottom);
+                            meta.data.forEach(point => {
+                                ctx.lineTo(point.x, point.y);
+                            });
+                            ctx.lineTo(meta.data[meta.data.length - 1].x, chartArea.bottom);
+                            ctx.closePath();
+                            ctx.fill();
+                            ctx.restore();
+                        }
+                    }]
+                });
+            }
+        });
+
+        // Get AntiForgeryToken
+        function getToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+        }
+
+        function addMasterData(event, tipe, inputId, descId, listId) {
+            const input = document.getElementById(inputId);
+            const descInput = document.getElementById(descId);
+            const nilai = input.value.trim();
+            const deskripsi = descInput ? descInput.value.trim() : '';
+
+            if (!nilai) {
+                alert('Nilai harus diisi!');
+                return;
+            }
+
+            const token = getToken();
+            if (!token) {
+                alert('Token tidak ditemukan. Silakan refresh halaman.');
+                return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('tipe', tipe);
+            formData.append('nilai', nilai);
+            if (deskripsi) {
+                formData.append('deskripsi', deskripsi);
+            }
+            formData.append('__RequestVerificationToken', token);
+
+            // Show loading
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Menyimpan...';
+
+            fetch('@Url.Action("Add", "MasterData")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    input.value = '';
+                    if (descInput) descInput.value = '';
+                    alert('Data berhasil ditambahkan!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menambah data: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        }
+
+        function editMasterDataFromElement(button) {
+            try {
+                // Ambil data dari parent element (data-item)
+                const dataItem = button.closest('.data-item');
+                if (!dataItem) {
+                    alert('Data item tidak ditemukan');
+                    return;
+                }
+                
+                const id = dataItem.getAttribute('data-id');
+                const tipe = dataItem.getAttribute('data-tipe');
+                const nilai = dataItem.getAttribute('data-nilai') || '';
+                const deskripsi = dataItem.getAttribute('data-deskripsi') || '';
+                
+                if (!id || !tipe) {
+                    alert('Data tidak valid');
+                    return;
+                }
+                
+                const editIdEl = document.getElementById('editId');
+                const editTipeEl = document.getElementById('editTipe');
+                const editNilaiEl = document.getElementById('editNilai');
+                const editDeskripsiEl = document.getElementById('editDeskripsi');
+                const editModalEl = document.getElementById('editModal');
+                
+                if (!editIdEl || !editTipeEl || !editNilaiEl || !editDeskripsiEl || !editModalEl) {
+                    alert('Elemen modal tidak ditemukan. Silakan refresh halaman.');
+                    console.error('Missing elements:', {
+                        editId: !!editIdEl,
+                        editTipe: !!editTipeEl,
+                        editNilai: !!editNilaiEl,
+                        editDeskripsi: !!editDeskripsiEl,
+                        editModal: !!editModalEl
+                    });
+                    return;
+                }
+                
+                editIdEl.value = id;
+                editTipeEl.value = tipe;
+                editNilaiEl.value = nilai;
+                editDeskripsiEl.value = deskripsi;
+                editModalEl.style.display = 'block';
+            } catch (error) {
+                console.error('Error opening edit modal:', error);
+                alert('Terjadi kesalahan saat membuka form edit: ' + error.message);
+            }
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('editModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            const editId = document.getElementById('editId');
+            const editTipe = document.getElementById('editTipe');
+            const editNilai = document.getElementById('editNilai');
+            const editDeskripsi = document.getElementById('editDeskripsi');
+            if (editId) editId.value = '';
+            if (editTipe) editTipe.value = '';
+            if (editNilai) editNilai.value = '';
+            if (editDeskripsi) editDeskripsi.value = '';
+        }
+
+        function saveEditMasterData(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('editId').value;
+            const tipe = document.getElementById('editTipe').value;
+            const nilai = document.getElementById('editNilai').value.trim();
+            const deskripsi = document.getElementById('editDeskripsi').value.trim();
+
+            if (!nilai) {
+                alert('Nilai harus diisi!');
+                return;
+            }
+
+            const token = getToken();
+            if (!token) {
+                alert('Token tidak ditemukan. Silakan refresh halaman.');
+                return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('id', id);
+            formData.append('tipe', tipe);
+            formData.append('nilai', nilai);
+            if (deskripsi) {
+                formData.append('deskripsi', deskripsi);
+            }
+            formData.append('__RequestVerificationToken', token);
+
+            const btn = event.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Menyimpan...';
+
+            fetch('@Url.Action("Edit", "MasterData")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert('Data berhasil diupdate!');
+                    closeEditModal();
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat mengupdate data: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target == modal) {
+                closeEditModal();
+            }
+        }
+
+        function deleteMasterData(id, tipe) {
+            if (!confirm('Yakin ingin menghapus data ini?')) {
+                return;
+            }
+
+            const token = getToken();
+            if (!token) {
+                alert('Token tidak ditemukan. Silakan refresh halaman.');
+                return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('id', id);
+            formData.append('__RequestVerificationToken', token);
+
+            fetch('@Url.Action("Delete", "MasterData")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menghapus data');
+            });
+        }
+    </script>
+}
+

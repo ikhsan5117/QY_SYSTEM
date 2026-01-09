@@ -1,0 +1,1136 @@
+@model InputDimensiViewModel
+@{
+    ViewData["Title"] = "Input Data Dimensi";
+    Layout = "_Layout";
+}
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        background: #f8fafc;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .page-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .select-section {
+        background: rgba(30, 41, 59, 0.6);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        box-shadow: 
+            0 4px 16px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+    
+    .select-section:hover {
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.5),
+            0 0 20px rgba(59, 130, 246, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        border-color: rgba(59, 130, 246, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .select-label {
+        color: #f1f5f9;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.3));
+    }
+    
+    .select-dropdown {
+        width: 100%;
+        padding: 16px;
+        font-size: 16px;
+        font-weight: 600;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(10px);
+        color: #f1f5f9 !important;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    
+    .select-dropdown::placeholder {
+        color: #94a3b8;
+        opacity: 0.6;
+    }
+    
+    .select-dropdown:focus {
+        outline: none;
+        border-color: #3b82f6;
+        background: rgba(15, 23, 42, 0.8);
+        box-shadow: 
+            0 0 0 3px rgba(59, 130, 246, 0.2),
+            0 0 20px rgba(59, 130, 246, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    
+    .select-dropdown option {
+        background: rgba(15, 23, 42, 0.95);
+        color: #f1f5f9;
+    }
+    
+    .info-section {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 2px solid #e2e8f0;
+        display: none;
+    }
+    
+    .info-section.active {
+        display: block;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    
+    .info-value {
+        color: #1e293b;
+        font-size: 14px;
+        font-weight: 800;
+    }
+    
+    .form-section {
+        display: none;
+        padding-bottom: 100px;
+        margin-bottom: 20px;
+    }
+    
+    .form-section.active {
+        display: block;
+    }
+    
+    .dimension-card {
+        background: #ffffff;
+        border: 3px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .dimension-card:focus-within {
+        border-color: #3b82f6;
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
+    }
+    
+    .dimension-title {
+        font-size: 18px;
+        font-weight: 800;
+        color: #1e293b;
+        text-align: center;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .dimension-content {
+        display: grid;
+        grid-template-columns: 0.8fr 1.5fr;
+        gap: 12px;
+        align-items: center;
+    }
+    
+    /* Layout for X/Y measurements */
+    .dimension-content.xy-layout {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .xy-header {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border: 2px solid #93c5fd;
+        border-radius: 12px;
+        padding: 12px;
+        text-align: center;
+    }
+    
+    .xy-measurements {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    
+    .xy-item {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .xy-axis-label {
+        text-align: center;
+        font-size: 14px;
+        font-weight: 800;
+        color: #1e293b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    
+    .tolerance-column {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border: 2px solid #93c5fd;
+        border-radius: 12px;
+        padding: 12px 10px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .tolerance-label {
+        display: none;
+    }
+    
+    .tolerance-values {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .tolerance-item {
+        text-align: center;
+        width: 100%;
+    }
+    
+    .tolerance-item-label {
+        font-size: 10px;
+        color: #1e40af;
+        font-weight: 700;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+    }
+    
+    .tolerance-item-value {
+        font-size: 20px;
+        color: #1d4ed8;
+        font-weight: 900;
+    }
+    
+    .input-column {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        justify-content: center;
+    }
+    
+    .input-row {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+    }
+    
+    .input-field-wrapper {
+        flex: 1;
+    }
+    
+    .input-label {
+        text-align: center;
+        font-size: 9px;
+        color: #64748b;
+        font-weight: 700;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+    }
+    
+    .parsed-value {
+        width: 100%;
+        padding: 14px 12px;
+        font-size: 28px;
+        font-weight: 900;
+        text-align: center;
+        border: 4px solid #cbd5e1;
+        border-radius: 12px;
+        background: #f1f5f9;
+        color: #475569;
+        transition: all 0.3s ease;
+    }
+    
+    .input-wrapper {
+        position: relative;
+    }
+    
+    .dimension-input-caliper {
+        width: 100%;
+        padding: 14px 12px;
+        font-size: 28px;
+        font-weight: 900;
+        text-align: center;
+        border: 4px solid #e2e8f0;
+        border-radius: 12px;
+        background: #fafafa;
+        color: #1e293b;
+        transition: all 0.3s ease;
+    }
+    
+    .dimension-input-caliper:focus {
+        outline: none;
+        border-color: #3b82f6;
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+    
+    .dimension-input-caliper.valid {
+        border-color: #10b981;
+        background: #f0fdf4;
+    }
+    
+    .dimension-input-caliper.invalid {
+        border-color: #ef4444;
+        background: #fef2f2;
+    }
+    
+    .status-badge {
+        margin-top: 8px;
+        min-width: 100%;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 16px;
+        opacity: 0;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .status-badge.show {
+        opacity: 1;
+    }
+    
+    .status-badge.ok {
+        background: #10b981;
+        color: #ffffff;
+    }
+    
+    .status-badge.ng {
+        background: #ef4444;
+        color: #ffffff;
+    }
+    
+    .input-help {
+        text-align: center;
+        font-size: 11px;
+        color: #94a3b8;
+        margin-top: 8px;
+        font-weight: 600;
+    }
+    
+    .sample-counter {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: #ffffff;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+        text-align: center;
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+    }
+    
+    .sample-counter-label {
+        font-size: 12px;
+        font-weight: 600;
+        opacity: 0.9;
+        margin-bottom: 8px;
+    }
+    
+    .sample-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #3b82f6;
+        border: none;
+        font-size: 24px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
+    .sample-btn:hover {
+        background: #f0f9ff;
+        transform: scale(1.05);
+    }
+    
+    .sample-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .sample-input {
+        width: 80px;
+        height: 48px;
+        text-align: center;
+        font-size: 24px;
+        font-weight: 800;
+        border: none;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #1e293b;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
+    .sample-input:focus {
+        outline: 2px solid #ffffff;
+        outline-offset: 2px;
+    }
+    
+    .sample-counter-value {
+        font-size: 36px;
+        font-weight: 900;
+        letter-spacing: 1px;
+    }
+    
+    .submit-btn {
+        width: 100%;
+        padding: 22px;
+        font-size: 18px;
+        font-weight: 800;
+        color: #ffffff;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: none;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        z-index: 10;
+        margin-top: 20px;
+    }
+    
+    .submit-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+        background: linear-gradient(135deg, #059669, #047857);
+    }
+    
+    .submit-btn:active:not(:disabled) {
+        transform: translateY(0);
+    }
+    
+    .submit-btn:disabled {
+        background: #cbd5e1;
+        cursor: not-allowed;
+        box-shadow: none;
+        opacity: 0.6;
+    }
+    
+    /* Responsive untuk mobile */
+    @@media (max-width: 600px) {
+        .dimension-content {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        
+        .dimension-input-caliper {
+            font-size: 28px;
+            padding: 16px;
+        }
+        
+        .tolerance-item-value {
+            font-size: 18px;
+        }
+    }
+</style>
+
+<div class="page-container">
+    <!-- Product Selection -->
+    <div class="select-section">
+        <label class="select-label">Pilih Item / Produk</label>
+        <input type="text" 
+               id="produkSearch" 
+               class="select-dropdown" 
+               list="produkList" 
+               placeholder="Ketik Part Code untuk mencari..." 
+               autocomplete="off">
+        <datalist id="produkList">
+            @if (Model.StandarDimensiList != null)
+            {
+                foreach (var standar in Model.StandarDimensiList)
+                {
+                    <option value="@standar.Produk?.PartCode" 
+                            data-id="@standar.Id"
+                            data-nama="@standar.Produk?.NamaProduk"
+                            data-inner-a-min="@standar.InnerDiameter_SisiA_Min"
+                            data-inner-a-max="@standar.InnerDiameter_SisiA_Max"
+                            data-outer-a-min="@standar.OuterDiameter_SisiA_Min"
+                            data-outer-a-max="@standar.OuterDiameter_SisiA_Max"
+                            data-thickness-a-min="@standar.Thickness_SisiA_Min"
+                            data-thickness-a-max="@standar.Thickness_SisiA_Max"
+                            data-inner-b-min="@standar.InnerDiameter_SisiB_Min"
+                            data-inner-b-max="@standar.InnerDiameter_SisiB_Max"
+                            data-outer-b-min="@standar.OuterDiameter_SisiB_Min"
+                            data-outer-b-max="@standar.OuterDiameter_SisiB_Max"
+                            data-thickness-b-min="@standar.Thickness_SisiB_Min"
+                            data-thickness-b-max="@standar.Thickness_SisiB_Max"
+                            data-panjang-min="@standar.Panjang_Min"
+                            data-panjang-max="@standar.Panjang_Max"
+                            data-tinggi-min="@standar.Tinggi_Min"
+                            data-tinggi-max="@standar.Tinggi_Max"
+                            data-radius-min="@standar.Radius_Min"
+                            data-radius-max="@standar.Radius_Max"
+                            data-dimensia-min="@standar.DimensiA_Min"
+                            data-dimensia-max="@standar.DimensiA_Max"
+                            data-dimensib-min="@standar.DimensiB_Min"
+                            data-dimensib-max="@standar.DimensiB_Max"
+                            data-sudut-min="@standar.Sudut_Min"
+                            data-sudut-max="@standar.Sudut_Max">
+                        @standar.Produk?.NamaProduk - @standar.NamaDimensi
+                    </option>
+                }
+            }
+        </datalist>
+        <select id="produkSelect" style="display: none;">
+            <option value="">-- Pilih Produk --</option>
+            @if (Model.StandarDimensiList != null)
+            {
+                foreach (var standar in Model.StandarDimensiList)
+                {
+                    <option value="@standar.Id" 
+                            data-partcode="@standar.Produk?.PartCode"
+                            data-nama="@standar.Produk?.NamaProduk"
+                            data-inner-a-min="@standar.InnerDiameter_SisiA_Min"
+                            data-inner-a-max="@standar.InnerDiameter_SisiA_Max"
+                            data-outer-a-min="@standar.OuterDiameter_SisiA_Min"
+                            data-outer-a-max="@standar.OuterDiameter_SisiA_Max"
+                            data-thickness-a-min="@standar.Thickness_SisiA_Min"
+                            data-thickness-a-max="@standar.Thickness_SisiA_Max"
+                            data-inner-b-min="@standar.InnerDiameter_SisiB_Min"
+                            data-inner-b-max="@standar.InnerDiameter_SisiB_Max"
+                            data-outer-b-min="@standar.OuterDiameter_SisiB_Min"
+                            data-outer-b-max="@standar.OuterDiameter_SisiB_Max"
+                            data-thickness-b-min="@standar.Thickness_SisiB_Min"
+                            data-thickness-b-max="@standar.Thickness_SisiB_Max"
+                            data-panjang-min="@standar.Panjang_Min"
+                            data-panjang-max="@standar.Panjang_Max"
+                            data-tinggi-min="@standar.Tinggi_Min"
+                            data-tinggi-max="@standar.Tinggi_Max"
+                            data-radius-min="@standar.Radius_Min"
+                            data-radius-max="@standar.Radius_Max"
+                            data-dimensia-min="@standar.DimensiA_Min"
+                            data-dimensia-max="@standar.DimensiA_Max"
+                            data-dimensib-min="@standar.DimensiB_Min"
+                            data-dimensib-max="@standar.DimensiB_Max"
+                            data-sudut-min="@standar.Sudut_Min"
+                            data-sudut-max="@standar.Sudut_Max">
+                        @standar.Produk?.PartCode - @standar.Produk?.NamaProduk - @standar.NamaDimensi
+                    </option>
+                }
+            }
+        </select>
+    </div>
+
+    <!-- Sample Counter Configuration (Step 1) -->
+    <div id="sampleCounterConfig" class="sample-counter" style="display: none;">
+        <div class="sample-counter-label">TENTUKAN JUMLAH SAMPLE</div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 12px;">
+            <button type="button" id="btnDecreaseConfig" class="sample-btn" onclick="adjustSampleConfig(-1)">-</button>
+            <input type="number" id="sampleInputConfig" value="5" min="1" max="50" class="sample-input" onchange="updateSampleConfigDisplay()" />
+            <button type="button" id="btnIncreaseConfig" class="sample-btn" onclick="adjustSampleConfig(1)">+</button>
+        </div>
+        <div class="sample-counter-value" id="sampleNumberConfig" style="margin-top: 12px;">5</div>
+        <button type="button" id="btnConfirmSample" class="submit-btn" style="margin-top: 20px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);" onclick="confirmSampleQty()">
+            ✓ MULAI PENGUKURAN
+        </button>
+    </div>
+
+    <!-- Sample Counter Progress (Step 2) -->
+    <div id="sampleCounter" class="sample-counter" style="display: none;">
+        <div class="sample-counter-label">PROGRESS PENGUKURAN</div>
+        <div class="sample-counter-value" id="sampleNumber" style="margin-top: 12px;">0/5</div>
+    </div>
+
+    <!-- Form -->
+    <form id="inputForm" action="/Dimensi/SimpanInput" method="post" class="form-section">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="StandarDimensiId" id="standarDimensiIdForm" />
+        <input type="hidden" name="NamaPIC" id="namaPICForm" value="" />
+        <input type="hidden" name="Plant" id="plantForm" value="" />
+        <input type="hidden" name="Grup" id="grupForm" value="" />
+        
+        <div id="dimensionInputs"></div>
+        
+        <button type="submit" class="submit-btn" id="submitBtn" disabled>
+            SIMPAN DATA
+        </button>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    let currentSampleCount = 0;
+    let maxSamples = 5;
+    let allFieldsValid = false;
+    let sampleQtyConfirmed = false;
+    
+    // Functions for sample configuration (Step 1)
+    function adjustSampleConfig(delta) {
+        const sampleInput = document.getElementById('sampleInputConfig');
+        let newValue = parseInt(sampleInput.value) + delta;
+        if (newValue >= 1 && newValue <= 50) {
+            sampleInput.value = newValue;
+            updateSampleConfigDisplay();
+        }
+    }
+    
+    function updateSampleConfigDisplay() {
+        const sampleInput = document.getElementById('sampleInputConfig');
+        const value = parseInt(sampleInput.value);
+        document.getElementById('sampleNumberConfig').textContent = value;
+    }
+    
+    function confirmSampleQty() {
+        const sampleInput = document.getElementById('sampleInputConfig');
+        maxSamples = parseInt(sampleInput.value);
+        sampleQtyConfirmed = true;
+        
+        // Hide configuration, show progress counter and form
+        document.getElementById('sampleCounterConfig').style.display = 'none';
+        document.getElementById('sampleCounter').style.display = 'block';
+        document.getElementById('inputForm').classList.add('active');
+        
+        // Update progress display
+        currentSampleCount = 0;
+        updateSampleDisplay();
+        
+        // Auto focus to first input field
+        setTimeout(() => {
+            const firstInput = document.querySelector('.dimension-input-caliper');
+            if (firstInput) {
+                firstInput.focus();
+                firstInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 300);
+    }
+    
+    // Function to update sample progress display
+    function updateSampleDisplay() {
+        document.getElementById('sampleNumber').textContent = currentSampleCount + '/' + maxSamples;
+    }
+    
+    let selectedStandarId = null;
+    let picData = { nama: '', plant: '', grup: '' };
+    
+    // Global references to DOM elements
+    let produkSearch, produkSelect, formSection, sampleCounterConfig, sampleCounter, dimensionInputs, submitBtn;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        produkSearch = document.getElementById('produkSearch');
+        produkSelect = document.getElementById('produkSelect');
+        formSection = document.getElementById('inputForm');
+        sampleCounterConfig = document.getElementById('sampleCounterConfig');
+        sampleCounter = document.getElementById('sampleCounter');
+        dimensionInputs = document.getElementById('dimensionInputs');
+        submitBtn = document.getElementById('submitBtn');
+        
+        // AUTO-FILL: Read partCode from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const partCodeFromUrl = urlParams.get('partCode');
+        if (partCodeFromUrl) {
+            produkSearch.value = partCodeFromUrl;
+            // Trigger the search logic
+            const selectOptions = produkSelect.options;
+            for (let i = 0; i < selectOptions.length; i++) {
+                const partCode = selectOptions[i].dataset.partcode;
+                if (partCode && partCode.toUpperCase() === partCodeFromUrl.toUpperCase()) {
+                    produkSelect.value = selectOptions[i].value;
+                    loadProduct();
+                    break;
+                }
+            }
+        }
+        
+        // Handle search input change - search by Part Code
+        produkSearch.addEventListener('input', function() {
+            const searchValue = this.value.trim();
+            // Find matching option by Part Code in select
+            const selectOptions = produkSelect.options;
+            for (let i = 0; i < selectOptions.length; i++) {
+                const partCode = selectOptions[i].dataset.partcode;
+                if (partCode && partCode.toUpperCase() === searchValue.toUpperCase()) {
+                    produkSelect.value = selectOptions[i].value;
+                    loadProduct();
+                    break;
+                }
+            }
+        });
+        
+        // Also trigger on blur (when user selects from datalist)
+        produkSearch.addEventListener('blur', function() {
+            setTimeout(() => {
+                const searchValue = this.value.trim();
+                const selectOptions = produkSelect.options;
+                for (let i = 0; i < selectOptions.length; i++) {
+                    const partCode = selectOptions[i].dataset.partcode;
+                    if (partCode && partCode.toUpperCase() === searchValue.toUpperCase()) {
+                        produkSelect.value = selectOptions[i].value;
+                        loadProduct();
+                        break;
+                    }
+                }
+            }, 200);
+        });
+        
+        produkSelect.addEventListener('change', loadProduct);
+        
+        function loadProduct() {
+            const selectedOption = produkSelect.options[produkSelect.selectedIndex];
+            
+            if (!selectedOption.value) {
+                formSection.classList.remove('active');
+                sampleCounterConfig.style.display = 'none';
+                sampleCounter.style.display = 'none';
+                sampleQtyConfirmed = false;
+                return;
+            }
+            
+            // Save selected standar ID
+            selectedStandarId = selectedOption.value;
+            
+            // Set PIC data from ViewBag
+            picData = { 
+                nama: '@ViewBag.NamaLengkap', 
+                plant: '@ViewBag.Plant', 
+                grup: '@ViewBag.Grup' 
+            };
+            
+            // Show sample quantity configuration (Step 1)
+            sampleCounterConfig.style.display = 'block';
+            sampleCounter.style.display = 'none';
+            formSection.classList.remove('active');
+            sampleQtyConfirmed = false;
+            
+            // Reset counter
+            currentSampleCount = 0;
+            
+            // Build dimension inputs (but keep hidden until qty confirmed)
+            buildDimensionInputs(selectedOption);
+        }
+        
+        function buildDimensionInputs(option) {
+            const dimensions = [
+                { label: 'INNER Ø SISI A', field: 'NilaiInnerDiameter_SisiA', min: option.dataset.innerAMin, max: option.dataset.innerAMax, hasXY: true },
+                { label: 'OUTER Ø SISI A', field: 'NilaiOuterDiameter_SisiA', min: option.dataset.outerAMin, max: option.dataset.outerAMax, hasXY: true },
+                { label: 'THICKNESS SISI A', field: 'NilaiThickness_SisiA', min: option.dataset.thicknessAMin, max: option.dataset.thicknessAMax, hasXY: true },
+                { label: 'INNER Ø SISI B', field: 'NilaiInnerDiameter_SisiB', min: option.dataset.innerBMin, max: option.dataset.innerBMax, hasXY: true },
+                { label: 'OUTER Ø SISI B', field: 'NilaiOuterDiameter_SisiB', min: option.dataset.outerBMin, max: option.dataset.outerBMax, hasXY: true },
+                { label: 'THICKNESS SISI B', field: 'NilaiThickness_SisiB', min: option.dataset.thicknessBMin, max: option.dataset.thicknessBMax, hasXY: true },
+                { label: 'PANJANG', field: 'NilaiPanjang', min: option.dataset.panjangMin, max: option.dataset.panjangMax, hasXY: false },
+                { label: 'TINGGI', field: 'NilaiTinggi', min: option.dataset.tinggiMin, max: option.dataset.tinggiMax, hasXY: false },
+                { label: 'RADIUS', field: 'NilaiRadius', min: option.dataset.radiusMin, max: option.dataset.radiusMax, hasXY: false },
+                { label: 'DIMENSI A', field: 'NilaiDimensiA', min: option.dataset.dimensiaMin, max: option.dataset.dimensiaMax, hasXY: false },
+                { label: 'DIMENSI B', field: 'NilaiDimensiB', min: option.dataset.dimensibMin, max: option.dataset.dimensibMax, hasXY: false },
+                { label: 'SUDUT', field: 'NilaiSudut', min: option.dataset.sudutMin, max: option.dataset.sudutMax, hasXY: false }
+            ];
+            
+            let html = '';
+            dimensions.forEach(dim => {
+                // Only show dimension if it has valid standard (min or max > 0)
+                const minVal = parseFloat(dim.min) || 0;
+                const maxVal = parseFloat(dim.max) || 0;
+                
+                if (minVal > 0 || maxVal > 0) {
+                    if (dim.hasXY) {
+                        // Layout with X and Y measurements
+                        html += `
+                            <div class="dimension-card">
+                                <div class="dimension-title">${dim.label}</div>
+                                
+                                <div class="dimension-content xy-layout">
+                                    <!-- Standar Header -->
+                                    <div class="xy-header">
+                                        <div style="font-size: 11px; color: #1e40af; font-weight: 700; margin-bottom: 6px;">STANDAR</div>
+                                        <div style="display: flex; justify-content: space-around;">
+                                            <div>
+                                                <div style="font-size: 10px; color: #1e40af; font-weight: 700;">Min</div>
+                                                <div style="font-size: 18px; color: #1d4ed8; font-weight: 900;">${parseFloat(dim.min).toFixed(2)}</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 10px; color: #1e40af; font-weight: 700;">Max</div>
+                                                <div style="font-size: 18px; color: #1d4ed8; font-weight: 900;">${parseFloat(dim.max).toFixed(2)}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- X and Y Measurements -->
+                                    <div class="xy-measurements">
+                                        <!-- X Axis -->
+                                        <div class="xy-item">
+                                            <div class="xy-axis-label">X</div>
+                                            <div class="input-label">CALIPER</div>
+                                            <input type="text" 
+                                                   inputmode="decimal"
+                                                   class="dimension-input-caliper" 
+                                                   data-target="${dim.field}X"
+                                                   data-min="${dim.min}" 
+                                                   data-max="${dim.max}"
+                                                   placeholder="+012.00">
+                                            <div class="input-label">PARSED</div>
+                                            <div class="parsed-value" id="parsed-${dim.field}X">-</div>
+                                            <input type="hidden" 
+                                                   name="${dim.field}X" 
+                                                   class="dimension-input-hidden" 
+                                                   id="hidden-${dim.field}X">
+                                            <div class="status-badge" id="status-${dim.field}X"></div>
+                                        </div>
+                                        
+                                        <!-- Y Axis -->
+                                        <div class="xy-item">
+                                            <div class="xy-axis-label">Y</div>
+                                            <div class="input-label">CALIPER</div>
+                                            <input type="text" 
+                                                   inputmode="decimal"
+                                                   class="dimension-input-caliper" 
+                                                   data-target="${dim.field}Y"
+                                                   data-min="${dim.min}" 
+                                                   data-max="${dim.max}"
+                                                   placeholder="+012.00">
+                                            <div class="input-label">PARSED</div>
+                                            <div class="parsed-value" id="parsed-${dim.field}Y">-</div>
+                                            <input type="hidden" 
+                                                   name="${dim.field}Y" 
+                                                   class="dimension-input-hidden" 
+                                                   id="hidden-${dim.field}Y">
+                                            <div class="status-badge" id="status-${dim.field}Y"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Hidden field for average value -->
+                                    <input type="hidden" 
+                                           name="${dim.field}" 
+                                           class="dimension-input-hidden dimension-average" 
+                                           id="hidden-${dim.field}"
+                                           data-x-field="hidden-${dim.field}X"
+                                           data-y-field="hidden-${dim.field}Y">
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // Standard layout (single measurement)
+                        html += `
+                        <div class="dimension-card">
+                            <div class="dimension-title">${dim.label}</div>
+                            
+                            <div class="dimension-content">
+                                <!-- Standar Column -->
+                                <div class="tolerance-column">
+                                    <div class="tolerance-label">STANDAR TOLERANSI</div>
+                                    <div class="tolerance-values">
+                                        <div class="tolerance-item">
+                                            <div class="tolerance-item-label">MIN</div>
+                                            <div class="tolerance-item-value">${parseFloat(dim.min).toFixed(2)}</div>
+                                        </div>
+                                        <div class="tolerance-item">
+                                            <div class="tolerance-item-label">MAX</div>
+                                            <div class="tolerance-item-value">${parseFloat(dim.max).toFixed(2)}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Input Column with Caliper and Parsed -->
+                                <div class="input-column">
+                                    <div class="input-row">
+                                        <div class="input-field-wrapper">
+                                            <div class="input-label">CALIPER</div>
+                                            <input type="text" 
+                                                   inputmode="decimal"
+                                                   class="dimension-input-caliper" 
+                                                   data-target="${dim.field}"
+                                                   data-min="${dim.min}" 
+                                                   data-max="${dim.max}"
+                                                   placeholder="+012.00">
+                                        </div>
+                                        <div class="input-field-wrapper">
+                                            <div class="input-label">PARSED</div>
+                                            <div class="parsed-value" id="parsed-${dim.field}">-</div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" 
+                                           name="${dim.field}" 
+                                           class="dimension-input-hidden" 
+                                           id="hidden-${dim.field}">
+                                    <div class="status-badge" id="status-${dim.field}"></div>
+                                    <div class="input-help">Hasil pengukuran</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    }
+                }
+            });
+            
+            dimensionInputs.innerHTML = html;
+            
+            // Attach validation to all caliper inputs
+            document.querySelectorAll('.dimension-input-caliper').forEach(input => {
+                input.addEventListener('input', function() {
+                    validateInput(this);
+                    updateAverageValues();
+                    checkAllFields();
+                });
+                
+                input.addEventListener('blur', function() {
+                    validateInput(this);
+                    updateAverageValues();
+                    checkAllFields();
+                });
+            });
+        }
+        
+        // Update average values for X/Y measurements
+        function updateAverageValues() {
+            document.querySelectorAll('.dimension-average').forEach(avgField => {
+                const xFieldId = avgField.dataset.xField;
+                const yFieldId = avgField.dataset.yField;
+                
+                const xField = document.getElementById(xFieldId);
+                const yField = document.getElementById(yFieldId);
+                
+                if (xField && yField && xField.value && yField.value) {
+                    const xValue = parseFloat(xField.value);
+                    const yValue = parseFloat(yField.value);
+                    
+                    if (!isNaN(xValue) && !isNaN(yValue)) {
+                        const average = (xValue + yValue) / 2;
+                        avgField.value = average.toFixed(2);
+                    }
+                }
+            });
+        }
+        
+        function validateInput(input) {
+            // Parse value - handle caliper digital format (+020.00, +020,00, -020.00, etc)
+            let rawValue = input.value;
+            const targetName = input.dataset.target;
+            
+            // Remove all whitespace and non-printable characters
+            rawValue = rawValue.replace(/[\s\u0000-\u001F\u007F-\u009F]/g, '');
+            
+            // Remove leading + sign if present
+            if (rawValue.charAt(0) === '+' || rawValue.charAt(0) === '\u002B') {
+                rawValue = rawValue.substring(1);
+            }
+            
+            // Replace comma with dot for decimal separator (European format)
+            rawValue = rawValue.replace(/,/g, '.');
+            
+            // Remove leading zeros but keep the number (012.00 -> 12.00, 020.00 -> 20.00)
+            // Only remove zeros before the first non-zero digit or decimal point
+            if (rawValue.indexOf('.') !== -1) {
+                // Has decimal: remove leading zeros before decimal
+                const parts = rawValue.split('.');
+                parts[0] = parts[0].replace(/^0+/, '') || '0';
+                rawValue = parts.join('.');
+            } else {
+                // No decimal: just remove leading zeros
+                rawValue = rawValue.replace(/^0+/, '') || '0';
+            }
+            
+            const value = parseFloat(rawValue);
+            const min = parseFloat(input.dataset.min);
+            const max = parseFloat(input.dataset.max);
+            
+            // Update parsed display and hidden input
+            const parsedDisplay = document.getElementById('parsed-' + targetName);
+            const hiddenInput = document.getElementById('hidden-' + targetName);
+            const statusBadge = document.getElementById('status-' + targetName);
+            
+            // Clear previous states
+            input.classList.remove('valid', 'invalid');
+            statusBadge.classList.remove('show', 'ok', 'ng');
+            statusBadge.textContent = '';
+            
+            if (rawValue && !isNaN(value) && value !== 0) {
+                // Display parsed value
+                parsedDisplay.textContent = value.toFixed(2);
+                parsedDisplay.style.color = '#1e293b';
+                parsedDisplay.style.background = '#e0f2fe';
+                parsedDisplay.style.borderColor = '#0ea5e9';
+                
+                // Set hidden input for form submission
+                hiddenInput.value = value;
+                
+                if (value >= min && value <= max) {
+                    // OK
+                    input.classList.add('valid');
+                    input.style.borderColor = '#10b981';
+                    input.style.background = '#f0fdf4';
+                    parsedDisplay.style.borderColor = '#10b981';
+                    parsedDisplay.style.background = '#f0fdf4';
+                    statusBadge.classList.add('show', 'ok');
+                    statusBadge.textContent = 'OK';
+                } else {
+                    // NG
+                    input.classList.add('invalid');
+                    input.style.borderColor = '#ef4444';
+                    input.style.background = '#fef2f2';
+                    parsedDisplay.style.borderColor = '#ef4444';
+                    parsedDisplay.style.background = '#fef2f2';
+                    statusBadge.classList.add('show', 'ng');
+                    statusBadge.textContent = 'NG';
+                }
+            } else {
+                parsedDisplay.textContent = '-';
+                parsedDisplay.style.color = '#475569';
+                parsedDisplay.style.background = '#f1f5f9';
+                parsedDisplay.style.borderColor = '#cbd5e1';
+                hiddenInput.value = '';
+                input.style.borderColor = '#e2e8f0';
+                input.style.background = '#fafafa';
+            }
+        }
+        
+        function checkAllFields() {
+            const inputs = document.querySelectorAll('.dimension-input-hidden:not(.dimension-average)');
+            let allFilled = true;
+            
+            inputs.forEach(input => {
+                if (!input.value || input.value.trim() === '') {
+                    allFilled = false;
+                }
+            });
+            
+            // Enable button if all fields are filled, regardless of OK/NG status
+            submitBtn.disabled = !allFilled;
+        }
+        
+        // Form submission
+        document.getElementById('inputForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Set PIC data to hidden fields
+            document.getElementById('standarDimensiIdForm').value = selectedStandarId;
+            document.getElementById('namaPICForm').value = picData.nama;
+            document.getElementById('plantForm').value = picData.plant;
+            document.getElementById('grupForm').value = picData.grup;
+            
+            // Submit via AJAX
+            const formData = new FormData(this);
+            
+            fetch('/Dimensi/SimpanInput', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (!response.ok) {
+                    throw new Error('Server responded with status: ' + response.status);
+                }
+                
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    currentSampleCount++;
+                    updateSampleDisplay();
+                    
+                    // Check if we need more samples
+                    if (currentSampleCount < maxSamples) {
+                        // Reset form for next sample (no popup, just continue)
+                        resetFormForNextSample();
+                    } else {
+                        // All samples complete - redirect immediately
+                        window.location.href = '/Dimensi/Riwayat';
+                    }
+                } else {
+                    alert('Gagal menyimpan data: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+            });
+        });
+        
+        function resetFormForNextSample() {
+            // Clear all caliper input fields
+            document.querySelectorAll('.dimension-input-caliper').forEach(input => {
+                input.value = '';
+                input.classList.remove('valid', 'invalid');
+                input.style.borderColor = '#e2e8f0';
+                input.style.background = '#fafafa';
+            });
+            
+            // Clear all hidden inputs
+            document.querySelectorAll('.dimension-input-hidden').forEach(input => {
+                input.value = '';
+            });
+            
+            // Clear all parsed displays
+            document.querySelectorAll('[id^="parsed-"]').forEach(parsed => {
+                parsed.textContent = '-';
+                parsed.style.color = '#475569';
+                parsed.style.background = '#f1f5f9';
+                parsed.style.borderColor = '#cbd5e1';
+            });
+            
+            // Hide all status badges
+            document.querySelectorAll('.status-badge').forEach(badge => {
+                badge.classList.remove('show', 'ok', 'ng');
+                badge.textContent = '';
+            });
+            
+            // Disable submit button
+            document.getElementById('submitBtn').disabled = true;
+            
+            // Auto focus to first input field
+            setTimeout(() => {
+                const firstInput = document.querySelector('.dimension-input-caliper');
+                if (firstInput) {
+                    firstInput.focus();
+                    firstInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 300);
+        }
+    });
+</script>
+}

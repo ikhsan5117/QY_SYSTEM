@@ -1,0 +1,1118 @@
+@model IEnumerable<AplikasiCheckDimensi.Models.Produk>
+@{
+    ViewData["Title"] = "SOP CHECKING QC";
+    Layout = "~/Views/Shared/_LayoutDesktop.cshtml";
+}
+
+<style>
+    .sop-scan-container {
+        padding: 10px 20px 20px 20px;
+        max-width: 100%;
+        margin: 0 auto;
+        height: calc(100vh - 100px);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        transition: all 0.3s ease;
+    }
+
+    /* Top Info Section */
+    .top-info-section {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 20px;
+        transition: all 0.3s ease;
+    }
+
+    /* Responsive untuk sidebar collapsed */
+    .sidebar.collapsed ~ .main-content .top-info-section {
+        grid-template-columns: 1fr 450px;
+    }
+
+    .product-info-cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-left: 4px solid #3b82f6;
+        transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .info-card-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+    }
+
+    .info-card-value {
+        font-size: 22px;
+        font-weight: 800;
+        color: #1e293b;
+    }
+
+    .info-card:nth-child(1) {
+        border-left-color: #3b82f6;
+    }
+
+    .info-card:nth-child(2) {
+        border-left-color: #8b5cf6;
+    }
+
+    .info-card:nth-child(3) {
+        border-left-color: #10b981;
+    }
+
+    .info-card:nth-child(4) {
+        border-left-color: #f59e0b;
+    }
+
+    .scan-barcode-section {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .scan-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .scan-title {
+        font-size: 14px;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .barcode-input {
+        width: 100%;
+        padding: 12px 15px;
+        font-size: 16px;
+        font-weight: 600;
+        text-align: center;
+        border: 3px solid #3b82f6;
+        border-radius: 10px;
+        background: #eff6ff;
+        transition: all 0.3s ease;
+    }
+
+    .barcode-input:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        background: white;
+    }
+
+    .scan-icon {
+        color: #3b82f6;
+        font-size: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 60px;
+    }
+
+    /* Main Content Grid */
+    .main-content-grid {
+        display: grid;
+        grid-template-columns: 1fr 200px;
+        gap: 15px;
+        flex: 1;
+        min-height: 0;
+        transition: all 0.3s ease;
+    }
+
+    /* Perbesar area video saat sidebar collapsed */
+    .sidebar.collapsed ~ .main-content .main-content-grid {
+        grid-template-columns: 1fr 220px;
+        gap: 20px;
+    }
+
+    /* Video Section */
+    .video-section {
+        background: #1e293b;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .video-container-main {
+        flex: 1;
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .video-placeholder-main {
+        color: #64748b;
+        text-align: center;
+    }
+
+    .video-placeholder-main i {
+        font-size: 80px;
+        margin-bottom: 15px;
+        opacity: 0.3;
+        transition: font-size 0.3s ease;
+    }
+
+    /* Perbesar icon placeholder saat sidebar collapsed */
+    .sidebar.collapsed ~ .main-content .video-placeholder-main i {
+        font-size: 120px;
+    }
+
+    .video-title {
+        color: white;
+        font-size: 32px;
+        font-weight: 700;
+        text-align: center;
+        transition: font-size 0.3s ease;
+    }
+
+    /* Perbesar font title saat sidebar collapsed */
+    .sidebar.collapsed ~ .main-content .video-title {
+        font-size: 40px;
+    }
+
+    /* Right Sidebar Buttons */
+    .right-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .sidebar-btn {
+        padding: 18px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: white;
+        text-transform: uppercase;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    /* Perbesar button saat sidebar collapsed */
+    .sidebar.collapsed ~ .main-content .sidebar-btn {
+        padding: 22px;
+        font-size: 17px;
+    }
+
+    .sidebar-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    .btn-dimensi {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        flex: 1;
+    }
+
+    .btn-packing {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        flex: 1;
+    }
+
+    .btn-cf {
+        background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+        flex: 1;
+    }
+
+    /* Loading State */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.active {
+        display: flex;
+    }
+
+    .loading-content {
+        text-align: center;
+        color: white;
+    }
+
+    .spinner {
+        border: 4px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top: 4px solid white;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .product-not-found {
+        display: none;
+        background: #fef2f2;
+        border: 2px solid #ef4444;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        color: #dc2626;
+        font-weight: 700;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10000;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .product-not-found.show {
+        display: block;
+    }
+
+    /* Modal Popup Styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.7);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 80vh;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        padding: 20px 30px;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header.packing {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+
+    .modal-header.cf {
+        background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    }
+
+    .modal-title {
+        font-size: 24px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .modal-close {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .modal-close:hover {
+        background: rgba(255,255,255,0.3);
+    }
+
+    .modal-body {
+        padding: 30px;
+        overflow-y: auto;
+    }
+
+    .dimension-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .dimension-table th {
+        background: #f1f5f9;
+        padding: 12px;
+        text-align: left;
+        font-weight: 700;
+        font-size: 12px;
+        color: #64748b;
+        text-transform: uppercase;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .dimension-table td {
+        padding: 15px 12px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .dimension-name {
+        color: #3b82f6;
+        font-weight: 700;
+    }
+
+    .packing-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .packing-item {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 20px;
+        border: 2px solid #e2e8f0;
+    }
+
+    .packing-item-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .packing-item-value {
+        font-size: 24px;
+        font-weight: 800;
+        color: #1e293b;
+    }
+
+    .packing-image {
+        width: 100%;
+        border-radius: 12px;
+        margin-top: 20px;
+        border: 2px solid #e2e8f0;
+    }
+
+    .cf-content {
+        margin-top: 20px;
+    }
+
+    .cf-item {
+        background: #fef2f2;
+        border-radius: 12px;
+        padding: 20px;
+        border: 2px solid #fecaca;
+    }
+
+    .cf-item-label {
+        font-size: 14px;
+        font-weight: 700;
+        color: #dc2626;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .cf-item-value {
+        font-size: 16px;
+        font-weight: 500;
+        color: #1e293b;
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+
+    .cf-image-container {
+        margin-top: 20px;
+    }
+
+    .cf-image-label {
+        font-size: 14px;
+        font-weight: 700;
+        color: #dc2626;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .cf-image {
+        width: 100%;
+        border-radius: 12px;
+        border: 3px solid #fecaca;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+    }
+
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #94a3b8;
+        font-size: 16px;
+    }
+
+    /* ========================================
+       TABLET RESPONSIVE - OPTIMIZED LAYOUT
+       ======================================== */
+    @@media (max-width: 1024px) {
+        /* Container padding optimization */
+        .sop-scan-container {
+            padding: 16px;
+            gap: 16px;
+        }
+        
+        /* Top Info Section - Stack vertically on tablet */
+        .top-info-section {
+            grid-template-columns: 1fr;  /* Single column layout */
+            gap: 16px;
+        }
+        
+        /* Product Info Cards - 2 columns instead of 4 */
+        .product-info-cards {
+            grid-template-columns: repeat(2, 1fr);  /* 2x2 grid */
+            gap: 12px;
+        }
+        
+        /* Optimize card sizing */
+        .info-card {
+            padding: 16px;
+        }
+        
+        .info-card-label {
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .info-card-value {
+            font-size: 18px;
+        }
+        
+        /* Scan Barcode Section - Full width */
+        .scan-barcode-section {
+            padding: 16px;
+        }
+        
+        .barcode-input {
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+        
+        .scan-icon {
+            font-size: 36px;
+            min-width: 48px;
+        }
+        
+        /* Main Content Grid - Wider sidebar for better button proportions */
+        .main-content-grid {
+            grid-template-columns: 1fr 240px;  /* Increased from 200px to 240px */
+            gap: 12px;
+        }
+        
+        /* Video Section */
+        .video-section {
+            padding: 16px;
+        }
+        
+        .video-placeholder-main i {
+            font-size: 60px;
+        }
+        
+        .video-title {
+            font-size: 24px;
+        }
+        
+        /* Right Sidebar Buttons - Better proportions */
+        .sidebar-btn {
+            padding: 16px 12px;  /* Reduced padding */
+            font-size: 14px;  /* Smaller font */
+            min-height: 80px;  /* Set minimum height */
+            flex: none;  /* Remove flex: 1 to prevent stretching */
+        }
+        
+        /* Override sidebar collapsed styles on tablet */
+        .sidebar.collapsed ~ .main-content .top-info-section {
+            grid-template-columns: 1fr;  /* Keep single column */
+        }
+        
+        .sidebar.collapsed ~ .main-content .main-content-grid {
+            grid-template-columns: 1fr 240px;  /* Same as tablet default */
+        }
+        
+        .sidebar.collapsed ~ .main-content .sidebar-btn {
+            padding: 16px 12px;  /* Don't enlarge buttons */
+            font-size: 14px;
+        }
+        
+        .sidebar.collapsed ~ .main-content .video-placeholder-main i {
+            font-size: 60px;  /* Don't enlarge on tablet */
+        }
+        
+        .sidebar.collapsed ~ .main-content .video-title {
+            font-size: 24px;  /* Don't enlarge on tablet */
+        }
+    }
+
+    /* Mobile adjustments (smaller than tablet) */
+    @@media (max-width: 768px) {
+        /* Stack everything vertically on mobile */
+        .product-info-cards {
+            grid-template-columns: 1fr;  /* Single column */
+        }
+        
+        .main-content-grid {
+            grid-template-columns: 1fr;  /* Stack video and buttons */
+        }
+        
+        .right-sidebar {
+            flex-direction: row;  /* Horizontal button layout on mobile */
+            gap: 8px;
+        }
+        
+        .sidebar-btn {
+            flex: 1;  /* Equal width buttons */
+            min-height: 60px;
+        }
+    }
+
+</style>
+
+<div class="sop-scan-container">
+    <!-- Top Info Section -->
+    <div class="top-info-section">
+        <!-- Product Info Cards -->
+        <div class="product-info-cards">
+            <div class="info-card">
+                <div class="info-card-label">Part Name</div>
+                <div class="info-card-value" id="partName">-</div>
+            </div>
+            <div class="info-card">
+                <div class="info-card-label">Part No</div>
+                <div class="info-card-value" id="partNo">-</div>
+            </div>
+            <div class="info-card">
+                <div class="info-card-label">Part Code</div>
+                <div class="info-card-value" id="partCode">-</div>
+            </div>
+            <div class="info-card">
+                <div class="info-card-label">CT (detik)</div>
+                <div class="info-card-value" id="ctTime">-</div>
+            </div>
+        </div>
+
+        <!-- Scan Barcode Section -->
+        <div class="scan-barcode-section">
+            <div class="scan-content">
+                <div class="scan-title">SCAN BARCODE</div>
+                <input type="text" 
+                       id="barcodeInput" 
+                       class="barcode-input" 
+                       placeholder="Scan or type product ID..." 
+                       autofocus>
+            </div>
+            <div class="scan-icon">
+                <i class="bi bi-upc-scan"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content-grid">
+        <!-- Video Section -->
+        <div class="video-section">
+            <div class="video-container-main">
+                <div class="video-placeholder-main">
+                    <i class="bi bi-camera-video"></i>
+                    <div class="video-title">VIDEO SOP</div>
+                    <p style="margin-top: 10px;">Scan barcode to load SOP video</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar Buttons -->
+        <div class="right-sidebar">
+            <button class="sidebar-btn btn-dimensi" id="btnDimensi" disabled>
+                Dimensi
+            </button>
+            <button class="sidebar-btn btn-packing" id="btnPacking" disabled>
+                PACKING
+            </button>
+            <button class="sidebar-btn btn-cf" id="btnCF" disabled>
+                CHECKING FIXTURE
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <p style="font-size: 20px; font-weight: 700;">Loading SOP...</p>
+    </div>
+</div>
+
+<!-- Product Not Found -->
+<div class="product-not-found" id="productNotFound">
+    <i class="bi bi-exclamation-triangle" style="font-size: 48px; display: block; margin-bottom: 15px;"></i>
+    <h3>Product Not Found</h3>
+    <p>Please scan a valid product barcode</p>
+</div>
+
+<!-- Dimensi Modal -->
+<div class="modal-overlay" id="dimensiModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="bi bi-rulers"></i>
+                DIMENSION STANDARDS
+            </div>
+            <button class="modal-close" onclick="closeDimensiModal()">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="dimensiModalBody">
+            <div class="no-data">Please scan a product first</div>
+        </div>
+    </div>
+</div>
+
+<!-- Packing Modal -->
+<div class="modal-overlay" id="packingModal">
+    <div class="modal-content">
+        <div class="modal-header packing">
+            <div class="modal-title">
+                <i class="bi bi-box-seam"></i>
+                PACKING INFORMATION
+            </div>
+            <button class="modal-close" onclick="closePackingModal()">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="packingModalBody">
+            <div class="no-data">Please scan a product first</div>
+        </div>
+    </div>
+</div>
+
+<!-- Checking Fixture Modal -->
+<div class="modal-overlay" id="cfModal">
+    <div class="modal-content">
+        <div class="modal-header cf">
+            <div class="modal-title">
+                <i class="bi bi-clipboard-check"></i>
+                CHECKING FIXTURE
+            </div>
+            <button class="modal-close" onclick="closeCFModal()">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="cfModalBody">
+            <div class="no-data">Please scan a product first</div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentProductId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const barcodeInput = document.getElementById('barcodeInput');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const productNotFound = document.getElementById('productNotFound');
+    let scanTimeout;
+
+    // Product data from server
+    const products = @Html.Raw(Json.Serialize(Model.Select(p => new { 
+        id = p.Id, 
+        name = p.NamaProduk, 
+        partCode = p.PartCode,
+        partNo = p.PartNo,
+        ct = p.CT,
+        plant = p.Plant,
+        videoPath = p.VideoPath,
+        operator_name = p.Operator,
+        date = p.TanggalInput.ToString("dd/MM/yyyy")
+    })));
+
+    // Auto-focus barcode input
+    barcodeInput.focus();
+    
+    // Handle barcode input
+    barcodeInput.addEventListener('input', function() {
+        clearTimeout(scanTimeout);
+        scanTimeout = setTimeout(() => {
+            const scannedValue = this.value.trim();
+            if (scannedValue) {
+                searchAndLoadProduct(scannedValue);
+            }
+        }, 500); // Wait 500ms after typing stops
+    });
+
+    // Handle Enter key
+    barcodeInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            clearTimeout(scanTimeout);
+            const scannedValue = this.value.trim();
+            if (scannedValue) {
+                searchAndLoadProduct(scannedValue);
+            }
+        }
+    });
+
+    function searchAndLoadProduct(searchValue) {
+        loadingOverlay.classList.add('active');
+        
+        // Parse barcode: remove 'LB' suffix if present
+        let parsedValue = searchValue.toUpperCase();
+        if (parsedValue.endsWith('LB')) {
+            parsedValue = parsedValue.substring(0, parsedValue.length - 2);
+            console.log('Barcode parsed:', searchValue, '->', parsedValue);
+        }
+        
+        // Search by ID, PartCode (with LB parsing), or name
+        const product = products.find(p => 
+            p.id.toString() === searchValue || 
+            p.id.toString() === parsedValue ||
+            (p.partCode && p.partCode.toUpperCase() === parsedValue) ||
+            (p.partCode && p.partCode.toUpperCase() === searchValue.toUpperCase()) ||
+            p.name.toLowerCase().includes(searchValue.toLowerCase())
+        );
+
+        setTimeout(() => {
+            loadingOverlay.classList.remove('active');
+            
+            if (product) {
+                // Product found - load data and video on same page
+                loadProductData(product);
+                barcodeInput.value = '';
+                barcodeInput.focus();
+            } else {
+                // Product not found
+                productNotFound.classList.add('show');
+                barcodeInput.value = '';
+                barcodeInput.focus();
+                
+                setTimeout(() => {
+                    productNotFound.classList.remove('show');
+                }, 3000);
+            }
+        }, 800);
+    }
+
+    function loadProductData(product) {
+        // Store product ID for modal usage
+        currentProductId = product.id;
+        
+        // Update info cards
+        document.getElementById('partName').textContent = product.name || '-';
+        document.getElementById('partNo').textContent = product.partNo || '-';
+        document.getElementById('partCode').textContent = product.partCode || '-';
+        document.getElementById('ctTime').textContent = product.ct || '-';
+
+        // Load video
+        const videoContainer = document.querySelector('.video-container-main');
+        if (product.videoPath) {
+            videoContainer.innerHTML = `
+                <video id="sopVideo" width="100%" height="100%" controls autoplay muted loop style="object-fit: contain;">
+                    <source src="${product.videoPath}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            `;
+            
+            // Try to play video
+            setTimeout(() => {
+                const video = document.getElementById('sopVideo');
+                if (video) {
+                    video.play().catch(err => console.log('Autoplay prevented:', err));
+                }
+            }, 100);
+        } else {
+            videoContainer.innerHTML = `
+                <div class="video-placeholder-main">
+                    <i class="bi bi-camera-video"></i>
+                    <div class="video-title">VIDEO SOP</div>
+                    <p style="margin-top: 10px;">No video available for this product</p>
+                </div>
+            `;
+        }
+
+        // Enable buttons
+        document.getElementById('btnDimensi').disabled = false;
+        document.getElementById('btnPacking').disabled = false;
+        document.getElementById('btnCF').disabled = false;
+    }
+
+    // Button handlers (disabled until product is loaded)
+    document.getElementById('btnDimensi').addEventListener('click', function() {
+        if (currentProductId) {
+            openDimensiModal();
+        }
+    });
+
+    document.getElementById('btnPacking').addEventListener('click', function() {
+        if (currentProductId) {
+            openPackingModal();
+        }
+    });
+
+    document.getElementById('btnCF').addEventListener('click', function() {
+        if (currentProductId) {
+            openCFModal();
+        }
+    });
+
+    // Re-focus on barcode input when clicking anywhere
+    document.addEventListener('click', function(e) {
+        if (e.target !== barcodeInput) {
+            setTimeout(() => barcodeInput.focus(), 100);
+        }
+    });
+});
+
+// Modal Functions
+function openDimensiModal() {
+    if (!currentProductId) return;
+    
+    // Show loading overlay
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    loadingOverlay.classList.add('active');
+    
+    // Fetch dimension standards to check if data exists
+    fetch(`/Produk/GetStandarDimensi/${currentProductId}`)
+        .then(response => response.json())
+        .then(data => {
+            loadingOverlay.classList.remove('active');
+            
+            // Check if dimension data exists
+            if (!data || data.length === 0) {
+                // No dimension data - redirect to Input page
+                if (confirm('Belum ada data standar dimensi untuk produk ini.\n\nApakah Anda ingin menambahkan data standar dimensi sekarang?')) {
+                    window.location.href = `/Dimensi/Input?produkId=${currentProductId}`;
+                }
+                return;
+            }
+            
+            // Data exists - show modal
+            const modal = document.getElementById('dimensiModal');
+            const modalBody = document.getElementById('dimensiModalBody');
+            modal.classList.add('active');
+            
+            let html = '<table class="dimension-table"><thead><tr>';
+            html += '<th>Dimension</th>';
+            html += '<th>MIN</th>';
+            html += '<th>MAX</th>';
+            html += '<th>Tolerance</th>';
+            html += '</tr></thead><tbody>';
+            
+            data.forEach(std => {
+                const dimensions = [
+                    { name: 'Inner Ø Sisi A', min: std.innerDiameter_SisiA_Min, max: std.innerDiameter_SisiA_Max },
+                    { name: 'Outer Ø Sisi A', min: std.outerDiameter_SisiA_Min, max: std.outerDiameter_SisiA_Max },
+                    { name: 'Thickness Sisi A', min: std.thickness_SisiA_Min, max: std.thickness_SisiA_Max },
+                    { name: 'Inner Ø Sisi B', min: std.innerDiameter_SisiB_Min, max: std.innerDiameter_SisiB_Max },
+                    { name: 'Outer Ø Sisi B', min: std.outerDiameter_SisiB_Min, max: std.outerDiameter_SisiB_Max },
+                    { name: 'Thickness Sisi B', min: std.thickness_SisiB_Min, max: std.thickness_SisiB_Max },
+                    { name: 'Panjang', min: std.panjang_Min, max: std.panjang_Max },
+                    { name: 'Tinggi', min: std.tinggi_Min, max: std.tinggi_Max },
+                    { name: 'Radius', min: std.radius_Min, max: std.radius_Max },
+                    { name: 'Dimensi A', min: std.dimensiA_Min, max: std.dimensiA_Max },
+                    { name: 'Dimensi B', min: std.dimensiB_Min, max: std.dimensiB_Max },
+                    { name: 'Sudut', min: std.sudut_Min, max: std.sudut_Max }
+                ];
+                
+                dimensions.forEach(dim => {
+                    if ((dim.min && dim.min > 0) || (dim.max && dim.max > 0)) {
+                        const tolerance = (dim.max - dim.min).toFixed(2);
+                        html += '<tr>';
+                        html += `<td class="dimension-name">${dim.name}</td>`;
+                        html += `<td>${dim.min ? dim.min.toFixed(2) : '0.00'}</td>`;
+                        html += `<td>${dim.max ? dim.max.toFixed(2) : '0.00'}</td>`;
+                        html += `<td>± ${tolerance}</td>`;
+                        html += '</tr>';
+                    }
+                });
+            });
+            
+            html += '</tbody></table>';
+            modalBody.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            loadingOverlay.classList.remove('active');
+            if (typeof toast !== 'undefined') {
+                toast.error('Error loading dimension data');
+            } else {
+                alert('Error loading dimension data');
+            }
+        });
+}
+
+function closeDimensiModal() {
+    document.getElementById('dimensiModal').classList.remove('active');
+}
+
+function openPackingModal() {
+    const modal = document.getElementById('packingModal');
+    const modalBody = document.getElementById('packingModalBody');
+    
+    if (!currentProductId) return;
+    
+    modalBody.innerHTML = '<div class="no-data"><div class="spinner"></div><p>Loading...</p></div>';
+    modal.classList.add('active');
+    
+    // Fetch packing information
+    fetch(`/Produk/GetPackingInfo/${currentProductId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data) {
+                let html = '<div class="packing-grid">';
+                html += `
+                    <div class="packing-item">
+                        <div class="packing-item-label">Type Box</div>
+                        <div class="packing-item-value">${data.typeBox || '-'}</div>
+                    </div>
+                    <div class="packing-item">
+                        <div class="packing-item-label">Qty per Box</div>
+                        <div class="packing-item-value">${data.qtyPerBox || '-'}</div>
+                    </div>
+                `;
+                html += '</div>';
+                
+                if (data.gambarPacking) {
+                    html += `<img src="${data.gambarPacking}" class="packing-image" alt="Packing Image">`;
+                }
+                
+                modalBody.innerHTML = html;
+            } else {
+                modalBody.innerHTML = '<div class="no-data">No packing information found</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            modalBody.innerHTML = '<div class="no-data">Error loading packing data</div>';
+        });
+}
+
+function closePackingModal() {
+    document.getElementById('packingModal').classList.remove('active');
+}
+
+function openCFModal() {
+    const modal = document.getElementById('cfModal');
+    const modalBody = document.getElementById('cfModalBody');
+    
+    if (!currentProductId) return;
+    
+    modalBody.innerHTML = '<div class="no-data"><div class="spinner"></div><p>Loading...</p></div>';
+    modal.classList.add('active');
+    
+    // Fetch checking fixture information
+    fetch(`/Produk/GetCFInfo/${currentProductId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data && (data.standarCF || data.gambarCF)) {
+                let html = '<div class="cf-content">';
+                
+                if (data.standarCF) {
+                    html += `
+                        <div class="cf-item">
+                            <div class="cf-item-label">
+                                <i class="bi bi-clipboard-check"></i> Standar Checking Fixture
+                            </div>
+                            <div class="cf-item-value">${data.standarCF}</div>
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+                
+                if (data.gambarCF) {
+                    html += `
+                        <div class="cf-image-container">
+                            <div class="cf-image-label">Gambar Checking Fixture</div>
+                            <img src="${data.gambarCF}" class="cf-image" alt="Checking Fixture Image">
+                        </div>
+                    `;
+                }
+                
+                modalBody.innerHTML = html;
+            } else {
+                modalBody.innerHTML = '<div class="no-data">No checking fixture information found</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            modalBody.innerHTML = '<div class="no-data">Error loading checking fixture data</div>';
+        });
+}
+
+function closeCFModal() {
+    document.getElementById('cfModal').classList.remove('active');
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal-overlay')) {
+        closeDimensiModal();
+        closePackingModal();
+        closeCFModal();
+    }
+});
+</script>

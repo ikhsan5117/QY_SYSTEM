@@ -1,0 +1,2612 @@
+@{
+    ViewData["Title"] = "Dashboard Rejection Molded";
+    Layout = "_LayoutDesktop";
+}
+
+<style>
+    .dashboard-container {
+        padding: 20px;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        min-height: 100vh;
+        overflow: visible;
+        position: relative;
+    }
+
+    /* --- Premium Dark Navy Theme Updates --- */
+
+    /* Chart & Table Cards - Matching the Summary Cards */
+    .chart-card, .table-card {
+        background: rgba(30, 41, 59, 0.7); /* Lighter Dark Navy Base */
+        backdrop-filter: blur(20px);
+        border-radius: 16px; /* Slightly rounder */
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.08); /* Subtle border */
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .chart-card:hover, .table-card:hover {
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.15); /* Brighter on hover */
+    }
+
+    /* Filter Section */
+    .filter-section-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        background: rgba(15, 23, 42, 0.6); /* Glassy background */
+        backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Filter Buttons */
+    .filter-dropdown-button {
+        background: rgba(30, 41, 59, 0.9);
+        border: 1px solid rgba(71, 85, 105, 0.5); /* Slate border */
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: #e2e8f0; /* Light text */
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .filter-dropdown-button:hover {
+        background: rgba(51, 65, 85, 1); /* Lighter on hover */
+        border-color: #3b82f6; /* Blue border on hover */
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.3); /* Blue Glow */
+        transform: translateY(-1px);
+    }
+
+    /* Dashboard Header */
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding: 20px;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .btn-back-filter {
+        background: rgba(59, 130, 246, 0.2);
+        border: 1px solid rgba(59, 130, 246, 0.5);
+        color: #93c5fd;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-back-filter:hover {
+        background: rgba(59, 130, 246, 0.8);
+        color: white;
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .dashboard-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin: 0;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr 1fr;
+        gap: 20px;
+        overflow: visible;
+    }
+
+    .dashboard-date {
+        color: #94a3b8;
+        font-size: 20px;
+        white-space: nowrap; /* biar gak turun baris */
+    }
+
+    
+    #filterFormMain {
+        margin: 0;
+        overflow: visible;
+        position: relative;
+        z-index: 1;
+    }
+
+    .filter-item {
+        position: relative;
+        z-index: 1;
+    }
+
+    .filter-item[style*="z-index"] {
+        z-index: 10005 !important;
+    }
+
+    .filter-dropdown-menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+        backdrop-filter: blur(20px) saturate(180%);
+        border: 2px solid rgba(148, 163, 184, 0.2);
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        display: none;
+        z-index: 10010;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .filter-dropdown-menu.show {
+        display: block;
+    }
+
+    .filter-dropdown-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: white;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        font-size: 14px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .header-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: white;
+    }
+
+    .hanya-btn {
+        padding: 4px 12px;
+        background: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        flex-shrink: 0;
+        opacity: 0;
+        visibility: hidden;
+        display: block !important;
+    }
+
+    .hanya-btn:hover {
+        background: #2563eb;
+        transform: scale(1.05);
+    }
+
+    .filter-dropdown-item:hover .hanya-btn {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .check-icon {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.9);
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .check-icon.active {
+        background: rgba(255, 255, 255, 0.9);
+        color: #1e3a8a;
+    }
+
+    .filter-dropdown-item {
+        padding: 12px 18px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #1f2937;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+        position: relative;
+    }
+    
+    .filter-dropdown-item > span {
+        flex: 1;
+        cursor: pointer;
+    }
+
+    .filter-dropdown-item:hover {
+        background: rgba(239, 246, 255, 0.5);
+    }
+
+    .filter-dropdown-item:last-child {
+        border-bottom: none;
+    }
+
+    .filter-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: #3b82f6;
+        flex-shrink: 0;
+    }
+
+    .item-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: #3b82f6;
+        flex-shrink: 0;
+        margin-right: 8px;
+    }
+
+    .filter-dropdown-item label {
+        flex: 1;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    .filter-dropdown-search {
+        padding: 10px;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+    }
+
+    .dropdown-search-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        border-radius: 6px;
+        font-size: 13px;
+        color: #1f2937;
+        background: white;
+    }
+
+    .dropdown-search-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    .filter-dropdown-item.selected {
+        background: linear-gradient(90deg, rgba(239, 246, 255, 1), rgba(219, 234, 254, 0.8));
+        color: #1e40af;
+        font-weight: 700;
+    }
+
+    .chart-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        padding: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        margin-bottom: 20px;
+    }
+
+    .chart-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+
+    .chart-container {
+        height: 220px;
+        position: relative;
+    }
+
+    .chart-container.larger {
+        height: 180px;
+    }
+
+    .table-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        padding: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .summary-card {
+        position: relative;
+        /* Base: Lighter Dark Navy */
+        background: rgba(30, 41, 59, 0.7); 
+        backdrop-filter: blur(20px);
+        border-radius: 12px;
+        color: #f1f5f9;
+        overflow: hidden;
+        padding: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* Card 1: QTY CHECK - Vivid Royal Blue */
+    .summary-card:nth-child(1) {
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.6) 0%, rgba(30, 41, 59, 0.95) 100%);
+        border-top: 2px solid rgba(96, 165, 250, 0.5);
+    }
+
+    /* Card 2: QTY NG - Vivid Indigo */
+    .summary-card:nth-child(2) {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.5) 0%, rgba(30, 41, 59, 0.95) 100%);
+        border-top: 2px solid rgba(129, 140, 248, 0.5);
+    }
+
+    /* Card 3: RR% - Vivid Cyan */
+    .summary-card:nth-child(3) {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.5) 0%, rgba(30, 41, 59, 0.95) 100%);
+        border-top: 2px solid rgba(34, 211, 238, 0.5);
+    }
+
+    /* Card 4: Total Data - Cool Blue Grey */
+    .summary-card:nth-child(4) {
+        background: linear-gradient(135deg, rgba(71, 85, 105, 0.6) 0%, rgba(30, 41, 59, 0.95) 100%);
+        border-top: 2px solid rgba(148, 163, 184, 0.5);
+    }
+
+    .summary-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Inner Glow Effect */
+    .summary-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+        pointer-events: none;
+    }
+
+    .summary-card-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .summary-card-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin: 0;
+    }
+
+    .summary-card-value.small {
+        font-size: 20px;
+    }
+
+    .summary-card-unit {
+        font-size: 14px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .table-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #f1f5f9;
+        font-size: 12px;
+    }
+
+    .data-table th {
+        background: rgba(59, 130, 246, 0.2);
+        padding: 8px;
+        text-align: left;
+        font-weight: 700;
+        border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .data-table td {
+        padding: 8px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .data-table tr:hover {
+        background: rgba(59, 130, 246, 0.1);
+        cursor: pointer;
+    }
+
+    .data-table tr {
+        transition: background-color 0.2s ease;
+    }
+
+    canvas {
+        cursor: default;
+    }
+
+    /* Toast Notification */
+    #toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+
+    .toast-notification {
+        background: rgba(16, 185, 129, 0.9); /* Emerald Green */
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transform: translateX(120%);
+        transition: transform 0.3s ease-out;
+    }
+
+    .toast-notification.show {
+        transform: translateX(0);
+    }
+
+    /* Vertical Title Styles */
+    .chart-card-flex {
+        display: flex;
+        flex-direction: row;
+        gap: 15px;
+        align-items: stretch;
+        min-height: 200px;
+    }
+
+    .vertical-title-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(15, 23, 42, 0.4);
+        padding: 10px 5px;
+        border-radius: 8px;
+        min-width: 40px;
+        border-left: 3px solid #3b82f6;
+    }
+
+    .vertical-title-text {
+        writing-mode: vertical-lr;
+        transform: rotate(180deg);
+        text-align: center;
+        text-transform: uppercase;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        letter-spacing: 2px;
+        white-space: nowrap;
+    }
+
+    .chart-main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0; /* Important for Chart.js responsiveness */
+    }
+</style>
+
+<!-- Toast Notification Container -->
+<div id="toast-container"></div>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">DASHBOARD REJECTION MOLDED</h1>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="dashboard-date">
+                @DateTime.Now.ToString("dd MMM yyyy")
+            </div>
+            <button onclick="goBackFilter()" class="btn-back-filter" id="btnBackFilter" style="display: none;">
+                <span>⬅️</span> Back
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+        <div class="summary-card">
+            <div class="summary-card-title">QTY CHECK</div>
+            <p class="summary-card-value">@((ViewBag.TotalQtyCheck ?? 0).ToString("N0")) <span class="summary-card-unit">pcs</span></p>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card-title">QTY NG</div>
+            <p class="summary-card-value">@((ViewBag.TotalQtyNG ?? 0).ToString("N0")) <span class="summary-card-unit">pcs</span></p>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card-title">RR%</div>
+            <p class="summary-card-value small">@((ViewBag.TotalRR ?? 0).ToString("N2")) <span class="summary-card-unit">%</span></p>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card-title">Total Data</div>
+            <p class="summary-card-value">@((ViewBag.TotalQtyCheck ?? 0) + (ViewBag.TotalQtyNG ?? 0)) <span class="summary-card-unit">records</span></p>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Left Column - Time Series Charts -->
+        <div class="dashboard-column" style="grid-row: 1 / 4; grid-column: 1;">
+            <!-- Bulanan Chart -->
+            <div class="chart-card">
+                <div class="chart-card-flex">
+                    <div class="vertical-title-container">
+                        <div class="vertical-title-text">BULANAN</div>
+                    </div>
+                    <div class="chart-main-content">
+                        <div class="chart-container" style="margin-top:0;">
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mingguan Chart -->
+            <div class="chart-card">
+                <div class="chart-card-flex">
+                    <div class="vertical-title-container" style="border-left-color: #f59e0b;">
+                        <div class="vertical-title-text">MINGGUAN</div>
+                    </div>
+                    <div class="chart-main-content">
+                        <div class="chart-container" style="margin-top:0;">
+                            <canvas id="weeklyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Harian Chart -->
+            <div class="chart-card">
+                <div class="chart-card-flex">
+                    <div class="vertical-title-container" style="border-left-color: #10b981;">
+                        <div class="vertical-title-text">HARIAN</div>
+                    </div>
+                    <div class="chart-main-content">
+                        <div class="chart-container" style="margin-top:0;">
+                            <canvas id="dailyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section - Above Pareto and Kriteria -->
+        <form method="get" action="@Url.Action("Dashboard", "Rejection")" id="filterFormMain" style="grid-row: 1; grid-column: 2 / 4;">
+            <div class="filter-section-grid">
+                <!-- Bulan -->
+                <div class="filter-item">
+                <div class="filter-dropdown-button" data-dropdown="bulanMain">
+                    <span class="dropdown-text">BULAN</span>
+                    <span>▼</span>
+                </div>
+                <div class="filter-dropdown-menu" data-dropdown-menu="bulanMain">
+                    <div class="filter-dropdown-header">
+                        <input type="checkbox" class="header-checkbox" id="bulanCheckAll" />
+                        <span>Bulan</span>
+                    </div>
+                    <div class="filter-dropdown-search">
+                        <input type="text" class="dropdown-search-input" data-search-target="bulanMain" placeholder="Ketik untuk menelusuri" />
+                    </div>
+                    <div class="filter-dropdown-list" data-list="bulanMain">
+                        @{
+                            string bulanRaw = ViewBag.Bulan as string ?? "";
+                            string[] selectedBulan = string.IsNullOrEmpty(bulanRaw) ? new string[0] : bulanRaw.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            var bulanList = ViewBag.BulanList as dynamic ?? new List<dynamic>();
+                        }
+                        @foreach (var item in bulanList)
+                        {
+                            string value = item.Value?.ToString() ?? "";
+                            string monthName = item.MonthName?.ToString() ?? "";
+                            int year = item.Year ?? DateTime.Now.Year;
+                            string displayName = $"{monthName} {year}";
+                            bool isSelected = selectedBulan.Contains(value);
+                            <div class="filter-dropdown-item @(isSelected ? "selected" : "")" data-value="@value" data-name="@displayName">
+                                <input type="checkbox" class="item-checkbox" @(isSelected ? "checked" : "") />
+                                <span>@displayName</span>
+                                <button class="hanya-btn">HANYA</button>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <input type="hidden" name="bulan" id="bulanValueMain" value="@ViewBag.Bulan" />
+            </div>
+
+            <!-- Tanggal -->
+            <div class="filter-item">
+                <div class="filter-dropdown-button" data-dropdown="tanggalMain">
+                    <span class="dropdown-text">
+                        @if (!string.IsNullOrEmpty(ViewBag.Tanggal?.ToString()))
+                        {
+                            <text>TANGGAL @ViewBag.Tanggal</text>
+                        }
+                        else
+                        {
+                            <text>TANGGAL</text>
+                        }
+                    </span>
+                    <span>▼</span>
+                </div>
+                <div class="filter-dropdown-menu" data-dropdown-menu="tanggalMain">
+                    <div class="filter-dropdown-header">
+                        <input type="checkbox" class="header-checkbox" id="tanggalCheckAll" />
+                        <span>Tanggal</span>
+                    </div>
+                    <div class="filter-dropdown-search">
+                        <input type="text" class="dropdown-search-input" data-search-target="tanggalMain" placeholder="Ketik untuk menelusuri" />
+                    </div>
+                    <div class="filter-dropdown-list" data-list="tanggalMain">
+                        @{
+                            string tanggalRaw = ViewBag.Tanggal as string ?? "";
+                            string[] selectedTanggal = string.IsNullOrEmpty(tanggalRaw) ? new string[0] : tanggalRaw.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        }
+                        @for (int day = 1; day <= 31; day++)
+                        {
+                            string dayStr = day.ToString();
+                            bool isSelected = selectedTanggal.Contains(dayStr);
+                            <div class="filter-dropdown-item @(isSelected ? "selected" : "")" data-value="@day" data-name="@day">
+                                <input type="checkbox" class="item-checkbox" @(isSelected ? "checked" : "") />
+                                <span>@day</span>
+                                <button class="hanya-btn">HANYA</button>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <input type="hidden" name="tanggal" id="tanggalValueMain" value="@ViewBag.Tanggal" />
+            </div>
+
+            <!-- JENIS NG -->
+            <div class="filter-item">
+                <div class="filter-dropdown-button" data-dropdown="jenisNGMain">
+                    <span class="dropdown-text">
+                        @if (!string.IsNullOrEmpty(ViewBag.JenisNG?.ToString()))
+                        {
+                            <text>JENIS NG @ViewBag.JenisNG</text>
+                        }
+                        else
+                        {
+                            <text>JENIS NG</text>
+                        }
+                    </span>
+                    <span>▼</span>
+                </div>
+                <div class="filter-dropdown-menu" data-dropdown-menu="jenisNGMain">
+                    <div class="filter-dropdown-header">
+                        <input type="checkbox" class="header-checkbox" id="jenisNGCheckAll" />
+                        <span>JENIS NG</span>
+                    </div>
+                    <div class="filter-dropdown-search">
+                        <input type="text" class="dropdown-search-input" data-search-target="jenisNGMain" placeholder="Ketik untuk menelusuri" />
+                    </div>
+                    <div class="filter-dropdown-list" data-list="jenisNGMain">
+                        @if (ViewBag.JenisNGList != null)
+                        {
+                            string jenisNGRaw = ViewBag.JenisNG as string ?? "";
+                            string[] selectedJenisNG = string.IsNullOrEmpty(jenisNGRaw) ? new string[0] : jenisNGRaw.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            @foreach (var jenis in ViewBag.JenisNGList)
+                            {
+                                string jenisStr = jenis?.ToString() ?? "";
+                                bool isSelected = selectedJenisNG.Contains(jenisStr);
+                                <div class="filter-dropdown-item @(isSelected ? "selected" : "")" data-value="@jenis" data-name="@jenis">
+                                    <input type="checkbox" class="item-checkbox" @(isSelected ? "checked" : "") />
+                                    <span>@jenis</span>
+                                    <button class="hanya-btn">HANYA</button>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+                <input type="hidden" name="jenisNG" id="jenisNGValueMain" value="@ViewBag.JenisNG" />
+            </div>
+
+            <!-- Kategori NG -->
+            <div class="filter-item">
+                <div class="filter-dropdown-button" data-dropdown="kategoriNGMain">
+                    <span class="dropdown-text">
+                        @if (!string.IsNullOrEmpty(ViewBag.KategoriNG?.ToString()))
+                        {
+                            <text>KATEGORI NG @ViewBag.KategoriNG</text>
+                        }
+                        else
+                        {
+                            <text>KATEGORI NG</text>
+                        }
+                    </span>
+                    <span>▼</span>
+                </div>
+                <div class="filter-dropdown-menu" data-dropdown-menu="kategoriNGMain">
+                    <div class="filter-dropdown-header">
+                        <input type="checkbox" class="header-checkbox" id="kategoriNGCheckAll" />
+                        <span>Kategori NG</span>
+                    </div>
+                    <div class="filter-dropdown-search">
+                        <input type="text" class="dropdown-search-input" data-search-target="kategoriNGMain" placeholder="Ketik untuk menelusuri" />
+                    </div>
+                    <div class="filter-dropdown-list" data-list="kategoriNGMain">
+                        @if (ViewBag.JenisNGList != null)
+                        {
+                            string kategoriNGRaw = ViewBag.KategoriNG as string ?? "";
+                            string[] selectedKategoriNG = string.IsNullOrEmpty(kategoriNGRaw) ? new string[0] : kategoriNGRaw.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            @foreach (var jenis in ViewBag.JenisNGList)
+                            {
+                                string jenisStr = jenis?.ToString() ?? "";
+                                bool isSelected = selectedKategoriNG.Contains(jenisStr);
+                                <div class="filter-dropdown-item @(isSelected ? "selected" : "")" data-value="@jenis" data-name="@jenis">
+                                    <input type="checkbox" class="item-checkbox" @(isSelected ? "checked" : "") />
+                                    <span>@jenis</span>
+                                    <button class="hanya-btn">HANYA</button>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+                <input type="hidden" name="kategoriNG" id="kategoriNGValueMain" value="@ViewBag.KategoriNG" />
+            </div>
+
+            <!-- LINE -->
+            <div class="filter-item">
+                <div class="filter-dropdown-button" data-dropdown="lineMain">
+                    <span class="dropdown-text">
+                        @if (!string.IsNullOrEmpty(ViewBag.Line?.ToString()))
+                        {
+                            <text>LINE @ViewBag.Line</text>
+                        }
+                        else
+                        {
+                            <text>LINE</text>
+                        }
+                    </span>
+                    <span>▼</span>
+                </div>
+                <div class="filter-dropdown-menu" data-dropdown-menu="lineMain">
+                    <div class="filter-dropdown-header">
+                        <input type="checkbox" class="header-checkbox" id="lineCheckAll" />
+                        <span>LINE</span>
+                    </div>
+                    <div class="filter-dropdown-search">
+                        <input type="text" class="dropdown-search-input" data-search-target="lineMain" placeholder="Ketik untuk menelusuri" />
+                    </div>
+                    <div class="filter-dropdown-list" data-list="lineMain">
+                        @if (ViewBag.LineList != null)
+                        {
+                            string lineRaw = ViewBag.Line as string ?? "";
+                            string[] selectedLine = string.IsNullOrEmpty(lineRaw) ? new string[0] : lineRaw.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            @foreach (var line in ViewBag.LineList)
+                            {
+                                string lineStr = line?.ToString() ?? "";
+                                bool isSelected = selectedLine.Contains(lineStr);
+                                <div class="filter-dropdown-item @(isSelected ? "selected" : "")" data-value="@line" data-name="@line">
+                                    <input type="checkbox" class="item-checkbox" @(isSelected ? "checked" : "") />
+                                    <span>@line</span>
+                                    <button class="hanya-btn">HANYA</button>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+                <input type="hidden" name="line" id="lineValueMain" value="@ViewBag.Line" />
+            </div>
+
+            <!-- PART CODE -->
+            <div class="filter-item">
+                <div class="filter-dropdown-button" data-dropdown="partCodeMain">
+                    <span class="dropdown-text">
+                        @if (!string.IsNullOrEmpty(ViewBag.PartCode?.ToString()))
+                        {
+                            <text>PART CODE @ViewBag.PartCode</text>
+                        }
+                        else
+                        {
+                            <text>PART CODE</text>
+                        }
+                    </span>
+                    <span>▼</span>
+                </div>
+                <div class="filter-dropdown-menu" data-dropdown-menu="partCodeMain">
+                    <div class="filter-dropdown-header">
+                        <input type="checkbox" class="header-checkbox" id="partCodeCheckAll" />
+                        <span>PART CODE</span>
+                    </div>
+                    <div class="filter-dropdown-search">
+                        <input type="text" class="dropdown-search-input" data-search-target="partCodeMain" placeholder="Ketik untuk menelusuri" />
+                    </div>
+                    <div class="filter-dropdown-list" data-list="partCodeMain">
+                        @if (ViewBag.PartCodeList != null)
+                        {
+                            string partCodeRaw = ViewBag.PartCode as string ?? "";
+                            string[] selectedPartCode = string.IsNullOrEmpty(partCodeRaw) ? new string[0] : partCodeRaw.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            @foreach (var part in ViewBag.PartCodeList)
+                            {
+                                string partStr = part?.ToString() ?? "";
+                                bool isSelected = selectedPartCode.Contains(partStr);
+                                <div class="filter-dropdown-item @(isSelected ? "selected" : "")" data-value="@part" data-name="@part">
+                                    <input type="checkbox" class="item-checkbox" @(isSelected ? "checked" : "") />
+                                    <span>@part</span>
+                                    <button class="hanya-btn">HANYA</button>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+                <input type="hidden" name="partCode" id="partCodeValueMain" value="@ViewBag.PartCode" />
+            </div>
+        </div>
+    </form>
+
+        <!-- Middle Column - Pareto Chart and Part Table -->
+        <div class="dashboard-column pareto-column" style="grid-row: 2; grid-column: 2;">
+            <!-- Pareto Part Chart -->
+            <div class="chart-card">
+                <div class="chart-title">PARETO PART</div>
+                <div class="chart-container larger">
+                    <canvas id="paretoChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Data Rejection / Part Table -->
+            <div class="table-card">
+                <div class="table-title">DATA REJECTION / PART</div>
+                <div style="max-height: 200px; overflow-y: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">NO</th>
+                                <th>PART CODE</th>
+                                <th>QTY CHECK</th>
+                                <th>QTY NG</th>
+                                <th>RR%</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rejectionByPartTableBody">
+                            @if (ViewBag.RejectionByPartData != null)
+                            {
+                                int partIndex = 1;
+                                @foreach (dynamic item in ViewBag.RejectionByPartData)
+                                {
+                                    <tr>
+                                        <td>@partIndex</td>
+                                        <td>@item.partCode</td>
+                                        <td>@item.qtyCheck.ToString("N0")</td>
+                                        <td>@item.qtyNG.ToString("N0")</td>
+                                        <td>@item.rr.ToString("N2")%</td>
+                                    </tr>
+                                    partIndex++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #94a3b8;">Tidak ada data</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Kriteria NG Chart and Table -->
+        <div class="dashboard-column kriteria-column" style="grid-row: 2; grid-column: 3;">
+            <!-- Kriteria NG Chart -->
+            <div class="chart-card">
+                <div class="chart-title">KRITERIA NG</div>
+                <div class="chart-container larger">
+                    <canvas id="kriteriaChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Data Rejection / Kriteria NG Table -->
+            <div class="table-card">
+                <div class="table-title">DATA REJECTION / KRITERIA NG</div>
+                <div style="max-height: 200px; overflow-y: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">NO</th>
+                                <th>JENIS NG</th>
+                                <th>QTY NG</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rejectionByKriteriaTableBody">
+                            @if (ViewBag.RejectionByKriteriaData != null)
+                            {
+                                int kriteriaIndex = 1;
+                                @foreach (dynamic item in ViewBag.RejectionByKriteriaData)
+                                {
+                                    <tr>
+                                        <td>@kriteriaIndex</td>
+                                        <td>@item.jenisNG</td>
+                                        <td>@item.qtyNG.ToString("N0")</td>
+                                    </tr>
+                                    kriteriaIndex++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" style="text-align: center; color: #94a3b8;">Tidak ada data</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Generic Dropdown Functionality - Single Select with Select All option
+        (function() {
+            document.querySelectorAll('[data-dropdown]').forEach(function(button) {
+                try {
+                    const dropdownName = button.getAttribute('data-dropdown');
+                    if (!dropdownName) return;
+                    
+                    const menu = document.querySelector('[data-dropdown-menu="' + dropdownName + '"]');
+                    let hiddenInput = null;
+                    if (dropdownName.endsWith('Main')) {
+                        const baseName = dropdownName.replace('Main', '');
+                        hiddenInput = document.getElementById(baseName + 'ValueMain');
+                    } else {
+                        hiddenInput = document.getElementById(dropdownName + 'Value');
+                    }
+                    
+                    const textSpan = button.querySelector('.dropdown-text');
+                    if (!menu || !hiddenInput || !textSpan) {
+                        console.warn('Missing elements for dropdown:', dropdownName, 'menu:', !!menu, 'hiddenInput:', !!hiddenInput, 'textSpan:', !!textSpan);
+                        return;
+                    }
+
+                    // Get dropdown title from header
+                    const headerTitle = menu.querySelector('.filter-dropdown-header span')?.textContent || '';
+                    const titleUpper = headerTitle.toUpperCase();
+                    const headerCheckbox = menu.querySelector('.header-checkbox');
+                    const allItems = menu.querySelectorAll('.filter-dropdown-item');
+
+                    // Function to update button text
+                    function updateButtonText() {
+                        const selectedItems = menu.querySelectorAll('.filter-dropdown-item.selected');
+                        const totalItems = allItems.length;
+                        
+                        if (selectedItems.length === 0) {
+                            textSpan.textContent = titleUpper;
+                        } else if (selectedItems.length === totalItems) {
+                            // All items selected, show only title
+                            textSpan.textContent = titleUpper;
+                        } else if (selectedItems.length === 1) {
+                            // Single item selected, show title + item name
+                            const itemName = selectedItems[0].getAttribute('data-name');
+                            textSpan.textContent = titleUpper + ' ' + itemName;
+                        } else {
+                            // Multiple items selected (but not all), show count
+                            textSpan.textContent = titleUpper + ' (' + selectedItems.length + ')';
+                        }
+                    }
+
+                    // Function to update hidden input
+                    function updateHiddenInput() {
+                        const selectedItems = menu.querySelectorAll('.filter-dropdown-item.selected');
+                        const values = Array.from(selectedItems).map(function(item) { return item.getAttribute('data-value'); });
+                        hiddenInput.value = values.join(',');
+                    }
+
+                    // Initialize: sync checkboxes with selected state from server
+                    const selectedCount = menu.querySelectorAll('.filter-dropdown-item.selected').length;
+                    const hasValue = hiddenInput.value && hiddenInput.value.trim() !== '';
+                    
+                    // Check if this is first load (no filter params in URL at all)
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const filterParam = dropdownName.replace('Main', '').toLowerCase();
+                    const hasFilterInUrl = urlParams.has(filterParam);
+                    const isFirstLoad = urlParams.toString() === ''; // No params at all = first load
+                    
+                    // IMPORTANT: First sync checkboxes with selected state from server (based on class="selected")
+                    // This ensures checkbox state matches what server rendered
+                    allItems.forEach(function(item) {
+                        const cb = item.querySelector('.item-checkbox');
+                        if (cb) {
+                            cb.checked = item.classList.contains('selected');
+                        }
+                    });
+                    
+                    // Check if all items are selected for header checkbox
+                    if (headerCheckbox) {
+                        headerCheckbox.checked = selectedCount === allItems.length && allItems.length > 0;
+                    }
+                    
+                    // If first load and no value, select all by default
+                    if (isFirstLoad && !hasValue && selectedCount === 0 && allItems.length > 0) {
+                        // First load - select all items by default
+                        allItems.forEach(function(item) {
+                            item.classList.add('selected');
+                            const cb = item.querySelector('.item-checkbox');
+                            if (cb) cb.checked = true;
+                        });
+                        if (headerCheckbox) headerCheckbox.checked = true;
+                        updateHiddenInput();
+                    } else if (hasValue) {
+                        // If hidden input has value from server, ensure it's preserved
+                        // Don't overwrite it - server already set it correctly
+                        // Just make sure checkboxes match the selected state
+                        // NO NEED to call updateHiddenInput() - server value is correct
+                    } else {
+                        // No value and not first load - this shouldn't happen normally
+                        // But if it does, update hidden input based on current checkbox state
+                        // But only if there are selected items
+                        if (selectedCount > 0) {
+                            updateHiddenInput();
+                        }
+                    }
+
+                    // Initialize text
+                    updateButtonText();
+
+                    // Handle header checkbox (Select All / Deselect All)
+                    if (headerCheckbox) {
+                        headerCheckbox.addEventListener('change', function(e) {
+                            e.stopPropagation();
+                            if (this.checked) {
+                                // Select all - ensure all values are in hidden input
+                                allItems.forEach(function(item) {
+                                    item.classList.add('selected');
+                                    const cb = item.querySelector('.item-checkbox');
+                                    if (cb) cb.checked = true;
+                                });
+                            } else {
+                                // Deselect all - but don't submit if this would clear all filters
+                                // Instead, keep at least one item selected or don't submit
+                                allItems.forEach(function(item) {
+                                    item.classList.remove('selected');
+                                    const cb = item.querySelector('.item-checkbox');
+                                    if (cb) cb.checked = false;
+                                });
+                                // Don't submit if all items are deselected - this would clear the filter
+                                updateHiddenInput();
+                                updateButtonText();
+                                return; // Don't submit
+                            }
+                            // IMPORTANT: Update hidden input BEFORE submit
+                            updateHiddenInput();
+                            updateButtonText();
+                            
+                            // Use setTimeout to ensure hidden input is updated before submit
+                            setTimeout(function() {
+                                const form = document.getElementById('filterFormMain');
+                                if (form) {
+                                    form.submit();
+                                }
+                            }, 10);
+                        });
+                    }
+
+                    // Handle item click (toggle selection)
+                    allItems.forEach(function(item) {
+                        // Get elements once
+                        const hanyaBtn = item.querySelector('.hanya-btn');
+                        const itemCheckbox = item.querySelector('.item-checkbox');
+                        const itemText = item.querySelector('span');
+                        
+                        // Click on item text/span area
+                        if (itemText) {
+                            itemText.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                
+                                // Toggle selection
+                                if (item.classList.contains('selected')) {
+                                    item.classList.remove('selected');
+                                    if (itemCheckbox) itemCheckbox.checked = false;
+                                } else {
+                                    item.classList.add('selected');
+                                    if (itemCheckbox) itemCheckbox.checked = true;
+                                }
+                                
+                                // Update header checkbox
+                                if (headerCheckbox) {
+                                    const selectedCount = menu.querySelectorAll('.filter-dropdown-item.selected').length;
+                                    headerCheckbox.checked = selectedCount === allItems.length && allItems.length > 0;
+                                }
+                                
+                                // IMPORTANT: Update hidden input BEFORE submit
+                                updateHiddenInput();
+                                updateButtonText();
+                                
+                                // Use setTimeout to ensure hidden input is updated before submit
+                                setTimeout(function() {
+                                    const form = document.getElementById('filterFormMain');
+                                    if (form) {
+                                        form.submit();
+                                    }
+                                }, 10);
+                            });
+                        }
+
+                        // Handle HANYA button click
+                        if (hanyaBtn) {
+                            hanyaBtn.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                
+                                // Deselect all items
+                                allItems.forEach(function(i) {
+                                    i.classList.remove('selected');
+                                    const cb = i.querySelector('.item-checkbox');
+                                    if (cb) cb.checked = false;
+                                });
+                                // Select only this item
+                                item.classList.add('selected');
+                                if (itemCheckbox) itemCheckbox.checked = true;
+                                
+                                // Update header checkbox
+                                if (headerCheckbox) headerCheckbox.checked = false;
+                                
+                                // IMPORTANT: Update hidden input BEFORE submit
+                                updateHiddenInput();
+                                updateButtonText();
+                                menu.classList.remove('show');
+                                const filterItem = button.closest('.filter-item');
+                                if (filterItem) filterItem.style.zIndex = '';
+                                
+                                // Use setTimeout to ensure hidden input is updated before submit
+                                setTimeout(function() {
+                                    const form = document.getElementById('filterFormMain');
+                                    if (form) {
+                                        form.submit();
+                                    }
+                                }, 10);
+                            });
+                        }
+                        
+                        // Handle checkbox click separately
+                        if (itemCheckbox) {
+                            itemCheckbox.addEventListener('change', function(e) {
+                                e.stopPropagation();
+                                
+                                if (this.checked) {
+                                    item.classList.add('selected');
+                                } else {
+                                    item.classList.remove('selected');
+                                }
+                                
+                                // Update header checkbox
+                                if (headerCheckbox) {
+                                    const selectedCount = menu.querySelectorAll('.filter-dropdown-item.selected').length;
+                                    headerCheckbox.checked = selectedCount === allItems.length && allItems.length > 0;
+                                }
+                                
+                                // IMPORTANT: Update hidden input BEFORE submit
+                                updateHiddenInput();
+                                updateButtonText();
+                                
+                                // Don't submit if no items are selected (would clear filter)
+                                const selectedCount = menu.querySelectorAll('.filter-dropdown-item.selected').length;
+                                if (selectedCount === 0) {
+                                    return; // Don't submit if all items are deselected
+                                }
+                                
+                                // Use setTimeout to ensure hidden input is updated before submit
+                                setTimeout(function() {
+                                    const form = document.getElementById('filterFormMain');
+                                    if (form) {
+                                        form.submit();
+                                    }
+                                }, 10);
+                            });
+                        }
+                    });
+
+                    // Handle button click to toggle menu
+                    button.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const filterItem = button.closest('.filter-item');
+                        document.querySelectorAll('.filter-dropdown-menu.show').forEach(function(m) {
+                            if (m !== menu) {
+                                m.classList.remove('show');
+                                const item = m.closest('.filter-item');
+                                if (item) item.style.zIndex = '';
+                            }
+                        });
+                        
+                        menu.classList.toggle('show');
+                        if (filterItem) {
+                            if (menu.classList.contains('show')) {
+                                filterItem.style.zIndex = '10003';
+                            } else {
+                                filterItem.style.zIndex = '';
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error initializing dropdown:', dropdownName, error);
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.filter-item')) {
+                    document.querySelectorAll('.filter-dropdown-menu.show').forEach(menu => {
+                        menu.classList.remove('show');
+                        const item = menu.closest('.filter-item');
+                        if (item) item.style.zIndex = '';
+                    });
+                }
+            });
+
+            document.querySelectorAll('.dropdown-search-input').forEach(function(searchInput) {
+                const searchTarget = searchInput.getAttribute('data-search-target');
+                if (!searchTarget) return;
+                
+                const listContainer = document.querySelector('[data-list="' + searchTarget + '"]');
+                if (!listContainer) return;
+                
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const items = listContainer.querySelectorAll('.filter-dropdown-item');
+                    
+                    items.forEach(item => {
+                        const itemText = item.textContent.toLowerCase();
+                        if (itemText.includes(searchTerm)) {
+                            item.style.display = 'flex';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        })();
+
+        // ===================================
+        // FILTER HISTORY SYSTEM (Back Button)
+        // ===================================
+        const filterHistory = [];
+
+        function saveFilterState() {
+            const state = {
+                tanggal: document.getElementById('tanggalValueMain')?.value || '',
+                jenisNG: document.getElementById('jenisNGValueMain')?.value || '',
+                kategoriNG: document.getElementById('kategoriNGValueMain')?.value || '',
+                line: document.getElementById('lineValueMain')?.value || '',
+                partCode: document.getElementById('partCodeValueMain')?.value || ''
+            };
+            filterHistory.push(state);
+            updateBackButtonVisibility();
+            console.log('💾 Filter state saved. History length:', filterHistory.length);
+        }
+
+        function updateBackButtonVisibility() {
+            const btn = document.getElementById('btnBackFilter');
+            if (btn) {
+                btn.style.display = filterHistory.length > 0 ? 'flex' : 'none';
+            }
+        }
+
+        function goBackFilter() {
+            if (filterHistory.length === 0) {
+                console.warn('⚠️ No history to go back to');
+                return;
+            }
+
+            const prevState = filterHistory.pop();
+            updateBackButtonVisibility();
+
+            console.log('⬅️ Going back to previous state:', prevState);
+            console.log('⬅️ History remaining:', filterHistory.length);
+
+            // Restore previous filter values
+            const tanggalInput = document.getElementById('tanggalValueMain');
+            const jenisNGInput = document.getElementById('jenisNGValueMain');
+            const kategoriNGInput = document.getElementById('kategoriNGValueMain');
+            const lineInput = document.getElementById('lineValueMain');
+            const partCodeInput = document.getElementById('partCodeValueMain');
+
+            if(tanggalInput) {
+                tanggalInput.value = prevState.tanggal || '';
+                console.log('⬅️ Restored tanggal:', tanggalInput.value);
+            }
+            if(jenisNGInput) {
+                jenisNGInput.value = prevState.jenisNG || '';
+                console.log('⬅️ Restored jenisNG:', jenisNGInput.value);
+            }
+            if(kategoriNGInput) {
+                kategoriNGInput.value = prevState.kategoriNG || '';
+                console.log('⬅️ Restored kategoriNG:', kategoriNGInput.value);
+            }
+            if(lineInput) {
+                lineInput.value = prevState.line || '';
+                console.log('⬅️ Restored line:', lineInput.value);
+            }
+            if(partCodeInput) {
+                partCodeInput.value = prevState.partCode || '';
+                console.log('⬅️ Restored partCode:', partCodeInput.value);
+            }
+
+            // SPECIAL: If this is the last back (history now empty), ensure jenisNG is cleared
+            // This ensures we return to the initial view with QTY CHECK + QTY NG visible
+            if(filterHistory.length === 0 && jenisNGInput) {
+                console.log('⬅️ Last back - forcing jenisNG to empty');
+                jenisNGInput.value = '';
+            }
+
+            // Trigger dashboard update without saving to history again
+            console.log('⬅️ Triggering updateDashboardResults...');
+            updateDashboardResults();
+        }
+
+        // Global filter update function
+        function updateGlobalFilter(filterType, filterValue) {
+            try {
+                const form = document.getElementById('filterFormMain');
+                if (!form) {
+                    console.error('Form filterFormMain not found');
+                    return;
+                }
+                
+                // Save current state to history (for all drill-down actions including chart clicks)
+                if (['jenisNG', 'partCode', 'line', 'kategoriNG', 'tanggal', 'bulan'].includes(filterType)) {
+                    saveFilterState();
+                }
+                
+                // Get current filter values
+                const bulanInput = document.getElementById('bulanValueMain');
+                const tanggalInput = document.getElementById('tanggalValueMain');
+                const jenisNGInput = document.getElementById('jenisNGValueMain');
+                const kategoriNGInput = document.getElementById('kategoriNGValueMain');
+                const partCodeInput = document.getElementById('partCodeValueMain');
+                const lineInput = document.getElementById('lineValueMain');
+                
+                // PENTING: Simpan nilai filter bulan yang sudah ada SEBELUM update
+                let currentBulanValue = '';
+                if (bulanInput && bulanInput.value && bulanInput.value.trim() !== '') {
+                    currentBulanValue = bulanInput.value.trim();
+                }
+                
+                // Helper function to convert month format - ensure it's always "MonthName-Year"
+                function convertBulanFormat(bulanValue) {
+                    if (!bulanValue) return bulanValue;
+                    
+                    const bulanList = bulanValue.split(',');
+                    const convertedList = bulanList.map(function(b) {
+                        const trimmed = b.trim();
+                        const parts = trimmed.split('-');
+                        
+                        if (parts.length === 2) {
+                            const monthPart = parts[0];
+                            const yearPart = parts[1];
+                            
+                            // Check if month is numeric (e.g., "1-2026")
+                            const monthNum = parseInt(monthPart);
+                            if (!isNaN(monthNum) && monthNum >= 1 && monthNum <= 12) {
+                                // Convert to month name
+                                const monthName = getMonthName(monthNum);
+                                return monthName + '-' + yearPart;
+                            }
+                        }
+                        
+                        // Already in correct format or invalid format
+                        return trimmed;
+                    });
+                    
+                    return convertedList.join(',');
+                }
+                
+                // Convert current bulan value to ensure it's in month-name format
+                if (currentBulanValue) {
+                    currentBulanValue = convertBulanFormat(currentBulanValue);
+                }
+                
+                
+                // Update filter based on type
+                switch(filterType) {
+                    case 'bulan':
+                        if (bulanInput) {
+                            bulanInput.value = filterValue;
+                        }
+                        // Clear tanggal jika bulan berubah
+                        if (tanggalInput) {
+                            tanggalInput.value = '';
+                        }
+                        // Clear jenisNG karena ini bukan filter NG
+                        if (jenisNGInput) {
+                            jenisNGInput.value = '';
+                        }
+                        // Clear filter lain untuk fokus ke filter waktu saja
+                        if (kategoriNGInput) {
+                            kategoriNGInput.value = '';
+                        }
+                        if (lineInput) {
+                            lineInput.value = '';
+                        }
+                        if (partCodeInput) {
+                            partCodeInput.value = '';
+                        }
+                        break;
+                    case 'tanggal':
+                        console.log('📅 [updateGlobalFilter] Setting tanggal filter:', filterValue);
+                        if (tanggalInput) {
+                            tanggalInput.value = filterValue;
+                            console.log('📅 [updateGlobalFilter] tanggal input value after set:', tanggalInput.value);
+                        }
+                        // PENTING: Pertahankan filter bulan yang sudah ada
+                        if (bulanInput && currentBulanValue) {
+                            bulanInput.value = currentBulanValue;
+                            console.log('📅 [updateGlobalFilter] bulan preserved:', bulanInput.value);
+                        }
+                        // Clear jenisNG karena ini bukan filter NG
+                        if (jenisNGInput) {
+                            jenisNGInput.value = '';
+                        }
+                        // Clear filter lain untuk fokus ke filter waktu saja
+                        if (kategoriNGInput) {
+                            kategoriNGInput.value = '';
+                        }
+                        if (lineInput) {
+                            lineInput.value = '';
+                        }
+                        if (partCodeInput) {
+                            partCodeInput.value = '';
+                        }
+                        break;
+                    case 'jenisNG':
+                        if (jenisNGInput) {
+                            jenisNGInput.value = filterValue;
+                        }
+                        // PENTING: Pertahankan filter bulan yang sudah ada
+                        if (bulanInput && currentBulanValue) {
+                            bulanInput.value = currentBulanValue;
+                        }
+                        break;
+                    case 'kategoriNG':
+                        if (kategoriNGInput) {
+                            kategoriNGInput.value = filterValue;
+                        }
+                        // PENTING: Pertahankan filter bulan yang sudah ada
+                        if (bulanInput && currentBulanValue) {
+                            bulanInput.value = currentBulanValue;
+                        }
+                        // Clear jenisNG karena ini bukan filter NG spesifik
+                        if (jenisNGInput) {
+                            jenisNGInput.value = '';
+                        }
+                        break;
+                    case 'partCode':
+                        if (partCodeInput) {
+                            partCodeInput.value = filterValue;
+                        }
+                        // PENTING: Pertahankan filter bulan yang sudah ada
+                        if (bulanInput && currentBulanValue) {
+                            bulanInput.value = currentBulanValue;
+                        }
+                        // Clear jenisNG karena ini bukan filter NG
+                        if (jenisNGInput) {
+                            jenisNGInput.value = '';
+                        }
+                        break;
+                    case 'line':
+                        if (lineInput) {
+                            lineInput.value = filterValue;
+                        }
+                        // PENTING: Pertahankan filter bulan yang sudah ada
+                        if (bulanInput && currentBulanValue) {
+                            bulanInput.value = currentBulanValue;
+                        }
+                        // Clear jenisNG karena ini bukan filter NG
+                        if (jenisNGInput) {
+                            jenisNGInput.value = '';
+                        }
+                        break;
+                }
+                
+                // PENTING: Jika filter bulan kosong setelah update, ambil semua bulan yang ada di dropdown
+                // Ini memastikan saat klik chart/tabel, filter bulan tetap ada sehingga data tidak hilang
+                if (bulanInput && (!bulanInput.value || bulanInput.value.trim() === '')) {
+                    const allBulanItems = document.querySelectorAll('[data-list="bulanMain"] .filter-dropdown-item');
+                    if (allBulanItems && allBulanItems.length > 0) {
+                        const allBulanValues = Array.from(allBulanItems).map(function(item) {
+                            return item.getAttribute('data-value');
+                        }).filter(function(v) { return v && v.trim() !== ''; });
+                        if (allBulanValues.length > 0) {
+                            bulanInput.value = allBulanValues.join(',');
+                        }
+                    }
+                }
+                
+                // Pastikan filter bulan tidak kosong sebelum submit
+                if (bulanInput && (!bulanInput.value || bulanInput.value.trim() === '')) {
+                    console.warn('Warning: Filter bulan is empty, trying to get all months from dropdown');
+                    const allBulanItems = document.querySelectorAll('[data-list="bulanMain"] .filter-dropdown-item');
+                    if (allBulanItems && allBulanItems.length > 0) {
+                        const allBulanValues = Array.from(allBulanItems).map(function(item) {
+                            return item.getAttribute('data-value');
+                        }).filter(function(v) { return v && v.trim() !== ''; });
+                        if (allBulanValues.length > 0) {
+                            bulanInput.value = allBulanValues.join(',');
+                        }
+                    }
+                }
+                
+                // Use AJAX for all filters to maintain history and avoid page reload
+                updateDashboardResults();
+
+            } catch (error) {
+                console.error('Error in updateGlobalFilter:', error);
+            }
+        }
+        
+        async function updateDashboardResults() {
+            try {
+                console.log('🔄 [updateDashboardResults] Starting dashboard refresh...');
+                
+                const form = document.getElementById('filterFormMain');
+                if (!form) {
+                    console.error('❌ Form filterFormMain not found!');
+                    return;
+                }
+                
+                const formData = new FormData(form);
+                const params = new URLSearchParams(formData).toString();
+                const url = window.location.pathname + '?' + params;
+
+                console.log('📡 [updateDashboardResults] Fetching from URL:', url);
+                console.log('📋 [updateDashboardResults] Form params:', params);
+
+                const response = await fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                console.log('📥 [updateDashboardResults] Response status:', response.status, response.statusText);
+
+                if (!response.ok) {
+                    throw new Error(`Fetch failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                console.log('📊 [updateDashboardResults] Received data from backend:', data);
+                console.log('📊 [updateDashboardResults] Data keys:', Object.keys(data));
+                
+                // Update Card Summary (gunakan camelCase sesuai response backend)
+                try {
+                    const qtyCheckValue = data.totalQtyCheck ?? 0;
+                    const qtyNGValue = data.totalQtyNG ?? 0;
+                    const rrValue = data.totalRR ?? 0;
+                    
+                    console.log('💳 [updateDashboardResults] Card values - QtyCheck:', qtyCheckValue, 'QtyNG:', qtyNGValue, 'RR:', rrValue);
+                    
+                    document.querySelector('.summary-cards .summary-card:nth-child(1) .summary-card-value').textContent = qtyCheckValue.toLocaleString();
+                    document.querySelector('.summary-cards .summary-card:nth-child(2) .summary-card-value').textContent = qtyNGValue.toLocaleString();
+                    document.querySelector('.summary-cards .summary-card:nth-child(3) .summary-card-value').innerHTML = rrValue.toFixed(2) + '<span class="summary-card-unit">%</span>';
+                    
+                    console.log('✅ [updateDashboardResults] Summary cards updated');
+                } catch (cardError) {
+                    console.error('❌ [updateDashboardResults] Error updating cards:', cardError);
+                }
+
+                // Check if we are filtering by a specific NG type
+                const jenisNGInputUpdate = document.getElementById('jenisNGValueMain');
+                const isFilteredNG = jenisNGInputUpdate && jenisNGInputUpdate.value && jenisNGInputUpdate.value.trim() !== '';
+                console.log('🔍 [updateDashboardResults] jenisNG input:', jenisNGInputUpdate);
+                console.log('🔍 [updateDashboardResults] jenisNG value:', jenisNGInputUpdate?.value);
+                console.log('🔍 [updateDashboardResults] Is filtered by NG?', isFilteredNG);
+
+                // Helper to create gradient
+                const createGradient = (ctx, colorStart, colorEnd) => {
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                    gradient.addColorStop(0, colorStart);
+                    gradient.addColorStop(1, colorEnd);
+                    return gradient;
+                };
+
+                // Helper to update chart
+                const updateChart = (chartName, chart, newData, hideQtyCheck = false) => {
+                    try {
+                        if (!chart || !newData || !Array.isArray(newData)) {
+                            console.warn(`⚠️ [updateChart] ${chartName}: No chart or invalid data`, { chart, newData });
+                            return;
+                        }
+                        
+                        console.log(`🔄 [updateChart] Updating ${chartName} chart with ${newData.length} data points, hideQtyCheck: ${hideQtyCheck}`);
+                        
+                        // Update Labels
+                        const newLabels = newData.map(d => d.label || d.Label || d.tanggal || '');
+                        chart.data.labels = newLabels;
+                        
+                        // Update Datasets with Gradients
+                        chart.data.datasets.forEach((ds, idx) => {
+                            const ctx = chart.ctx;
+                            
+                            if (ds.label === 'QTY CHECK') {
+                                const qtyCheckValues = newData.map(d => d.qtyCheck || d.QtyCheck || 0);
+                                ds.data = qtyCheckValues;
+                                // Hide QTY CHECK jika filter jenisNG aktif (hanya tampilkan QTY NG)
+                                ds.hidden = hideQtyCheck;
+                                // Blue gradient (solid to transparent)
+                                ds.backgroundColor = createGradient(ctx, 'rgba(59, 130, 246, 0.8)', 'rgba(59, 130, 246, 0.1)');
+                                ds.borderColor = 'rgba(59, 130, 246, 1)';
+                                ds.borderWidth = 1;
+                                console.log(`✅ [updateChart] ${chartName} QTY CHECK updated (hidden: ${ds.hidden}):`, qtyCheckValues);
+                                
+                            } else if (ds.label === 'QTY NG') {
+                                const qtyNGValues = newData.map(d => d.qtyNG || d.QtyNG || 0);
+                                ds.data = qtyNGValues;
+                                ds.hidden = false; // Always show QTY NG
+                                // Orange gradient (solid to transparent)
+                                ds.backgroundColor = createGradient(ctx, 'rgba(249, 115, 22, 0.9)', 'rgba(249, 115, 22, 0.1)');
+                                ds.borderColor = 'rgba(249, 115, 22, 1)';
+                                ds.borderWidth = 1;
+                                console.log(`✅ [updateChart] ${chartName} QTY NG updated:`, qtyNGValues);
+                                
+                            } else if (ds.label === 'RR%') {
+                                const rrValues = newData.map(d => d.rr || d.RR || 0);
+                                ds.data = rrValues;
+                                // RR% tetap ditampilkan meskipun QTY CHECK dihide (karena RR% tetap relevan untuk melihat persentase NG)
+                                ds.hidden = false;
+                                console.log(`✅ [updateChart] ${chartName} RR% updated:`, rrValues);
+                                
+                            } else if (ds.label === 'Target') {
+                                // Update Target dataset to match new label count
+                                ds.data = newLabels.map(() => 5); // Target is always 5%
+                            }
+                        });
+                        
+                        console.log(`✅ [updateChart] ${chartName} chart update complete`);
+                        chart.update();
+                    } catch (chartError) {
+                        console.error(`❌ Error updating ${chartName}:`, chartError);
+                        console.error(`❌ Error stack:`, chartError.stack);
+                    }
+                };
+
+                // Pass isFilteredNG to hide QTY CHECK when filtering by jenisNG
+                updateChart('Monthly', window.monthlyChartInstance, data.monthlyData, isFilteredNG);
+                updateChart('Weekly', window.weeklyChartInstance, data.weeklyData, isFilteredNG);
+                updateChart('Daily', window.dailyChartInstance, data.dailyData, isFilteredNG);
+                
+                // Update Pareto & Kriteria jika perlu
+                try {
+                    if (window.kriteriaChartInstance && data.kriteriaNGData && Array.isArray(data.kriteriaNGData)) {
+                        console.log('📈 [updateDashboardResults] Updating Kriteria NG chart...');
+                        // Update labels
+                        window.kriteriaChartInstance.data.labels = data.kriteriaNGData.map(d => d.jenisNG || '');
+                        // Update data
+                        window.kriteriaChartInstance.data.datasets[0].data = data.kriteriaNGData.map(d => d.qtyNG || d.QtyNG || 0);
+                        window.kriteriaChartInstance.update();
+                        console.log('✅ [updateDashboardResults] Kriteria NG chart updated with', data.kriteriaNGData.length, 'items');
+                    }
+                } catch (kriteriaError) {
+                    console.error('❌ [updateDashboardResults] Error updating Kriteria chart:', kriteriaError);
+                }
+
+                // Update Tables
+                try {
+                    console.log('📋 [updateDashboardResults] Updating tables...');
+                    
+                    // Update Rejection by Part Table
+                    if (data.rejectionByPartData && Array.isArray(data.rejectionByPartData)) {
+                        const partTableBody = document.getElementById('rejectionByPartTableBody');
+                        if (partTableBody) {
+                            if (data.rejectionByPartData.length === 0) {
+                                partTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Tidak ada data</td></tr>';
+                            } else {
+                                partTableBody.innerHTML = data.rejectionByPartData.map((item, index) => `
+                                    <tr style="cursor: pointer;">
+                                        <td>${index + 1}</td>
+                                        <td>${item.partCode || '-'}</td>
+                                        <td>${(item.qtyCheck || 0).toLocaleString()}</td>
+                                        <td>${(item.qtyNG || 0).toLocaleString()}</td>
+                                        <td>${(item.rr || 0).toFixed(2)}%</td>
+                                    </tr>
+                                `).join('');
+                                
+                                // Re-attach click event listeners
+                                partTableBody.querySelectorAll('tr').forEach(function(row, idx) {
+                                    row.addEventListener('click', function() {
+                                        const partCode = data.rejectionByPartData[idx]?.partCode;
+                                        if (partCode) {
+                                            updateGlobalFilter('partCode', partCode);
+                                        }
+                                    });
+                                });
+                            }
+                            console.log('✅ [updateDashboardResults] Part table updated');
+                        }
+                    }
+                    
+                    // Update Rejection by Kriteria Table
+                    if (data.rejectionByKriteriaData && Array.isArray(data.rejectionByKriteriaData)) {
+                        const kriteriaTableBody = document.getElementById('rejectionByKriteriaTableBody');
+                        if (kriteriaTableBody) {
+                            if (data.rejectionByKriteriaData.length === 0) {
+                                kriteriaTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #94a3b8;">Tidak ada data</td></tr>';
+                            } else {
+                                kriteriaTableBody.innerHTML = data.rejectionByKriteriaData.map((item, index) => `
+                                    <tr style="cursor: pointer;">
+                                        <td>${index + 1}</td>
+                                        <td>${item.jenisNG || '-'}</td>
+                                        <td>${(item.qtyNG || 0).toLocaleString()}</td>
+                                    </tr>
+                                `).join('');
+                                
+                                // Re-attach click event listeners
+                                kriteriaTableBody.querySelectorAll('tr').forEach(function(row, idx) {
+                                    row.addEventListener('click', function() {
+                                        const jenisNG = data.rejectionByKriteriaData[idx]?.jenisNG;
+                                        if (jenisNG) {
+                                            updateGlobalFilter('jenisNG', jenisNG);
+                                        }
+                                    });
+                                });
+                            }
+                            console.log('✅ [updateDashboardResults] Kriteria table updated');
+                        }
+                    }
+                } catch (tableError) {
+                    console.error('❌ [updateDashboardResults] Error updating tables:', tableError);
+                }
+
+                console.log('✅ [updateDashboardResults] Dashboard refresh completed successfully!');
+            } catch (error) {
+                console.error('❌ [updateDashboardResults] Fatal error:', error);
+                console.error('❌ [updateDashboardResults] Error stack:', error.stack);
+                // Fallback: reload page if AJAX fails
+                console.warn('⚠️ [updateDashboardResults] Falling back to page reload...');
+                location.reload();
+            }
+        }
+
+        // Load DataLabels Plugin and Register
+        const datalabelsScript = document.createElement('script');
+        datalabelsScript.src = 'https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2';
+        document.head.appendChild(datalabelsScript);
+
+        // Function that holds all chart initialization
+        function initCharts() {
+            // Give browser a moment to settle layout dimensions
+            setTimeout(function() {
+                try {
+                    renderCharts();
+                } catch (e) {
+                    console.error('Error rendering charts:', e);
+                }
+            }, 300);
+        }
+
+        // Register the plugin globally once loaded and then init
+        datalabelsScript.onload = function() {
+            try {
+                Chart.register(ChartDataLabels);
+            } catch (e) { console.warn('Datalabels already registered or failed'); }
+            initCharts();
+        };
+
+        // Fallback in case script fails to load or takes too long
+        setTimeout(function() {
+            if (typeof initChartsStarted === 'undefined') {
+                console.warn('Plugin load timeout, initializing charts anyway...');
+                initCharts();
+            }
+        }, 2000);
+
+        // Helper function to convert month number to abbreviated name
+        function getMonthName(monthNumber) {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return monthNames[monthNumber - 1] || '';
+        }
+
+        // Charts Initialization
+        // Always initialize chart data variables, even if ViewBag is null
+        var monthlyData = @Html.Raw(ViewBag.MonthlyData != null ? Json.Serialize(ViewBag.MonthlyData) : "[]");
+        var weeklyData = @Html.Raw(ViewBag.WeeklyData != null ? Json.Serialize(ViewBag.WeeklyData) : "[]");
+        var dailyData = @Html.Raw(ViewBag.DailyData != null ? Json.Serialize(ViewBag.DailyData) : "[]");
+        var paretoData = @Html.Raw(ViewBag.ParetoPartData != null ? Json.Serialize(ViewBag.ParetoPartData) : "[]");
+        var kriteriaData = @Html.Raw(ViewBag.KriteriaNGData != null ? Json.Serialize(ViewBag.KriteriaNGData) : "[]");
+        
+        // Ensure all data are arrays
+        if (!Array.isArray(monthlyData)) monthlyData = [];
+        if (!Array.isArray(weeklyData)) weeklyData = [];
+        if (!Array.isArray(dailyData)) dailyData = [];
+        if (!Array.isArray(paretoData)) paretoData = [];
+        if (!Array.isArray(kriteriaData)) kriteriaData = [];
+        
+        // Wrap core rendering in a function
+        function renderCharts() {
+            window.initChartsStarted = true;
+            
+            // Check if we are filtering by a specific NG type (for initial render)
+            // Check if filtering by jenisNG on initial render
+            const jenisNGInput = document.getElementById('jenisNGValueMain');
+            // TEMPORARY FIX: Always show QTY CHECK on initial render
+            const isFilteredNGInitial = false; // jenisNGInput && jenisNGInput.value && jenisNGInput.value.trim() !== '';
+            console.log('🔍 [renderCharts] jenisNG input element:', jenisNGInput);
+            console.log('🔍 [renderCharts] jenisNG value:', jenisNGInput?.value);
+            console.log('🔍 [renderCharts] Is filtered by NG on initial render? (FORCED FALSE)', isFilteredNGInitial);
+            
+            // Helper to create gradient for initial render - defined globally within renderCharts
+            const createChartGradient = function(ctx, colorStart, colorEnd) {
+                const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, colorStart);
+                gradient.addColorStop(1, colorEnd);
+                return gradient;
+            };
+            
+            @if (ViewBag.MonthlyData != null)
+            {
+                <text>
+            // Monthly Chart
+            const monthlyCtx = document.getElementById('monthlyChart');
+            if (monthlyCtx && monthlyData && Array.isArray(monthlyData)) {
+                // Use only months that have data (from filter) - show full label with year
+                const monthLabels = monthlyData.map(function(d) {
+                    if (d && d.label) {
+                        return d.label.toString();
+                    }
+                    return null;
+                }).filter(function(m) { return m !== null; });
+                
+                const qtyCheckData = monthlyData.map(function(d) { return d && d.qtyCheck !== undefined ? d.qtyCheck : 0; });
+                const qtyNGData = monthlyData.map(function(d) { return d && d.qtyNG !== undefined ? d.qtyNG : 0; });
+                const rrData = monthlyData.map(function(d) { return d && d.rr !== undefined ? d.rr : 0; });
+                
+                window.monthlyChartInstance = new Chart(monthlyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: monthLabels,
+                        datasets: [{
+                            label: 'QTY CHECK',
+                            data: qtyCheckData,
+                            backgroundColor: createChartGradient(monthlyCtx.getContext('2d'), 'rgba(59, 130, 246, 0.8)', 'rgba(59, 130, 246, 0.1)'),
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y',
+                            datalabels: { display: false },
+                            hidden: isFilteredNGInitial // Hide QTY CHECK jika filter jenisNG aktif
+                        }, {
+                            label: 'QTY NG',
+                            data: qtyNGData,
+                            backgroundColor: createChartGradient(monthlyCtx.getContext('2d'), 'rgba(249, 115, 22, 0.9)', 'rgba(249, 115, 22, 0.1)'),
+                            borderColor: 'rgba(249, 115, 22, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y',
+                            datalabels: { display: false }
+                        }, {
+                            label: 'RR%',
+                            data: rrData,
+                            type: 'line',
+                            borderColor: '#000000',
+                            backgroundColor: 'transparent',
+                            yAxisID: 'y1',
+                            datalabels: {
+                                display: function(context) {
+                                    var val = context.dataset.data[context.dataIndex];
+                                    return val > 0; // Hanya tampilkan jika > 0
+                                },
+                                color: '#000',
+                                align: 'top',
+                                offset: 2,
+                                font: { weight: 'bold', size: 10 },
+                                formatter: function(value) {
+                                    return (value && parseFloat(value) > 0) ? parseFloat(value).toFixed(2) + '%' : '';
+                                }
+                            }
+                        }, {
+                            label: 'Target',
+                            data: monthLabels.map(function() { return 5; }),
+                            type: 'line',
+                            borderColor: '#ef4444',
+                            borderDash: [5, 5],
+                            backgroundColor: 'transparent',
+                            yAxisID: 'y1',
+                            datalabels: {
+                                display: false // Sembunyikan label target agar tidak penuh angka
+                            }
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        onHover: function(event, elements) {
+                            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                        },
+                        onClick: function(event, elements) {
+                            if (elements.length > 0) {
+                                const elementIndex = elements[0].index;
+                                // Use label from chart instead of stale monthlyData
+                                const clickedLabel = this.data.labels[elementIndex];
+                                console.log('📅 [Monthly Chart] Clicked label:', clickedLabel);
+                                if (clickedLabel) {
+                                    // Label format is already "Jan-2026", so just use it directly
+                                    updateGlobalFilter('bulan', clickedLabel);
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            datalabels: {
+                                display: false // Default: sembunyikan semua label
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                position: 'left',
+                                stacked: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        if (value != null && typeof value.toLocaleString === 'function') {
+                                            return value.toLocaleString();
+                                        }
+                                        return value;
+                                    }
+                                }
+                            },
+                            y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                ticks: {
+                                    callback: function(value) {
+                                        if (value != null && typeof value.toFixed === 'function') {
+                                            return value.toFixed(1) + '%';
+                                        }
+                                        return value + '%';
+                                    }
+                                }
+                            },
+                            x: {
+                                stacked: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Weekly Chart
+            const weeklyCtx = document.getElementById('weeklyChart');
+            if (weeklyCtx && weeklyData && Array.isArray(weeklyData)) {
+                // Use only weeks that have data (from filter)
+                const weekLabels = weeklyData.map(function(d) { return d && d.label ? d.label.toString() : ''; }).filter(function(l) { return l !== ''; });
+                
+                const qtyCheckData = weeklyData.map(function(d) { return d && d.qtyCheck !== undefined ? d.qtyCheck : 0; });
+                const qtyNGData = weeklyData.map(function(d) { return d && d.qtyNG !== undefined ? d.qtyNG : 0; });
+                const rrData = weeklyData.map(function(d) { return d && d.rr !== undefined ? d.rr : 0; });
+                
+                window.weeklyChartInstance = new Chart(weeklyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: weekLabels,
+                        datasets: [{
+                            label: 'QTY CHECK',
+                            data: qtyCheckData,
+                            backgroundColor: createChartGradient(weeklyCtx.getContext('2d'), 'rgba(59, 130, 246, 0.8)', 'rgba(59, 130, 246, 0.1)'),
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y',
+                            datalabels: { display: false },
+                            hidden: isFilteredNGInitial // Hide QTY CHECK jika filter jenisNG aktif
+                        }, {
+                            label: 'QTY NG',
+                            data: qtyNGData,
+                            backgroundColor: createChartGradient(weeklyCtx.getContext('2d'), 'rgba(249, 115, 22, 0.9)', 'rgba(249, 115, 22, 0.1)'),
+                            borderColor: 'rgba(249, 115, 22, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y',
+                            datalabels: { display: false }
+                        }, {
+                            label: 'RR%',
+                            data: rrData,
+                            type: 'line',
+                            borderColor: '#000000',
+                            backgroundColor: 'transparent',
+                            yAxisID: 'y1',
+                            datalabels: {
+                                display: function(context) {
+                                    var val = context.dataset.data[context.dataIndex];
+                                    return val > 0;
+                                },
+                                color: '#000',
+                                align: 'top',
+                                offset: 2,
+                                font: { weight: 'bold', size: 10 },
+                                formatter: function(value) {
+                                    return (value && parseFloat(value) > 0) ? parseFloat(value).toFixed(2) + '%' : '';
+                                }
+                            }
+                        }, {
+                            label: 'Target',
+                            data: weekLabels.map(function() { return 5; }),
+                            type: 'line',
+                            borderColor: '#ef4444',
+                            borderDash: [5, 5],
+                            backgroundColor: 'transparent',
+                            yAxisID: 'y1',
+                            datalabels: {
+                                display: false
+                            }
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        onHover: function(event, elements) {
+                            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                        },
+                        onClick: function(event, elements) {
+                            if (elements.length > 0) {
+                                const elementIndex = elements[0].index;
+                                // Use label from chart instead of stale weeklyData
+                                const clickedLabel = this.data.labels[elementIndex];
+                                console.log('📅 [Weekly Chart] Clicked label:', clickedLabel);
+                                if (clickedLabel) {
+                                    // Extract date range from label seperti "Minggu 1 (1-7)" atau "Minggu 1 (29-4)"
+                                    const labelMatch = clickedLabel.match(/Minggu\s+\d+\s+\((\d+)-(\d+)\)/);
+                                    if (labelMatch) {
+                                        const startDay = parseInt(labelMatch[1]);
+                                        const endDay = parseInt(labelMatch[2]);
+                                        const dates = [];
+                                        let currentDay = startDay;
+                                        const maxDay = endDay + 1;
+                                        while (currentDay < maxDay) {
+                                            dates.push(currentDay.toString());
+                                            currentDay++;
+                                        }
+                                        console.log('📅 [Weekly Chart] Sending tanggal filter:', dates.join(','));
+                                        // Saat klik minggu, update tanggal tapi pertahankan filter bulan
+                                        updateGlobalFilter('tanggal', dates.join(','));
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                position: 'left',
+                                stacked: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        if (value != null && typeof value.toLocaleString === 'function') {
+                                            return value.toLocaleString();
+                                        }
+                                        return value;
+                                    }
+                                }
+                            },
+                            y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                ticks: {
+                                    callback: function(value) {
+                                        if (value != null && typeof value.toFixed === 'function') {
+                                            return value.toFixed(1) + '%';
+                                        }
+                                        return value + '%';
+                                    }
+                                }
+                            },
+                            x: {
+                                stacked: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Daily Chart
+            const dailyCtx = document.getElementById('dailyChart');
+            if (dailyCtx && dailyData && Array.isArray(dailyData)) {
+                // Use only days that have data (from filter) or show all days in selected month
+                // Filter out days with no data if tanggal filter is active
+                const dayLabels = dailyData.map(function(d) { return d && d.label ? d.label.toString() : ''; }).filter(function(l) { return l !== ''; });
+                
+                const qtyCheckData = dailyData.map(function(d) { return d && d.qtyCheck !== undefined ? d.qtyCheck : 0; });
+                const qtyNGData = dailyData.map(function(d) { return d && d.qtyNG !== undefined ? d.qtyNG : 0; });
+                const rrData = dailyData.map(function(d) { return d && d.rr !== undefined ? d.rr : 0; });
+                
+                window.dailyChartInstance = new Chart(dailyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dayLabels,
+                        datasets: [{
+                            label: 'QTY CHECK',
+                            data: qtyCheckData,
+                            backgroundColor: createChartGradient(dailyCtx.getContext('2d'), 'rgba(59, 130, 246, 0.8)', 'rgba(59, 130, 246, 0.1)'),
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y',
+                            datalabels: { display: false },
+                            hidden: isFilteredNGInitial // Hide QTY CHECK jika filter jenisNG aktif
+                        }, {
+                            label: 'QTY NG',
+                            data: qtyNGData,
+                            backgroundColor: createChartGradient(dailyCtx.getContext('2d'), 'rgba(249, 115, 22, 0.9)', 'rgba(249, 115, 22, 0.1)'),
+                            borderColor: 'rgba(249, 115, 22, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y',
+                            datalabels: { display: false }
+                        }, {
+                            label: 'RR%',
+                            data: rrData,
+                            type: 'line',
+                            borderColor: '#000000',
+                            backgroundColor: 'transparent',
+                            yAxisID: 'y1',
+                            datalabels: {
+                                display: function(context) {
+                                    var val = context.dataset.data[context.dataIndex];
+                                    return val > 0;
+                                },
+                                color: '#000',
+                                align: 'top',
+                                offset: 2,
+                                font: { weight: 'bold', size: 10 },
+                                formatter: function(value) {
+                                    return (value && parseFloat(value) > 0) ? parseFloat(value).toFixed(2) + '%' : '';
+                                }
+                            }
+                        }, {
+                            label: 'Target',
+                            data: dayLabels.map(function() { return 5; }),
+                            type: 'line',
+                            borderColor: '#ef4444',
+                            borderDash: [5, 5],
+                            backgroundColor: 'transparent',
+                            yAxisID: 'y1',
+                            datalabels: {
+                                display: false
+                            }
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        onHover: function(event, elements) {
+                            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                        },
+                        onClick: function(event, elements) {
+                            if (elements.length > 0) {
+                                const elementIndex = elements[0].index;
+                                // Use label from chart instead of stale dailyData
+                                const clickedLabel = this.data.labels[elementIndex];
+                                console.log('📅 [Daily Chart] Clicked label:', clickedLabel);
+                                if (clickedLabel) {
+                                    const day = parseInt(clickedLabel);
+                                    if (!isNaN(day)) {
+                                        console.log('📅 [Daily Chart] Sending tanggal filter:', day);
+                                        updateGlobalFilter('tanggal', day.toString());
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                position: 'left',
+                                stacked: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        if (value != null && typeof value.toLocaleString === 'function') {
+                                            return value.toLocaleString();
+                                        }
+                                        return value;
+                                    }
+                                }
+                            },
+                            y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                ticks: {
+                                    callback: function(value) {
+                                        if (value != null && typeof value.toFixed === 'function') {
+                                            return value.toFixed(1) + '%';
+                                        }
+                                        return value + '%';
+                                    }
+                                }
+                            },
+                            x: {
+                                stacked: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Pareto Chart
+            const paretoCtx = document.getElementById('paretoChart');
+            if (paretoCtx && paretoData && Array.isArray(paretoData)) {
+                new Chart(paretoCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: paretoData.map(function(d) { return d && d.partCode ? d.partCode : ''; }),
+                        datasets: [{
+                            label: 'QTY NG',
+                            data: paretoData.map(function(d) { return d && d.qtyNG !== undefined ? d.qtyNG : 0; }),
+                            backgroundColor: '#3b82f6'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        onHover: function(event, elements) {
+                            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                        },
+                        onClick: function(event, elements) {
+                            if (elements.length > 0) {
+                                const elementIndex = elements[0].index;
+                                const clickedPart = paretoData[elementIndex];
+                                if (clickedPart && clickedPart.partCode) {
+                                    updateGlobalFilter('partCode', clickedPart.partCode);
+                                }
+                            }
+                        },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            }
+
+            // Kriteria Chart
+            const kriteriaCtx = document.getElementById('kriteriaChart');
+            if (kriteriaCtx && kriteriaData && Array.isArray(kriteriaData)) {
+                window.kriteriaChartInstance = new Chart(kriteriaCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: kriteriaData.map(function(d) { return d && d.jenisNG ? d.jenisNG : ''; }),
+                        datasets: [{
+                            data: kriteriaData.map(function(d) { return d && d.qtyNG !== undefined ? d.qtyNG : 0; }),
+                            backgroundColor: ['#ef4444', '#f97316', '#3b82f6', '#10b981']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        onHover: function(event, elements) {
+                            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                        },
+                        onClick: function(event, elements) {
+                            if (elements.length > 0) {
+                                const elementIndex = elements[0].index;
+                                const clickedKriteria = kriteriaData[elementIndex];
+                                if (clickedKriteria && clickedKriteria.jenisNG) {
+                                    updateGlobalFilter('jenisNG', clickedKriteria.jenisNG);
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'right',
+                                labels: {
+                                    usePointStyle: false,
+                                    boxWidth: 16,
+                                    boxHeight: 16
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.chart._metasets[context.datasetIndex].total;
+                                        const percentage = total > 0 ? Math.round((value / total) * 1000) / 10 : 0;
+                                        return label + ': ' + value + ' (' + percentage + '%)';
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                color: '#fff',
+                                font: {
+                                    weight: 'bold',
+                                    size: 11
+                                },
+                                formatter: (value, ctx) => {
+                                    let sum = 0;
+                                    let dataArr = ctx.chart.data.datasets[0].data;
+                                    dataArr.map(data => {
+                                        sum += data;
+                                    });
+                                    let percentage = (value * 100 / sum).toFixed(1) + "%";
+                                    return value > 0 ? percentage : '';
+                                },
+                                anchor: 'center',
+                                align: 'center',
+                                offset: 0,
+                                textShadowBlur: 4,
+                                textShadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+
+                    }
+                });
+            }
+
+            </text>
+        }
+        else
+        {
+            <text>
+            // No monthly data available, charts will be empty
+            console.warn('No monthly data available');
+            </text>
+        }
+
+        }
+
+        // Table sorting functionality
+        function initTableSorting() {
+            // Add sorting to both tables
+            const tables = [
+                { tableId: 'rejectionByPartTableBody', headers: ['#rejectionByPartTableBody'].map(id => document.querySelector('#rejectionByPartTable thead th')) },
+                { tableId: 'rejectionByKriteriaTableBody', headers: ['#rejectionByKriteriaTableBody'].map(id => document.querySelector('#rejectionByKriteriaTable thead th')) }
+            ];
+
+            tables.forEach(function(tableConfig) {
+                const tbody = document.getElementById(tableConfig.tableId);
+                if (!tbody) return;
+                
+                const table = tbody.closest('table');
+                if (!table) return;
+                
+                const headers = table.querySelectorAll('thead th');
+                
+                headers.forEach(function(header, columnIndex) {
+                    // Skip NO column (first column)
+                    if (columnIndex === 0) return;
+                    
+                    header.style.cursor = 'pointer';
+                    header.style.userSelect = 'none';
+                    header.innerHTML = header.innerHTML + ' <span class="sort-indicator" style="opacity: 0.3;">⇅</span>';
+                    
+                    let sortDirection = 'asc';
+                    
+                    header.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        
+                        // Remove sorting indicators from other headers
+                        headers.forEach(function(h) {
+                            const indicator = h.querySelector('.sort-indicator');
+                            if (indicator && h !== header) {
+                                indicator.innerHTML = '⇅';
+                                indicator.style.opacity = '0.3';
+                            }
+                        });
+                        
+                        // Toggle sort direction
+                        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                        
+                        // Update indicator
+                        const indicator = header.querySelector('.sort-indicator');
+                        if (indicator) {
+                            indicator.innerHTML = sortDirection === 'asc' ? '⇈' : '⇊';
+                            indicator.style.opacity = '1';
+                        }
+                        
+                        // Get all rows
+                        const rows = Array.from(tbody.querySelectorAll('tr'));
+                        
+                        // Sort rows
+                        rows.sort(function(a, b) {
+                            const aCell = a.querySelectorAll('td')[columnIndex];
+                            const bCell = b.querySelectorAll('td')[columnIndex];
+                            
+                            if (!aCell || !bCell) return 0;
+                            
+                            let aValue = aCell.textContent.trim();
+                            let bValue = bCell.textContent.trim();
+                            
+                            // Try to parse as number for numeric columns (QTY CHECK, QTY NG, RR%)
+                            const aNum = parseFloat(aValue.replace(/[^0-9.-]/g, ''));
+                            const bNum = parseFloat(bValue.replace(/[^0-9.-]/g, ''));
+                            
+                            if (!isNaN(aNum) && !isNaN(bNum)) {
+                                return sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+                            } else {
+                                // String comparison
+                                if (sortDirection === 'asc') {
+                                    return aValue.localeCompare(bValue);
+                                } else {
+                                    return bValue.localeCompare(aValue);
+                                }
+                            }
+                        });
+                        
+                        // Re-append sorted rows
+                        rows.forEach(function(row) {
+                            tbody.appendChild(row);
+                        });
+                        
+                        // Update row numbers in first column
+                        rows.forEach(function(row, index) {
+                            const noCell = row.querySelector('td:first-child');
+                            if (noCell) {
+                                noCell.textContent = index + 1;
+                            }
+                        });
+                    });
+                });
+            });
+        }
+
+        // Table row click handlers - Always initialize regardless of data
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize table sorting
+            initTableSorting();
+            
+            // Part table rows
+            const partTableRows = document.querySelectorAll('#rejectionByPartTableBody tr');
+            partTableRows.forEach(function(row) {
+                row.style.cursor = 'pointer';
+                row.addEventListener('click', function() {
+                    const partCodeCell = row.querySelector('td:nth-child(2)');
+                    if (partCodeCell) {
+                        const partCode = partCodeCell.textContent.trim();
+                        if (partCode && partCode !== 'Tidak ada data') {
+                            updateGlobalFilter('partCode', partCode);
+                        }
+                    }
+                });
+            });
+
+            // Kriteria table rows
+            const kriteriaTableRows = document.querySelectorAll('#rejectionByKriteriaTableBody tr');
+            kriteriaTableRows.forEach(function(row) {
+                row.style.cursor = 'pointer';
+                row.addEventListener('click', function() {
+                    const jenisNGCell = row.querySelector('td:nth-child(2)');
+                    if (jenisNGCell) {
+                        const jenisNG = jenisNGCell.textContent.trim();
+                        if (jenisNG && jenisNG !== 'Tidak ada data') {
+                            updateGlobalFilter('jenisNG', jenisNG);
+                        }
+                    }
+                });
+            });
+        });
+
+        // ========================================
+        // 🔌 SIGNALR REAL-TIME UPDATE
+        // ========================================
+        // Load SignalR library from CDN
+        const signalRScript = document.createElement('script');
+        signalRScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js';
+        signalRScript.onload = function() {
+            console.log('📡 SignalR library loaded, connecting to QCHub...');
+            
+            // Build connection to QCHub
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/qchub")
+                .withAutomaticReconnect()
+                .build();
+
+            // Event: Connection established
+            connection.start()
+                .then(function() {
+                    console.log('✅ SignalR connected to QCHub! Dashboard will auto-update on new data.');
+                })
+                .catch(function(err) {
+                    console.error('❌ SignalR connection error:', err);
+                });
+
+            // Event: Listen for new QC data (from Input E_LWP)
+            connection.on("NewQCDataAdded", function(data) {
+                console.log('🔔 New QC Data received via SignalR:', data);
+                
+                // 1. Tampilkan Notifikasi Popup
+                showToast("🔔 Data E_LWP Baru Masuk!", "Dashboard diperbarui otomatis.");
+
+                // 2. Refresh Dashboard
+                console.log('🔄 Auto-refreshing Dashboard Rejection charts...');
+                if (typeof updateDashboardResults === 'function') {
+                    updateDashboardResults();
+                } else {
+                    location.reload();
+                }
+            });
+
+            // Helper: Show Toast
+            function showToast(title, message) {
+                const container = document.getElementById('toast-container');
+                if (!container) return;
+
+                const uniqueId = Date.now();
+                const toast = document.createElement('div');
+                toast.className = 'toast-notification';
+                toast.id = 'toast-' + uniqueId;
+                toast.innerHTML = `
+                    <div style="font-weight: bold; font-size: 16px;">${title}</div>
+                    <div style="font-size: 14px; opacity: 0.9;">${message}</div>
+                `;
+
+                container.appendChild(toast);
+
+                // Animate In
+                setTimeout(() => toast.classList.add('show'), 100);
+
+                // Animate Out & Remove
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
+            }
+
+            // Event: Reconnecting
+            connection.onreconnecting(function(error) {
+                console.warn('⚠️ SignalR reconnecting...', error);
+            });
+
+            // Event: Reconnected
+            connection.onreconnected(function(connectionId) {
+                console.log('✅ SignalR reconnected! ConnectionId:', connectionId);
+            });
+
+            // Event: Connection closed
+            connection.onclose(function(error) {
+                console.error('❌ SignalR connection closed:', error);
+                console.log('🔄 Will attempt to reconnect automatically...');
+            });
+        };
+        
+        signalRScript.onerror = function() {
+            console.error('❌ Failed to load SignalR library from CDN');
+        };
+        
+        document.head.appendChild(signalRScript);
+    </script>
+    
+}
+
+

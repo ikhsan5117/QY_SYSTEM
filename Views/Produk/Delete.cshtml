@@ -1,0 +1,135 @@
+@model Produk
+@{
+    ViewData["Title"] = "Hapus Produk";
+    Layout = "_LayoutDesktop";
+}
+
+<div class="row g-4">
+    <div class="col-lg-8 offset-lg-2">
+        <!-- Header Card -->
+        <div class="card-desktop" style="margin-bottom: 24px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">
+            <div style="text-align: center; padding: 32px 20px;">
+                <div style="width: 100px; height: 100px; margin: 0 auto 20px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); animation: pulse 2s ease-in-out infinite;">
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 60px; color: white;"></i>
+                </div>
+                <h2 style="margin-bottom: 12px; font-size: 28px; font-weight: 700;">KONFIRMASI PENGHAPUSAN</h2>
+                <p style="margin: 0; font-size: 16px; opacity: 0.95;">
+                    Tindakan ini tidak dapat dibatalkan!
+                </p>
+            </div>
+        </div>
+
+        <!-- Warning Card -->
+        <div class="card-desktop" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05)); border: 2px solid rgba(239, 68, 68, 0.3);">
+            <div style="display: flex; gap: 16px; align-items: start;">
+                <div style="flex-shrink: 0;">
+                    <i class="bi bi-shield-exclamation" style="font-size: 48px; color: #ef4444;"></i>
+                </div>
+                <div>
+                    <h4 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 700; color: #dc2626;">
+                        ⚠️ Peringatan Penting
+                    </h4>
+                    <p style="margin: 0 0 8px 0; font-size: 14px; color: var(--text-primary); line-height: 1.6;">
+                        Anda akan menghapus produk ini secara <strong>PERMANEN</strong>. Data berikut akan dihapus:
+                    </p>
+                    <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: var(--text-primary); line-height: 1.8;">
+                        <li><strong>Semua Standar Dimensi</strong> yang terkait dengan produk ini</li>
+                        <li><strong>Semua Data Input</strong> hasil pengecekan dimensi</li>
+                        <li><strong>Catatan dan Riwayat</strong> terkait produk ini</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Produk Card -->
+        <div class="card-desktop" style="margin-bottom: 24px;">
+            <div class="card-header-desktop" style="border-bottom: 2px solid var(--border-color);">
+                <h2 class="card-title-desktop">
+                    <i class="bi bi-box-seam"></i> Data Produk yang Akan Dihapus
+                </h2>
+            </div>
+            
+            <div style="padding-top: 8px;">
+                <div style="padding: 24px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(99, 102, 241, 0.02)); border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.2); margin-bottom: 16px;">
+                    <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px;">
+                        <i class="bi bi-box"></i> NAMA PRODUK
+                    </div>
+                    <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">
+                        @Model.NamaProduk
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div style="padding: 20px; background: rgba(16, 185, 129, 0.05); border-radius: 10px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                            <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px;">
+                                <i class="bi bi-person"></i> OPERATOR / PIC
+                            </div>
+                            <div style="font-size: 20px; font-weight: 700; color: var(--text-primary);">
+                                @Model.Operator
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="padding: 20px; background: rgba(245, 158, 11, 0.05); border-radius: 10px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                            <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 8px;">
+                                <i class="bi bi-calendar"></i> TANGGAL INPUT
+                            </div>
+                            <div style="font-size: 16px; font-weight: 700; color: var(--text-primary);">
+                                @Model.TanggalInput.ToString("dd MMMM yyyy")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Form -->
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            
+            <div style="border-top: 1px solid var(--border-color); padding-top: 24px; margin-top: 24px; display: flex; flex-direction: column; gap: 12px;">
+                <button type="submit" class="btn-delete-confirm" style="width: 100%; padding: 16px 32px; font-size: 16px; font-weight: 700; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: all 0.3s ease;">
+                    <i class="bi bi-trash-fill" style="font-size: 20px;"></i>
+                    <span>YA, HAPUS PRODUK INI SEKARANG</span>
+                </button>
+                <a asp-action="Detail" asp-route-id="@Model.Id" class="btn-secondary-desktop" style="width: 100%; padding: 16px 32px; font-size: 16px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 12px;">
+                    <i class="bi bi-x-circle"></i>
+                    <span>Batal, Kembali ke Detail</span>
+                </a>
+            </div>
+        </form>
+
+        <!-- Info Card -->
+        <div class="card-desktop" style="margin-top: 24px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.02)); border: 1px solid rgba(59, 130, 246, 0.2);">
+            <div style="display: flex; gap: 16px; align-items: start;">
+                <div style="flex-shrink: 0;">
+                    <i class="bi bi-info-circle-fill" style="font-size: 24px; color: var(--color-primary);"></i>
+                </div>
+                <div>
+                    <h4 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Saran</h4>
+                    <p style="margin: 0; font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+                        Jika Anda hanya ingin mengubah data produk, gunakan tombol <strong>Batal</strong> dan pilih opsi <strong>Edit</strong> di halaman detail produk.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.btn-delete-confirm:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+}
+</style>
