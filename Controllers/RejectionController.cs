@@ -627,6 +627,25 @@ namespace AplikasiCheckDimensi.Controllers
             return await GetDashboardByPlant("BTR", bulan, tanggal, jenisNG, line, kategoriNG, partCode);
         }
 
+
+        // GET: /Rejection/DashboardTPE
+        public async Task<IActionResult> DashboardTPE(string? bulan, string? tanggal, string? jenisNG, string? line, string? kategoriNG, string? partCode)
+        {
+            if (!IsLoggedIn())
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            if (!IsAdmin())
+            {
+                TempData["ErrorMessage"] = "Akses ditolak. Dashboard Rejection hanya untuk Admin.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            ViewBag.PlantName = "TPE";
+            return await GetDashboardByPlant("TPE", bulan, tanggal, jenisNG, line, kategoriNG, partCode);
+        }
+
         // Helper method for plant-specific dashboard
         private async Task<IActionResult> GetDashboardByPlant(string plantName, string? bulan, string? tanggal, string? jenisNG, string? line, string? kategoriNG, string? partCode)
         {
@@ -653,48 +672,66 @@ namespace AplikasiCheckDimensi.Controllers
                 if (!string.IsNullOrEmpty(bulan))
                 {
                     var bulanList = bulan.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var b in bulanList)
+                    if (bulanList.Length > 0)
                     {
-                        var parts = b.Split('-');
-                        if (parts.Length == 2 && int.TryParse(parts[0], out int month) && int.TryParse(parts[1], out int year))
+                        selectedMonthYears = bulanList
+                            .Select(b => {
+                                var parts = b.Split('-');
+                                if (parts.Length == 2 && int.TryParse(parts[1], out int year))
+                                {
+                                    // Gunakan helper ParseMonthValue agar bisa handle format angka ataupun "Jan"
+                                    int month = ParseMonthValue(parts[0].Trim());
+                                    if (month > 0)
+                                    {
+                                        return (Month: month, Year: year);
+                                    }
+                                }
+                                else
+                                {
+                                    // Coba parse sebagai bulan saja (misal saat klik chart label "Jan")
+                                    int monthOnly = ParseMonthValue(b.Trim());
+                                    if (monthOnly > 0)
+                                    {
+                                        return (Month: monthOnly, Year: DateTime.Now.Year);
+                                    }
+                                }
+                                return (Month: 0, Year: 0);
+                            })
+                            .Where(p => p.Month > 0)
+                            .ToList();
+
+                        selectedMonths = selectedMonthYears.Select(p => p.Month).Distinct().ToList();
+                        if (selectedMonthYears.Count > 0)
                         {
-                            selectedMonthYears.Add((month, year));
-                            if (!selectedMonths.Contains(month))
-                                selectedMonths.Add(month);
-                            selectedMonth = month;
-                            selectedYear = year;
+                            selectedMonth = selectedMonthYears.First().Month;
+                            selectedYear = selectedMonthYears.First().Year;
                         }
                     }
                 }
 
                 // Apply filters to NG query
+                // Note: For bulan filter, we'll apply it after loading data to avoid EF translation issues
+                List<(int Month, int Year)> selectedBulanPairs = new List<(int, int)>();
                 if (!string.IsNullOrEmpty(bulan))
                 {
                     var bulanList = bulan.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                    if (bulanList.Length > 0)
+                    foreach (var b in bulanList)
                     {
-                        var monthYearPairs = bulanList
-                            .Select(b => {
-                                var parts = b.Split('-');
-                                if (parts.Length == 2 && int.TryParse(parts[0], out int month) && int.TryParse(parts[1], out int year))
-                                {
-                                    return new { Month = month, Year = year };
-                                }
-                                else if (int.TryParse(b, out int monthOnly))
-                                {
-                                    return new { Month = monthOnly, Year = DateTime.Now.Year };
-                                }
-                                return null;
-                            })
-                            .Where(p => p != null)
-                            .ToList();
-                        
-                        if (monthYearPairs != null && monthYearPairs.Count > 0)
+                        var parts = b.Split('-');
+                        if (parts.Length == 2 && int.TryParse(parts[1], out int year))
                         {
-                            var validPairs = monthYearPairs.Where(p => p != null).ToList();
-                            if (validPairs.Count > 0)
+                            int month = ParseMonthValue(parts[0].Trim());
+                            if (month > 0)
                             {
-                                query = query.Where(x => validPairs.Any(p => p != null && p.Month == x.TanggalInput.Month && p.Year == x.TanggalInput.Year));
+                                selectedBulanPairs.Add((month, year));
+                            }
+                        }
+                        else
+                        {
+                            int monthOnly = ParseMonthValue(b.Trim());
+                            if (monthOnly > 0)
+                            {
+                                selectedBulanPairs.Add((monthOnly, DateTime.Now.Year));
                             }
                         }
                     }
@@ -714,10 +751,23 @@ namespace AplikasiCheckDimensi.Controllers
                             {
                                 var firstBulan = bulanList.First();
                                 var parts = firstBulan.Split('-');
-                                if (parts.Length == 2 && int.TryParse(parts[0], out int month) && int.TryParse(parts[1], out int year))
+                                if (parts.Length == 2 && int.TryParse(parts[1], out int year))
                                 {
-                                    tanggalMonth = month;
-                                    tanggalYear = year;
+                                    int month = ParseMonthValue(parts[0].Trim());
+                                    if (month > 0)
+                                    {
+                                        tanggalMonth = month;
+                                        tanggalYear = year;
+                                    }
+                                }
+                                else
+                                {
+                                    int monthOnly = ParseMonthValue(firstBulan.Trim());
+                                    if (monthOnly > 0)
+                                    {
+                                        tanggalMonth = monthOnly;
+                                        tanggalYear = DateTime.Now.Year;
+                                    }
                                 }
                             }
                         }
@@ -778,29 +828,7 @@ namespace AplikasiCheckDimensi.Controllers
                     .AsQueryable();
 
                 // Apply same filters to qtyCheckQuery
-                if (!string.IsNullOrEmpty(bulan))
-                {
-                    var bulanList = bulan.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                    if (bulanList.Length > 0)
-                    {
-                        var monthYearPairs = bulanList
-                            .Select(b => {
-                                var parts = b.Split('-');
-                                if (parts.Length == 2 && int.TryParse(parts[0], out int month) && int.TryParse(parts[1], out int year))
-                                {
-                                    return new { Month = month, Year = year };
-                                }
-                                return null;
-                            })
-                            .Where(p => p != null)
-                            .ToList();
-                        
-                        if (monthYearPairs != null && monthYearPairs.Count > 0)
-                        {
-                            qtyCheckQuery = qtyCheckQuery.Where(x => monthYearPairs.Any(p => p != null && p.Month == x.TanggalInput.Month && p.Year == x.TanggalInput.Year));
-                        }
-                    }
-                }
+                // Note: bulan filter will be applied in-memory after loading to avoid EF tuple issues
 
                 if (!string.IsNullOrEmpty(tanggal))
                 {
@@ -816,10 +844,23 @@ namespace AplikasiCheckDimensi.Controllers
                             {
                                 var firstBulan = bulanList.First();
                                 var parts = firstBulan.Split('-');
-                                if (parts.Length == 2 && int.TryParse(parts[0], out int month) && int.TryParse(parts[1], out int year))
+                                if (parts.Length == 2 && int.TryParse(parts[1], out int year))
                                 {
-                                    tanggalMonth = month;
-                                    tanggalYear = year;
+                                    int month = ParseMonthValue(parts[0].Trim());
+                                    if (month > 0)
+                                    {
+                                        tanggalMonth = month;
+                                        tanggalYear = year;
+                                    }
+                                }
+                                else
+                                {
+                                    int monthOnly = ParseMonthValue(firstBulan.Trim());
+                                    if (monthOnly > 0)
+                                    {
+                                        tanggalMonth = monthOnly;
+                                        tanggalYear = DateTime.Now.Year;
+                                    }
                                 }
                             }
                         }
@@ -871,29 +912,7 @@ namespace AplikasiCheckDimensi.Controllers
                 var allDataQuery = _context.QCHoseData.Where(x => x.Plant == plantName).AsQueryable();
                 
                 // Apply bulan filter to allData for correct weekly chart display
-                if (!string.IsNullOrEmpty(bulan))
-                {
-                    var bulanList = bulan.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                    if (bulanList.Length > 0)
-                    {
-                        var monthYearPairs = bulanList
-                            .Select(b => {
-                                var parts = b.Split('-');
-                                if (parts.Length == 2 && int.TryParse(parts[0], out int month) && int.TryParse(parts[1], out int year))
-                                {
-                                    return new { Month = month, Year = year };
-                                }
-                                return null;
-                            })
-                            .Where(p => p != null)
-                            .ToList();
-                        
-                        if (monthYearPairs != null && monthYearPairs.Count > 0)
-                        {
-                            allDataQuery = allDataQuery.Where(x => monthYearPairs.Any(p => p != null && p.Month == x.TanggalInput.Month && p.Year == x.TanggalInput.Year));
-                        }
-                    }
-                }
+                // Note: bulan filter will be applied in-memory after loading to avoid EF tuple issues
                 
                 var allData = await allDataQuery.ToListAsync();
 
@@ -976,17 +995,18 @@ namespace AplikasiCheckDimensi.Controllers
                 // If AJAX request, return JSON
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 {
+                    Console.WriteLine($"[DEBUG] AJAX request detected for {plantName}");
                     return Json(new {
-                        TotalQtyNG = totalQtyNG,
-                        TotalQtyCheck = totalQtyCheck,
-                        TotalRR = totalRR,
-                        MonthlyData = monthlyData,
-                        WeeklyData = weeklyData,
-                        DailyData = dailyData,
-                        ParetoPartData = paretoPartData,
-                        KriteriaNGData = kriteriaNGData,
-                        RejectionByPartData = rejectionByPartData,
-                        RejectionByKriteriaData = rejectionByKriteriaData
+                        totalQtyNG = totalQtyNG,
+                        totalQtyCheck = totalQtyCheck,
+                        totalRR = totalRR,
+                        monthlyData = monthlyData,
+                        weeklyData = weeklyData,
+                        dailyData = dailyData,
+                        paretoPartData = paretoPartData,
+                        kriteriaNGData = kriteriaNGData,
+                        rejectionByPartData = rejectionByPartData,
+                        rejectionByKriteriaData = rejectionByKriteriaData
                     });
                 }
 
@@ -994,6 +1014,28 @@ namespace AplikasiCheckDimensi.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[ERROR] Exception in GetDashboardByPlant for {plantName}: {ex.Message}");
+                Console.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
+                
+                // If AJAX request, return JSON error instead of HTML
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new {
+                        error = true,
+                        message = ex.Message,
+                        totalQtyNG = 0,
+                        totalQtyCheck = 0,
+                        totalRR = 0.0,
+                        monthlyData = new List<object>(),
+                        weeklyData = new List<object>(),
+                        dailyData = new List<object>(),
+                        paretoPartData = new List<object>(),
+                        kriteriaNGData = new List<object>(),
+                        rejectionByPartData = new List<object>(),
+                        rejectionByKriteriaData = new List<object>()
+                    });
+                }
+                
                 ViewData["Title"] = $"Dashboard Rejection {plantName}";
                 ViewBag.ErrorMessage = "Error loading data: " + ex.Message;
                 return View($"Dashboard{plantName}");
@@ -1064,11 +1106,12 @@ namespace AplikasiCheckDimensi.Controllers
                     var key = $"{m.Year}-{m.Month}";
                     var qtyCheck = checkGrouped.ContainsKey(key) ? checkGrouped[key] : 0;
                     var qtyNG = ngGrouped.ContainsKey(key) ? ngGrouped[key] : 0;
-                    // Gunakan nama bulan singkat (Jan, Feb, dst) bukan nama lengkap, tanpa tahun
+                    // Gunakan nama bulan singkat (Jan, Feb, dst) + tahun agar label unik dan jelas
                     var monthName = GetMonthName(m.Month);
                     return new
                     {
-                        label = monthName, // Hanya nama bulan singkat, tanpa tahun
+                        // Contoh: "Jan-2026"
+                        label = $"{monthName}-{m.Year}",
                         qtyCheck = qtyCheck,
                         qtyNG = qtyNG,
                         rr = qtyCheck > 0 ? Math.Round((qtyNG * 100.0) / qtyCheck, 2) : 0,
