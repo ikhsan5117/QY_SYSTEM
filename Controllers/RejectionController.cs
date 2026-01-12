@@ -1265,18 +1265,8 @@ namespace AplikasiCheckDimensi.Controllers
                     var qtyCheck = checkGrouped.ContainsKey(key) ? checkGrouped[key] : 0;
                     var qtyNG = ngGrouped.ContainsKey(key) ? ngGrouped[key] : 0;
                     
-                    // Format label lebih pendek: "W1" atau "W1 (1-7)" atau "W1 (29-4)" jika lintas bulan
-                    string label = "";
-                    if (w.startDate.Month == w.endDate.Month)
-                    {
-                        // Format: "Minggu 1 (1-7)" - hanya tanggal tanpa nama bulan
-                        label = $"Minggu {w.week} ({w.startDate.Day}-{w.endDate.Day})";
-                    }
-                    else
-                    {
-                        // Format: "Minggu 1 (29-4)" - hanya tanggal tanpa nama bulan untuk lebih pendek
-                        label = $"Minggu {w.week} ({w.startDate.Day}-{w.endDate.Day})";
-                    }
+                    // Format label lebih pendek: "Min 1", "Min 2", dst
+                    string label = $"Min {w.week}";
                     
                     return new
                     {

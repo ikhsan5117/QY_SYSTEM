@@ -1946,7 +1946,7 @@
                             label: 'RR%',
                             data: rrData,
                             type: 'line',
-                            borderColor: '#000000',
+                            borderColor: '#22c55e',
                             backgroundColor: 'transparent',
                             yAxisID: 'y1',
                             datalabels: {
@@ -1954,7 +1954,7 @@
                                     var val = context.dataset.data[context.dataIndex];
                                     return val > 0; // Hanya tampilkan jika > 0
                                 },
-                                color: '#000',
+                                color: '#22c55e',
                                 align: 'top',
                                 offset: 2,
                                 font: { weight: 'bold', size: 10 },
@@ -1996,7 +1996,25 @@
                         plugins: {
                             legend: {
                                 display: true,
-                                position: 'top'
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    pointStyle: 'rect',
+                                    generateLabels: function(chart) {
+                                        const original = Chart.defaults.plugins.legend.labels.generateLabels;
+                                        const labels = original.call(this, chart);
+                                        labels.forEach((label, i) => {
+                                            const dataset = chart.data.datasets[i];
+                                            if (dataset.label === 'RR%' || dataset.label === 'Target') {
+                                                label.pointStyle = 'line';
+                                                label.lineWidth = 3;
+                                            } else {
+                                                label.pointStyle = 'rect';
+                                            }
+                                        });
+                                        return labels;
+                                    }
+                                }
                             },
                             datalabels: {
                                 display: false // Default: sembunyikan semua label
@@ -2071,7 +2089,7 @@
                             label: 'RR%',
                             data: rrData,
                             type: 'line',
-                            borderColor: '#000000',
+                            borderColor: '#22c55e',
                             backgroundColor: 'transparent',
                             yAxisID: 'y1',
                             datalabels: {
@@ -2079,7 +2097,7 @@
                                     var val = context.dataset.data[context.dataIndex];
                                     return val > 0;
                                 },
-                                color: '#000',
+                                color: '#22c55e',
                                 align: 'top',
                                 offset: 2,
                                 font: { weight: 'bold', size: 10 },
@@ -2112,30 +2130,33 @@
                                 // Use label from chart instead of stale weeklyData
                                 const clickedLabel = this.data.labels[elementIndex];
                                 console.log('📅 [Weekly Chart] Clicked label:', clickedLabel);
-                                if (clickedLabel) {
-                                    // Extract date range from label seperti "Minggu 1 (1-7)" atau "Minggu 1 (29-4)"
-                                    const labelMatch = clickedLabel.match(/Minggu\s+\d+\s+\((\d+)-(\d+)\)/);
-                                    if (labelMatch) {
-                                        const startDay = parseInt(labelMatch[1]);
-                                        const endDay = parseInt(labelMatch[2]);
-                                        const dates = [];
-                                        let currentDay = startDay;
-                                        const maxDay = endDay + 1;
-                                        while (currentDay < maxDay) {
-                                            dates.push(currentDay.toString());
-                                            currentDay++;
-                                        }
-                                        console.log('📅 [Weekly Chart] Sending tanggal filter:', dates.join(','));
-                                        // Saat klik minggu, update tanggal tapi pertahankan filter bulan
-                                        updateGlobalFilter('tanggal', dates.join(','));
-                                    }
-                                }
+                                // Note: Weekly labels are now shortened to "Min 1", "Min 2", etc.
+                                // Click functionality disabled since date range is no longer in label
+                                console.log('ℹ️ [Weekly Chart] Click disabled - labels are shortened');
                             }
                         },
                         plugins: {
                             legend: {
                                 display: true,
-                                position: 'top'
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    pointStyle: 'rect',
+                                    generateLabels: function(chart) {
+                                        const original = Chart.defaults.plugins.legend.labels.generateLabels;
+                                        const labels = original.call(this, chart);
+                                        labels.forEach((label, i) => {
+                                            const dataset = chart.data.datasets[i];
+                                            if (dataset.label === 'RR%' || dataset.label === 'Target') {
+                                                label.pointStyle = 'line';
+                                                label.lineWidth = 3;
+                                            } else {
+                                                label.pointStyle = 'rect';
+                                            }
+                                        });
+                                        return labels;
+                                    }
+                                }
                             }
                         },
                         scales: {
@@ -2208,7 +2229,7 @@
                             label: 'RR%',
                             data: rrData,
                             type: 'line',
-                            borderColor: '#000000',
+                            borderColor: '#22c55e',
                             backgroundColor: 'transparent',
                             yAxisID: 'y1',
                             datalabels: {
@@ -2216,7 +2237,7 @@
                                     var val = context.dataset.data[context.dataIndex];
                                     return val > 0;
                                 },
-                                color: '#000',
+                                color: '#22c55e',
                                 align: 'top',
                                 offset: 2,
                                 font: { weight: 'bold', size: 10 },
@@ -2261,7 +2282,25 @@
                         plugins: {
                             legend: {
                                 display: true,
-                                position: 'top'
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    pointStyle: 'rect',
+                                    generateLabels: function(chart) {
+                                        const original = Chart.defaults.plugins.legend.labels.generateLabels;
+                                        const labels = original.call(this, chart);
+                                        labels.forEach((label, i) => {
+                                            const dataset = chart.data.datasets[i];
+                                            if (dataset.label === 'RR%' || dataset.label === 'Target') {
+                                                label.pointStyle = 'line';
+                                                label.lineWidth = 3;
+                                            } else {
+                                                label.pointStyle = 'rect';
+                                            }
+                                        });
+                                        return labels;
+                                    }
+                                }
                             }
                         },
                         scales: {
