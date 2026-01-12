@@ -1573,9 +1573,18 @@
             }
         }
         
-        async function updateDashboardResults() {
+        async function updateDashboardResults(clearFilters = false) {
             try {
-                console.log('🔄 [updateDashboardResults] Starting dashboard refresh...');
+                console.log('🔄 [updateDashboardResults] Starting dashboard refresh...', clearFilters ? '(clearing filters)' : '');
+                
+                // If called from SignalR auto-refresh, clear jenisNG filter to show all data
+                if (clearFilters) {
+                    const jenisNGInput = document.getElementById('jenisNGValueMain');
+                    if (jenisNGInput) {
+                        jenisNGInput.value = '';
+                        console.log('🔄 [updateDashboardResults] Cleared jenisNG filter for auto-refresh');
+                    }
+                }
                 
                 const form = document.getElementById('filterFormMain');
                 if (!form) {
@@ -1622,8 +1631,11 @@
                     console.error('❌ [updateDashboardResults] Error updating cards:', cardError);
                 }
 
-                // Check if we are filtering by a specific NG type
+                // IMPORTANT: Check if we are filtering by a specific NG type
+                // This check must happen AFTER any filter updates to ensure correct state
                 const jenisNGInputUpdate = document.getElementById('jenisNGValueMain');
+                // Use a small delay to ensure DOM has updated after filter changes
+                await new Promise(resolve => setTimeout(resolve, 10));
                 const isFilteredNG = jenisNGInputUpdate && jenisNGInputUpdate.value && jenisNGInputUpdate.value.trim() !== '';
                 console.log('🔍 [updateDashboardResults] jenisNG input:', jenisNGInputUpdate);
                 console.log('🔍 [updateDashboardResults] jenisNG value:', jenisNGInputUpdate?.value);
@@ -1690,7 +1702,11 @@
                         });
                         
                         console.log(`✅ [updateChart] ${chartName} chart update complete`);
-                        chart.update();
+                        // Update with smooth animation
+                        chart.update({
+                            duration: 800,
+                            easing: 'easeInOutQuart'
+                        });
                     } catch (chartError) {
                         console.error(`❌ Error updating ${chartName}:`, chartError);
                         console.error(`❌ Error stack:`, chartError.stack);
@@ -1704,13 +1720,31 @@
                 
                 // Update Pareto & Kriteria jika perlu
                 try {
+                    // Update Pareto Part Chart
+                    if (window.paretoChartInstance && data.paretoPartData && Array.isArray(data.paretoPartData)) {
+                        console.log('📈 [updateDashboardResults] Updating Pareto Part chart...');
+                        // Update labels
+                        window.paretoChartInstance.data.labels = data.paretoPartData.map(d => d.partCode || '');
+                        // Update data
+                        window.paretoChartInstance.data.datasets[0].data = data.paretoPartData.map(d => d.qtyNG || d.QtyNG || 0);
+                        window.paretoChartInstance.update({
+                            duration: 800,
+                            easing: 'easeInOutQuart'
+                        });
+                        console.log('✅ [updateDashboardResults] Pareto Part chart updated with', data.paretoPartData.length, 'items');
+                    }
+                    
+                    // Update Kriteria NG Chart
                     if (window.kriteriaChartInstance && data.kriteriaNGData && Array.isArray(data.kriteriaNGData)) {
                         console.log('📈 [updateDashboardResults] Updating Kriteria NG chart...');
                         // Update labels
                         window.kriteriaChartInstance.data.labels = data.kriteriaNGData.map(d => d.jenisNG || '');
                         // Update data
                         window.kriteriaChartInstance.data.datasets[0].data = data.kriteriaNGData.map(d => d.qtyNG || d.QtyNG || 0);
-                        window.kriteriaChartInstance.update();
+                        window.kriteriaChartInstance.update({
+                            duration: 800,
+                            easing: 'easeInOutQuart'
+                        });
                         console.log('✅ [updateDashboardResults] Kriteria NG chart updated with', data.kriteriaNGData.length, 'items');
                     }
                 } catch (kriteriaError) {
@@ -2267,7 +2301,7 @@
             // Pareto Chart
             const paretoCtx = document.getElementById('paretoChart');
             if (paretoCtx && paretoData && Array.isArray(paretoData)) {
-                new Chart(paretoCtx, {
+                window.paretoChartInstance = new Chart(paretoCtx, {
                     type: 'bar',
                     data: {
                         labels: paretoData.map(function(d) { return d && d.partCode ? d.partCode : ''; }),
@@ -2555,7 +2589,7 @@
                     // 2. Refresh Dashboard
                     console.log('🔄 Auto-refreshing Dashboard Rejection HOSE charts...');
                     if (typeof updateDashboardResults === 'function') {
-                        updateDashboardResults();
+                        updateDashboardResults(true); // Clear filters for auto-refresh
                     } else {
                         location.reload();
                     }
