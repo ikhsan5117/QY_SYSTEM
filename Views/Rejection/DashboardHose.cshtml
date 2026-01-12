@@ -455,8 +455,72 @@
         cursor: pointer;
     }
 
+        .badge {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: inline-block;
+    }
+
     .data-table tr {
         transition: background-color 0.2s ease;
+    }
+
+    /* Pagination Styling */
+    .pagination-container {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 12px 16px;
+        gap: 16px;
+        background: rgba(30, 41, 59, 0.4);
+        border-top: 1px solid rgba(148, 163, 184, 0.1);
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        user-select: none;
+    }
+
+    .pagination-info {
+        font-size: 0.875rem;
+        color: #94a3b8;
+        font-weight: 500;
+        letter-spacing: 0.025em;
+    }
+
+    .pagination-controls {
+        display: flex;
+        gap: 8px;
+    }
+
+    .pagination-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background: rgba(59, 130, 246, 0.2);
+        color: #60a5fa;
+        transform: translateY(-1px);
+    }
+
+    .pagination-btn:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        filter: grayscale(1);
     }
 
     canvas {
@@ -899,29 +963,20 @@
                             </tr>
                         </thead>
                         <tbody id="rejectionByPartTableBody">
-                            @if (ViewBag.RejectionByPartData != null)
-                            {
-                                int partIndex = 1;
-                                @foreach (dynamic item in ViewBag.RejectionByPartData)
-                                {
-                                    <tr>
-                                        <td>@partIndex</td>
-                                        <td>@item.partCode</td>
-                                        <td>@item.qtyCheck.ToString("N0")</td>
-                                        <td>@item.qtyNG.ToString("N0")</td>
-                                        <td>@item.rr.ToString("N2")%</td>
-                                    </tr>
-                                    partIndex++;
-                                }
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="5" style="text-align: center; color: #94a3b8;">Tidak ada data</td>
-                                </tr>
-                            }
+                            <!-- Data populated via JS -->
                         </tbody>
                     </table>
+                </div>
+                <div class="pagination-container" id="partTablePagination">
+                    <div class="pagination-info" id="partTableInfo">0 - 0 / 0</div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" id="partPrevBtn" onclick="changePartPage(-1)">
+                            <span>&#10094;</span>
+                        </button>
+                        <button class="pagination-btn" id="partNextBtn" onclick="changePartPage(1)">
+                            <span>&#10095;</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -944,32 +999,25 @@
                         <thead>
                             <tr>
                                 <th style="width: 50px;">NO</th>
-                                <th>JENIS NG</th>
+                                <th>KRITERIA NG</th>
                                 <th>QTY NG</th>
                             </tr>
                         </thead>
                         <tbody id="rejectionByKriteriaTableBody">
-                            @if (ViewBag.RejectionByKriteriaData != null)
-                            {
-                                int kriteriaIndex = 1;
-                                @foreach (dynamic item in ViewBag.RejectionByKriteriaData)
-                                {
-                                    <tr>
-                                        <td>@kriteriaIndex</td>
-                                        <td>@item.jenisNG</td>
-                                        <td>@item.qtyNG.ToString("N0")</td>
-                                    </tr>
-                                    kriteriaIndex++;
-                                }
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="3" style="text-align: center; color: #94a3b8;">Tidak ada data</td>
-                                </tr>
-                            }
+                            <!-- Data populated via JS -->
                         </tbody>
                     </table>
+                </div>
+                <div class="pagination-container" id="kriteriaTablePagination">
+                    <div class="pagination-info" id="kriteriaTableInfo">0 - 0 / 0</div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" id="kriteriaPrevBtn" onclick="changeKriteriaPage(-1)">
+                            <span>&#10094;</span>
+                        </button>
+                        <button class="pagination-btn" id="kriteriaNextBtn" onclick="changeKriteriaPage(1)">
+                            <span>&#10095;</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1374,6 +1422,115 @@
         }
 
         // Global filter update function
+                /* --- PAGINATION LOGIC --- */
+        window.partTableData = [];
+        window.partCurrentPage = 1;
+        window.partPageSize = 100;
+        
+        window.kriteriaTableData = [];
+        window.kriteriaCurrentPage = 1;
+        window.kriteriaPageSize = 100;
+
+        window.renderPartTablePage = function() {
+            const tbody = document.getElementById('rejectionByPartTableBody');
+            const info = document.getElementById('partTableInfo');
+            const prevBtn = document.getElementById('partPrevBtn');
+            const nextBtn = document.getElementById('partNextBtn');
+            
+            if (!tbody || !info) return;
+            
+            const totalData = window.partTableData.length;
+            const totalPages = Math.ceil(totalData / window.partPageSize) || 1;
+            
+            if (window.partCurrentPage < 1) window.partCurrentPage = 1;
+            if (window.partCurrentPage > totalPages) window.partCurrentPage = totalPages;
+            
+            const startIdx = (window.partCurrentPage - 1) * window.partPageSize;
+            const endIdx = Math.min(startIdx + window.partPageSize, totalData);
+            const pageData = window.partTableData.slice(startIdx, endIdx);
+            
+            if (totalData === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 20px;">Tidak ada data</td></tr>';
+                info.textContent = '0 - 0 / 0';
+                if (prevBtn) prevBtn.disabled = true;
+                if (nextBtn) nextBtn.disabled = true;
+            } else {
+                tbody.innerHTML = pageData.map((item, index) => {
+                    const pCode = item.partCode || item.PartCode || '-';
+                    const qCheck = (item.qtyCheck || item.QtyCheck || 0).toLocaleString();
+                    const qNG = (item.qtyNG || item.QtyNG || 0).toLocaleString();
+                    const rrVal = (item.rr || item.RR || 0).toFixed(2);
+                    
+                    return `
+                        <tr style="cursor: pointer;" onclick="updateGlobalFilter('partCode', '${pCode}')">
+                            <td>${startIdx + index + 1}</td>
+                            <td style="font-weight: 500;">${pCode}</td>
+                            <td style="text-align: right;">${qCheck}</td>
+                            <td style="text-align: right; color: #ef4444;">${qNG}</td>
+                            <td style="text-align: center;"><span class="badge" style="background: rgba(34, 197, 94, 0.2); color: #22c55e;">${rrVal}%</span></td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                info.textContent = `${startIdx + 1} - ${endIdx} / ${totalData}`;
+                if (prevBtn) prevBtn.disabled = window.partCurrentPage === 1;
+                if (nextBtn) nextBtn.disabled = window.partCurrentPage === totalPages;
+            }
+        };
+
+        window.renderKriteriaTablePage = function() {
+            const tbody = document.getElementById('rejectionByKriteriaTableBody');
+            const info = document.getElementById('kriteriaTableInfo');
+            const prevBtn = document.getElementById('kriteriaPrevBtn');
+            const nextBtn = document.getElementById('kriteriaNextBtn');
+            
+            if (!tbody || !info) return;
+            
+            const totalData = window.kriteriaTableData.length;
+            const totalPages = Math.ceil(totalData / window.kriteriaPageSize) || 1;
+            
+            if (window.kriteriaCurrentPage < 1) window.kriteriaCurrentPage = 1;
+            if (window.kriteriaCurrentPage > totalPages) window.kriteriaCurrentPage = totalPages;
+            
+            const startIdx = (window.kriteriaCurrentPage - 1) * window.kriteriaPageSize;
+            const endIdx = Math.min(startIdx + window.kriteriaPageSize, totalData);
+            const pageData = window.kriteriaTableData.slice(startIdx, endIdx);
+            
+            if (totalData === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #94a3b8; padding: 20px;">Tidak ada data</td></tr>';
+                info.textContent = '0 - 0 / 0';
+                if (prevBtn) prevBtn.disabled = true;
+                if (nextBtn) nextBtn.disabled = true;
+            } else {
+                tbody.innerHTML = pageData.map((item, index) => {
+                    const jNG = item.jenisNG || item.JenisNG || '-';
+                    const qNG = (item.qtyNG || item.QtyNG || 0).toLocaleString();
+                    
+                    return `
+                        <tr style="cursor: pointer;" onclick="updateGlobalFilter('jenisNG', '${jNG}')">
+                            <td>${startIdx + index + 1}</td>
+                            <td style="font-weight: 500;">${jNG}</td>
+                            <td style="text-align: right; color: #ef4444;">${qNG}</td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                info.textContent = `${startIdx + 1} - ${endIdx} / ${totalData}`;
+                if (prevBtn) prevBtn.disabled = window.kriteriaCurrentPage === 1;
+                if (nextBtn) nextBtn.disabled = window.kriteriaCurrentPage === totalPages;
+            }
+        };
+
+        window.changePartPage = function(delta) {
+            window.partCurrentPage += delta;
+            window.renderPartTablePage();
+        };
+        
+        window.changeKriteriaPage = function(delta) {
+            window.kriteriaCurrentPage += delta;
+            window.renderKriteriaTablePage();
+        };
+
         function updateGlobalFilter(filterType, filterValue) {
             try {
                 const form = document.getElementById('filterFormMain');
@@ -1751,72 +1908,20 @@
                     console.error('❌ [updateDashboardResults] Error updating Kriteria chart:', kriteriaError);
                 }
 
-                // Update Tables
-                try {
-                    console.log('📋 [updateDashboardResults] Updating tables...');
-                    
-                    // Update Rejection by Part Table
-                    if (data.rejectionByPartData && Array.isArray(data.rejectionByPartData)) {
-                        const partTableBody = document.getElementById('rejectionByPartTableBody');
-                        if (partTableBody) {
-                            if (data.rejectionByPartData.length === 0) {
-                                partTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Tidak ada data</td></tr>';
-                            } else {
-                                partTableBody.innerHTML = data.rejectionByPartData.map((item, index) => `
-                                    <tr style="cursor: pointer;">
-                                        <td>${index + 1}</td>
-                                        <td>${item.partCode || '-'}</td>
-                                        <td>${(item.qtyCheck || 0).toLocaleString()}</td>
-                                        <td>${(item.qtyNG || 0).toLocaleString()}</td>
-                                        <td>${(item.rr || 0).toFixed(2)}%</td>
-                                    </tr>
-                                `).join('');
-                                
-                                // Re-attach click event listeners
-                                partTableBody.querySelectorAll('tr').forEach(function(row, idx) {
-                                    row.addEventListener('click', function() {
-                                        const partCode = data.rejectionByPartData[idx]?.partCode;
-                                        if (partCode) {
-                                            updateGlobalFilter('partCode', partCode);
-                                        }
-                                    });
-                                });
-                            }
-                            console.log('✅ [updateDashboardResults] Part table updated');
-                        }
-                    }
-                    
-                    // Update Rejection by Kriteria Table
-                    if (data.rejectionByKriteriaData && Array.isArray(data.rejectionByKriteriaData)) {
-                        const kriteriaTableBody = document.getElementById('rejectionByKriteriaTableBody');
-                        if (kriteriaTableBody) {
-                            if (data.rejectionByKriteriaData.length === 0) {
-                                kriteriaTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #94a3b8;">Tidak ada data</td></tr>';
-                            } else {
-                                kriteriaTableBody.innerHTML = data.rejectionByKriteriaData.map((item, index) => `
-                                    <tr style="cursor: pointer;">
-                                        <td>${index + 1}</td>
-                                        <td>${item.jenisNG || '-'}</td>
-                                        <td>${(item.qtyNG || 0).toLocaleString()}</td>
-                                    </tr>
-                                `).join('');
-                                
-                                // Re-attach click event listeners
-                                kriteriaTableBody.querySelectorAll('tr').forEach(function(row, idx) {
-                                    row.addEventListener('click', function() {
-                                        const jenisNG = data.rejectionByKriteriaData[idx]?.jenisNG;
-                                        if (jenisNG) {
-                                            updateGlobalFilter('jenisNG', jenisNG);
-                                        }
-                                    });
-                                });
-                            }
-                            console.log('✅ [updateDashboardResults] Kriteria table updated');
-                        }
-                    }
-                } catch (tableError) {
-                    console.error('❌ [updateDashboardResults] Error updating tables:', tableError);
-                }
+                                                // Pagination Global Variables
+                window.partTableData = data.rejectionByPartData || [];
+                window.partCurrentPage = 1;
+                
+                window.kriteriaTableData = data.rejectionByKriteriaData || [];
+                window.kriteriaCurrentPage = 1;
+
+                // Initial Render if functions exist
+                if (typeof window.renderPartTablePage === 'function') window.renderPartTablePage();
+                if (typeof window.renderKriteriaTablePage === 'function') window.renderKriteriaTablePage();
+                };
+
+                window.renderPartTablePage();
+                window.renderKriteriaTablePage();
 
                 console.log('✅ [updateDashboardResults] Dashboard refresh completed successfully!');
             } catch (error) {
@@ -1827,6 +1932,30 @@
                 location.reload();
             }
         }
+
+        // --- INITIAL DATA POPULATION ---
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 [Dashboard] Initializing data...');
+            try {
+                const initialPartData = @Html.Raw(Json.Serialize(ViewBag.RejectionByPartData)) || [];
+                const initialKriteriaData = @Html.Raw(Json.Serialize(ViewBag.RejectionByKriteriaData)) || [];
+                
+                window.partTableData = initialPartData;
+                window.partCurrentPage = 1;
+                window.partPageSize = 10;
+                
+                window.kriteriaTableData = initialKriteriaData;
+                window.kriteriaCurrentPage = 1;
+                window.kriteriaPageSize = 10;
+                
+                if (typeof window.renderPartTablePage === 'function') window.renderPartTablePage();
+                if (typeof window.renderKriteriaTablePage === 'function') window.renderKriteriaTablePage();
+                
+                console.log('✅ [Dashboard] Initial table population successful');
+            } catch (e) {
+                console.error('❌ [Dashboard] Initial population error:', e);
+            }
+        });
 
         // Load DataLabels Plugin and Register
         const datalabelsScript = document.createElement('script');
